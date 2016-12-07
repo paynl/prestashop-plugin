@@ -10,9 +10,9 @@ class paynl_paymentmethods extends PaymentModule {
     public function __construct() {
         $this->name = 'paynl_paymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '3.4.2';
+        $this->version = '3.5.0';
         $this->_postErrors = array();
-		$this->module_key = '6c2f48f238008e8f68271f5e4763d308';
+        $this->module_key = '6c2f48f238008e8f68271f5e4763d308';
 
         $this->currencies = true;
         $this->currencies_mode = 'radio';
@@ -102,7 +102,7 @@ class paynl_paymentmethods extends PaymentModule {
     }
 
     public function install() {
-        if (!parent::install() || !$this->createTransactionTable() || !Configuration::updateValue('PAYNL_TOKEN', '') || !Configuration::updateValue('PAYNL_SERVICE_ID', '') || !Configuration::updateValue('PAYNL_ORDER_DESC', '') || !Configuration::updateValue('PAYNL_WAIT', '10') || !Configuration::updateValue('PAYNL_SUCCESS', '2') || !Configuration::updateValue('PAYNL_AMOUNTNOTVALID', '0') || !Configuration::updateValue('PAYNL_CANCEL', '6') || !Configuration::updateValue('PAYNL_COUNTRY_EXCEPTIONS', '') || !Configuration::updateValue('PAYNL_PAYMENT_METHOD_ORDER', '') || !$this->registerHook('paymentReturn') || !$this->registerHook('payment')) {
+        if (!parent::install() || !$this->createTransactionTable() || !Configuration::updateValue('PAYNL_TOKEN', '') || !Configuration::updateValue('PAYNL_SERVICE_ID', '') || !Configuration::updateValue('PAYNL_ORDER_DESC', '') || !Configuration::updateValue('PAYNL_WAIT', '10') || !Configuration::updateValue('PAYNL_SUCCESS', '2') || !Configuration::updateValue('PAYNL_AMOUNTNOTVALID', '0') || !Configuration::updateValue('PAYNL_CANCEL', '6') || !Configuration::updateValue('PAYNL_COUNTRY_EXCEPTIONS', '') || !Configuration::updateValue('PAYNL_PAYMENT_METHOD_ORDER', '') || !$this->registerHook('paymentReturn') || !$this->registerHook('payment') || !$this->registerHook('displayPaymentEU')) {
             return false;
         }
         return true;
@@ -123,7 +123,7 @@ class paynl_paymentmethods extends PaymentModule {
         PRIMARY KEY (`id`)
       ) ENGINE=myisam AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;";
 
-        DB::getInstance()->execute($sql);
+        Db::getInstance()->execute($sql);
         return true;
     }
 
@@ -281,6 +281,106 @@ class paynl_paymentmethods extends PaymentModule {
         }
     }
 
+	public function hookDisplayPaymentEU($params) {
+		$objCurrency = $this->getCurrency();
+		$intOrderAmount = round(number_format(Tools::convertPrice($params['cart']->getOrderTotal(), $objCurrency), 2, '.', '') * 100);
+
+		if ($this->validateOrderData($intOrderAmount)) {
+			global $smarty;
+
+			$token = Configuration::get('PAYNL_TOKEN');
+			$serviceId = Configuration::get('PAYNL_SERVICE_ID');
+
+			$methodOrder = Configuration::get('PAYNL_PAYMENT_METHOD_ORDER');
+			$methodOrder = @unserialize($methodOrder);
+			if ($methodOrder == false) {
+				$methodOrder = array();
+			}
+
+			$minAmount = Configuration::get('PAYNL_PAYMENT_MIN');
+			$minAmount = @unserialize($minAmount);
+
+			$maxAmount = Configuration::get('PAYNL_PAYMENT_MAX');
+			$maxAmount = @unserialize($maxAmount);
+
+			$countryExceptions = Configuration::get('PAYNL_COUNTRY_EXCEPTIONS');
+			$countryExceptions = @unserialize($countryExceptions);
+			if ($countryExceptions == false) {
+				$countryExceptions = array();
+			}
+
+			$apiGetservice = new Pay_Api_Getservice();
+			$apiGetservice->setApiToken($token);
+			$apiGetservice->setServiceId($serviceId);
+
+			$activeProfiles = $apiGetservice->doRequest();
+			$activeProfiles = $activeProfiles['paymentOptions'];
+
+
+			$paymentaddress = new Address($params['cart']->id_address_invoice);
+			$countryid = $paymentaddress->id_country;
+
+			// Only the profiles of the target country should remain in this array :). (Only when the count is > 0, otherwise it might indicate problems)
+			if (count($countryExceptions) > 0) {
+				if (isset($countryExceptions[$countryid])) {
+					foreach ($activeProfiles as $id => $profile) {
+						if (!isset($countryExceptions[$countryid][$profile['id']])) {
+							unset($activeProfiles[$id]);
+						}
+					}
+				}
+			}
+
+			// Order remaining profiles based by order...
+			asort($methodOrder);
+
+			$activeProfilesTemp = $activeProfiles;
+			$activeProfiles = array();
+
+			foreach (array_keys($methodOrder) as $iProfileId) {
+				foreach ($activeProfilesTemp as $iKey => $arrActiveProfile) {
+					if ($arrActiveProfile['id'] == $iProfileId) {
+						$minAmountForPP = @$minAmount[$iProfileId];
+						$maxAmountForPP = @$maxAmount[$iProfileId];
+
+						if(!empty($minAmountForPP) && ($minAmountForPP*100) > $intOrderAmount){
+							continue;
+						}
+						if(!empty($maxAmountForPP) && ($maxAmountForPP*100) < $intOrderAmount){
+							continue;
+						}
+
+						$arrActiveProfile['name'] = $this->getPaymentMethodName($iProfileId);
+						$arrActiveProfile['extraCosts'] = number_format($this->getExtraCosts($arrActiveProfile['id'], $intOrderAmount / 100), 2);
+						array_push($activeProfiles, $arrActiveProfile);
+						unset($activeProfilesTemp[$iKey]);
+					}
+				}
+			}
+
+			$smarty->assign(array(
+				'this_path' => $this->_path,
+				'profiles' => $activeProfiles,
+				//'banks' => $paynl->getIdealBanks(),
+				'this_path_ssl' => (Configuration::get('PS_SSL_ENABLED') ? 'https://' : 'http://') . htmlspecialchars($_SERVER['HTTP_HOST'], ENT_COMPAT, 'UTF-8') . __PS_BASE_URI__ . 'modules/' . $this->name . '/'
+			));
+
+			$paymentOptions = array();
+			foreach($activeProfiles as $profile)
+			{
+				$paymentOptions[] = array(
+					'cta_text' => $profile['visibleName'],
+					'logo' => 'https://www.pay.nl/images/payment_profiles/25x25/'.$profile['id'].'.png',
+					'action' => $this->context->link->getModuleLink('paynl_paymentmethods', 'payment', array('pid' => $profile['id']), true),
+				);
+			}
+
+			return $paymentOptions;
+		} else {
+			return false;
+		}
+	}
+
     public function hookPaymentReturn($params) {
         if (!$this->active)
             return;
@@ -377,8 +477,13 @@ class paynl_paymentmethods extends PaymentModule {
     }
 
     public function displayPaynl() {
+	    if (version_compare(_PS_VERSION_, '1.6.0.0', '>=')) {
+		    $src = $this->context->link->getMediaLink($this->_path.'pay.nl.logo.gif');
+	    } else {
+		    $src = '../modules/paynl_paymentmethods/pay.nl.logo.gif';
+	    }
         $this->_html .= '
-    <img src="../modules/paynl_paymentmethods/pay.nl.logo.gif" height="20%" width="20%" style="float:left; margin-right:15px;" />
+    <img src="'.$src.'" height="20%" width="20%" style="float:left; margin-right:15px;" />
     <b>' . $this->l('This module allows you to accept payments by Pay.nl.') . '</b>
     <br /><br /><br />';
     }
@@ -449,7 +554,7 @@ class paynl_paymentmethods extends PaymentModule {
         }
         $osCancel .= '</select>';
 
-        $countries = DB::getInstance()->ExecuteS('SELECT id_country FROM ' . _DB_PREFIX_ . 'module_country WHERE id_module = ' . (int) ($this->id));
+        $countries = Db::getInstance()->executeS('SELECT id_country FROM ' . _DB_PREFIX_ . 'module_country WHERE id_module = ' . (int) ($this->id));
         foreach ($countries as $country)
             $this->country[$country['id_country']] = $country['id_country'];
 
