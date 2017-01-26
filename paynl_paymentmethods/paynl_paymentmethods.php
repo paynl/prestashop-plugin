@@ -10,7 +10,7 @@ class paynl_paymentmethods extends PaymentModule {
     public function __construct() {
         $this->name = 'paynl_paymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '3.4.1';
+        $this->version = '3.4.4';
         $this->_postErrors = array();
 		$this->module_key = '6c2f48f238008e8f68271f5e4763d308';
 
