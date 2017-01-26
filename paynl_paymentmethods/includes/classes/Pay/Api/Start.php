@@ -241,8 +241,8 @@ class Pay_Api_Start extends Pay_Api {
             $data['paymentOptionSubId'] = $this->_paymentOptionSubId;
         }
 
-        
-        $data['ipAddress'] = $_SERVER['REMOTE_ADDR'];
+
+		$data['ipAddress'] = (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR']);
         
         // I set the browser data with dummydata, because most servers dont have the get_browser function available
         $data['browserData'] = array(
