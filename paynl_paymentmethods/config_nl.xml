@@ -2,7 +2,7 @@
 <module>
 	<name>paynl_paymentmethods</name>
 	<displayName><![CDATA[Pay.nl betaalmethoden]]></displayName>
-	<version><![CDATA[3.4.2]]></version>
+	<version><![CDATA[3.4.4]]></version>
 	<description><![CDATA[Acepteer betalingen via Pay.nl]]></description>
 	<author><![CDATA[]]></author>
 	<tab><![CDATA[payments_gateways]]></tab>
