@@ -115,6 +115,52 @@ class Pay_Helper {
 
         return array($strStreetName, $strStreetNumber);
     }
+
+    /**
+     * Determine the tax class to send to Pay.nl
+     *
+     * @param int|float $amountInclTax
+     * @param int|float $taxAmount
+     * @return string The tax class (N, L or H)
+     */
+    public static function calculateTaxClass($amountInclTax, $taxAmount)
+    {
+        $taxClasses = array(
+            0 => 'N',
+            6 => 'L',
+            21 => 'H'
+        );
+        // return 0 if amount or tax is 0
+        if ($taxAmount == 0 || $amountInclTax == 0) {
+            return $taxClasses[0];
+        }
+        $amountExclTax = $amountInclTax - $taxAmount;
+        $taxRate = ($taxAmount / $amountExclTax) * 100;
+        $nearestTaxRate = self::nearest($taxRate, array_keys($taxClasses));
+        return ($taxClasses[$nearestTaxRate]);
+    }
+    /**
+     * Get the nearest number
+     *
+     * @param int $number
+     * @param array $numbers
+     * @return int|bool nearest number false on error
+     */
+    private static function nearest($number, $numbers)
+    {
+        $output = FALSE;
+        $number = intval($number);
+        if (is_array($numbers) && count($numbers) >= 1) {
+            $NDat = array();
+            foreach ($numbers as $n) {
+                $NDat[abs($number - $n)] = $n;
+            }
+            ksort($NDat);
+            $NDat = array_values($NDat);
+            $output = $NDat[0];
+        }
+        return $output;
+    }
     
     /**
      * Sort the paymentoptions by name

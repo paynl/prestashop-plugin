@@ -35,7 +35,7 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
         $transactionId = Tools::getValue('orderId');
 
         try {
-            $result = Pay_Helper_Transaction::processTransaction($transactionId);
+            $result = Pay_Helper_Transaction::processTransaction($transactionId, true);
 
             $order = new Order($result['real_order_id']);
             $customer = new Customer($order->id_customer);
@@ -45,9 +45,12 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
                 'email' => $customer->email,
                 'id_order_formatted'=> $order->reference,
             ));
-            
+            $slowvalidation = '';
+            if(!($result['real_order_id'])){
+                $slowvalidation = "&slowvalidation=1";
+            }
             if ($result['state'] == 'PAID') {
-                Tools::redirect('index.php?controller=order-confirmation&id_cart='.$result['orderId'].'&id_module='.$this->module->id.'&id_order='.$result['real_order_id'].'&key='.$customer->secure_key);
+                Tools::redirect('index.php?controller=order-confirmation&id_cart='.$result['orderId'].'&id_module='.$this->module->id.'&id_order='.$result['real_order_id'].'&key='.$customer->secure_key.$slowvalidation);
              
             }
             if ($result['state'] == 'CHECKAMOUNT') {

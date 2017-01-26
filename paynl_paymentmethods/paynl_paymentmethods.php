@@ -73,7 +73,6 @@ class paynl_paymentmethods extends PaymentModule {
 
                 $order->total_paid_tax_incl = $order->total_paid_real = $order->total_paid = $order->total_paid + $extraCosts;
             }
-
             $result = $order->addOrderPayment($amount_paid, $payment_method, $extra_vars['transaction_id']);
 
             if (number_format($order->total_paid_tax_incl, 2) !== number_format($amount_paid, 2)) {
@@ -387,6 +386,7 @@ class paynl_paymentmethods extends PaymentModule {
 
         $arrConfig = array();
         $arrConfig[] = 'PAYNL_TOKEN';
+        $arrConfig[] = 'PAYNL_DESCRIPTION_PREFIX';
         $arrConfig[] = 'PAYNL_SERVICE_ID';
         $arrConfig[] = 'PAYNL_WAIT';
         $arrConfig[] = 'PAYNL_SUCCESS';

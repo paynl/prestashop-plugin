@@ -28,7 +28,8 @@
 /**
  * @since 1.5.0
  */
-class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontController {
+class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontController
+{
 
     public $ssl = true;
     public $display_column_left = false;
@@ -36,18 +37,18 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
     /**
      * @see FrontController::initContent()
      */
-    public function initContent() {
+    public function initContent()
+    {
 
 //        parent::initContent();
 
         $cart = $this->context->cart;
- 
-        $deliveryAddress = new Address((int) $cart->id_address_delivery);
-        $invoiceAddress = new Address((int) $cart->id_address_invoice);
+
+        $deliveryAddress = new Address((int)$cart->id_address_delivery);
+        $invoiceAddress = new Address((int)$cart->id_address_invoice);
 
         $paymentOptionId = Tools::getValue('pid');
 
-  
 
         $token = Configuration::get('PAYNL_TOKEN');
         $serviceId = Configuration::get('PAYNL_SERVICE_ID');
@@ -61,7 +62,7 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
         try {
             //validate the order
             $customer = new Customer($cart->id_customer);
-            $total = (float) $cart->getOrderTotal(true, Cart::BOTH);
+            $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
 
             $orderStatus = Configuration::get('PAYNL_WAIT');
             $module = $this->module;
@@ -130,8 +131,6 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             $arrEnduser['emailAddress'] = $customer->email;
 
 
-
-
             // delivery address
             $arrAddress = array();
             $strAddress = $deliveryAddress->address1 . $deliveryAddress->address2;
@@ -164,40 +163,48 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             $apiStart->setEnduser($arrEnduser);
 
             // producten toevoegen
+            /**
+             * @var $cart CartCore
+             */
             $products = $cart->getProducts();
             foreach ($products as $product) {
-                $apiStart->addProduct($product['id_product'], $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], 'H');
+                $taxClass = Pay_Helper::calculateTaxClass($product['price_wt'], $product['price_wt'] - $product['price']);
+                $apiStart->addProduct($product['id_product'], $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass);
             }
 
             //verzendkosten toevoegen
-            $shippingCost = $cart->getTotalShippingCost();
+            $shippingCost = $cart->getTotalShippingCost(null,true);
+            $shippingCost_no_tax = $cart->getTotalShippingCost(null,false);
             if ($shippingCost != 0) {
-                $apiStart->addProduct('SHIPPING', 'Verzendkosten', round($shippingCost * 100), 1, 'H');
+                $taxClass= Pay_Helper::calculateTaxClass($shippingCost, $shippingCost-$shippingCost_no_tax);
+                $apiStart->addProduct('SHIPPING', 'Verzendkosten', round($shippingCost * 100), 1, $taxClass);
             }
-            
+
             //Inpakservice toevoegen
             if ($cart->gift != 0) {
                 $packingCost = $cart->getGiftWrappingPrice(true);
+                $packingCost_no_tax = $cart->getGiftWrappingPrice(false);
                 if ($packingCost != 0) {
-                    $apiStart->addProduct('PACKING', 'Inpakservice', round($packingCost * 100), 1, 'H');
+                    $taxClass = Pay_Helper::calculateTaxClass($packingCost, $packingCost-$packingCost_no_tax);
+                    $apiStart->addProduct('PACKING', 'Inpakservice', round($packingCost * 100), 1, $taxClass);
                 }
             }
-            
+
             $cartRules = $cart->getCartRules();
-            
-            foreach($cartRules as $cartRule){
-                $apiStart->addProduct('DISCOUNT'.$cartRule['id_cart_rule'], $cartRule['description'], round($cartRule['value_real'] * -100), 1, 'H');
+
+            foreach ($cartRules as $cartRule) {
+                $apiStart->addProduct('DISCOUNT' . $cartRule['id_cart_rule'], $cartRule['description'], round($cartRule['value_real'] * -100), 1, 'H');
             }
-            
+
             if ($extraFee != 0) {
                 $apiStart->addProduct('PAYMENTFEE', 'Betaalkosten', round($extraFee * 100), 1, 'H');
-            } 
-		
+            }
+
 
             $apiStart->setApiToken($token);
             $apiStart->setServiceId($serviceId);
 
-            $description = Configuration::get('PAYNL_DESCRIPTION_PREFIX').' '.$cart->id;
+            $description = Configuration::get('PAYNL_DESCRIPTION_PREFIX') . ' ' . $cart->id;
             $description = trim($description);
             $apiStart->setDescription($description);
             $apiStart->setExtra1('CartId: ' . $cart->id);
@@ -222,7 +229,7 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             Pay_Helper_Transaction::addTransaction($result['transaction']['transactionId'], $paymentOptionId, round($total * 100), $currencyCode, $cartId, $startData);
 
             if ($this->module->validateOnStart($paymentOptionId)) {
-                $module->validateOrderPay((int) $cart->id, $statusPending, $total, $extraFee, $module->getPaymentMethodName($paymentOptionId), NULL, array('transaction_id' => $result['transaction']['transactionId']), (int) $currencyId, false, $customer->secure_key);
+                $module->validateOrderPay((int)$cart->id, $statusPending, $total, $extraFee, $module->getPaymentMethodName($paymentOptionId), NULL, array('transaction_id' => $result['transaction']['transactionId']), (int)$currencyId, false, $customer->secure_key);
             }
 
 

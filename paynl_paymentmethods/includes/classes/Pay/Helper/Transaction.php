@@ -55,7 +55,7 @@ class Pay_Helper_Transaction {
         }
     }
 
-    public static function processTransaction($transactionId) {
+    public static function processTransaction($transactionId, $dry_run = false) {
 
         $token = Configuration::get('PAYNL_TOKEN');
         $serviceId = Configuration::get('PAYNL_SERVICE_ID');
@@ -93,7 +93,7 @@ class Pay_Helper_Transaction {
             throw new Pay_Exception('Order already paid');
         }
 
-        if ($stateText == $transaction['status']) {
+        if ($stateText == $transaction['status'] || $dry_run) {
             //nothing changed so return without changing anything
             $real_order_id = Order::getOrderByCartId($orderId);
             return array(
