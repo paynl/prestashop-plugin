@@ -13,7 +13,7 @@ class paynl_paymentmethods extends PaymentModule
     {
         $this->name        = 'paynl_paymentmethods';
         $this->tab         = 'payments_gateways';
-        $this->version     = '3.5.7';
+        $this->version     = '3.5.8';
         $this->_postErrors = array();
         $this->module_key  = '6c2f48f238008e8f68271f5e4763d308';
 
@@ -421,7 +421,7 @@ class paynl_paymentmethods extends PaymentModule
                     foreach ($_POST['payExtraCosts'] as $paymentMethodId => $paymentMethod) {
                         foreach ($paymentMethod as $type => $value) {
                             $value = str_replace(',', '.', $value);
-                            $value = $value * 1;
+                            $value = (float) $value * 1;
                             if ($value == 0) {
                                 $value = '';
                             }
