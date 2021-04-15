@@ -46,6 +46,8 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
 			 */
 			$customer = new Customer( $order->id_customer );
 
+            $status = Tools::getValue('orderStatusId');
+
 			$this->context->smarty->assign( array(
 				'reference_order'    => $result['real_order_id'],
 				'email'              => $customer->email,
@@ -65,6 +67,11 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
 				$this->setTemplate( 'return_checkamount.tpl' );
 			}
 			if ( $result['state'] == 'CANCEL' ) {
+                // if transaction is denied by the payment option give an error
+                if ($status == -63){
+                    Tools::redirect(Context::getContext()->link->getModuleLink('paynl_paymentmethods', 'notification'));
+                }
+
 				if ( ! empty( $result['real_order_id'] ) ) {
 				    $cart = new Cart($result['orderId']);
 				    $this->reorder($cart);
