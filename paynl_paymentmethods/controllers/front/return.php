@@ -40,7 +40,7 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
 			/**
 			 * @var $order OrderCore
 			 */
-			$order    = new Order( $result['real_order_id'] );
+            $order = new Order($result['real_order_id']);
 			/**
 			 * @var $customer CustomerCore
 			 */
@@ -68,7 +68,7 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
 			}
 			if ( $result['state'] == 'CANCEL' ) {
                 // if transaction is denied by the payment option give an error
-                if ($status == -63){
+                if ($status == -63) {
                     Tools::redirect(Context::getContext()->link->getModuleLink('paynl_paymentmethods', 'notification'));
                 }
 
