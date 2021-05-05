@@ -35,10 +35,10 @@ $_MODULE['<{paynl_paymentmethods}prestashop>paynl_paymentmethods_505a83f220c02df
 $_MODULE['<{paynl_paymentmethods}prestashop>paynl_paymentmethods_ea4788705e6873b424c65e91c2846b19'] = 'Geannuleerd';
 $_MODULE['<{paynl_paymentmethods}prestashop>paynl_paymentmethods_d42c436daea89b6d15837258e3aa8144'] = 'Log procesinformatie';
 $_MODULE['<{paynl_paymentmethods}prestashop>paynl_paymentmethods_b17f3f4dcf653a5776792498a9b44d6a'] = 'Instellingen opslaan';
-$_MODULE['<{paynl_paymentmethods}prestashop>notification_18d83e46893a5ad232eba445ac1d64d7'] = 'De transactie kon niet gemaakt worden met deze betaalmethode. Dit kan komen omdat het bedrag te hoog of te laag was voor de betaalmethode of omdat de transactie afgewezen is door de betaalmethode';
+$_MODULE['<{paynl_paymentmethods}prestashop>notification_18d83e46893a5ad232eba445ac1d64d7'] = 'De transactie is helaas afgewezen.';
 $_MODULE['<{paynl_paymentmethods}prestashop>notification_98263401cde99ac86124ab033a63b211'] = 'Probeer de transactie a.u.b. af te maken met een andere betaalmethode';
-$_MODULE['<{paynl_paymentmethods}prestashop>notification_811437e5e47998ffcf68233020939c38'] = 'Klik op de link om door te gaan';
-$_MODULE['<{paynl_paymentmethods}prestashop>notification_3e0effd01a9b521603fd0fb0aade17d5'] = 'Er is helaas  iets mis gegaan';
+$_MODULE['<{paynl_paymentmethods}prestashop>notification_811437e5e47998ffcf68233020939c38'] = 'Klik op doorgaan om door te gaan';
+$_MODULE['<{paynl_paymentmethods}prestashop>notification_3e0effd01a9b521603fd0fb0aade17d5'] = 'Transactie afgewezen';
 $_MODULE['<{paynl_paymentmethods}prestashop>notification_f262fae0a2f17e8c1eb4e9eddb0160e4'] = 'Doorgaan';
 $_MODULE['<{paynl_paymentmethods}prestashop>payment_return_88526efe38fd18179a127024aba8c1d7'] = 'Uw bestelling bij %s is voltooid';
 $_MODULE['<{paynl_paymentmethods}prestashop>payment_return_ae569d4f9d42a8a2e5fef14f18becb25'] = 'Uw ordernummer is: %s';
