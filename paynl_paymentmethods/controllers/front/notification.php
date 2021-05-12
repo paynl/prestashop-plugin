@@ -12,11 +12,11 @@ class paynl_paymentmethodsNotificationModuleFrontController extends ModuleFrontC
         $errorMessage = $this->context->cookie->redirect_errors;
         $link = 'index.php?controller=order&step=3';
 
-        $message = $this->module->l('The transaction has unfortunately been denied') . '.</br>';
+        $message = $this->module->l('Probably the order amount is too low or too high for this paymentmethod') . '.</br>';
         $message .= $this->module->l('Please try again, or choose another paymentmethod') . '.</br>';
-        $message .= $this->module->l('Click on proceed to continue');
+        $message .= $this->module->l('Click on the link to continue');
 
-        $this->context->smarty->assign('title', $this->module->l('Transaction denied'));
+        $this->context->smarty->assign('title', $this->module->l('Unfortenately something went wrong'));
         $this->context->smarty->assign('proceedurl', $link);
         $this->context->smarty->assign('proceed_message', $this->module->l('Proceed'));
         $this->context->smarty->assign('messsage', $message);
