@@ -66,19 +66,19 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
 			if ( $result['state'] == 'CHECKAMOUNT' ) {
 				$this->setTemplate( 'return_checkamount.tpl' );
 			}
-			if ( $result['state'] == 'CANCEL' ) {
-                // if transaction is denied by the payment option give an error
+            if ($result['state'] == 'CANCEL') {
+                # If transaction is denied by the payment option give an error
                 if ($status == -63) {
                     Tools::redirect(Context::getContext()->link->getModuleLink('paynl_paymentmethods', 'denied'));
                 }
 
-				if ( ! empty( $result['real_order_id'] ) ) {
-				    $cart = new Cart($result['orderId']);
-				    $this->reorder($cart);
-				} else {
-					Tools::redirect( 'index.php?controller=order&step=3' );
-				}
-			}
+                if (!empty($result['real_order_id'])) {
+                    $cart = new Cart($result['orderId']);
+                    $this->reorder($cart);
+                } else {
+                    Tools::redirect('index.php?controller=order&step=3');
+                }
+            }
 			if ( $result['state'] == 'PENDING' ) {
 				$this->resetCart();
 				Tools::redirect( 'index.php?controller=order-confirmation&id_cart=' . $result['orderId'] . '&id_module=' . $this->module->id . '&id_order=' . $result['real_order_id'] . '&key=' . $customer->secure_key . $slowvalidation );
