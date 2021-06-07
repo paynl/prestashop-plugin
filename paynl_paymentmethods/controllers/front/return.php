@@ -28,44 +28,42 @@
 /**
  * @since 1.5.0
  */
-class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontController {
+class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontController
+{
 
-	public function initContent() {
-		parent::initContent();
-		$transactionId = Tools::getValue( 'orderId' );
+    public function initContent()
+    {
+        parent::initContent();
+        $transactionId = Tools::getValue('orderId');
 
-		try {
-			$result = Pay_Helper_Transaction::processTransaction( $transactionId, true );
+        try {
+            $result = Pay_Helper_Transaction::processTransaction($transactionId, true);
 
-			/**
-			 * @var $order OrderCore
-			 */
+            /**
+             * @var $order OrderCore
+             */
             $order = new Order($result['real_order_id']);
-			/**
-			 * @var $customer CustomerCore
-			 */
-			$customer = new Customer( $order->id_customer );
+            /**
+             * @var $customer CustomerCore
+             */
+            $customer = new Customer($order->id_customer);
 
             $status = Tools::getValue('orderStatusId');
 
-			$this->context->smarty->assign( array(
-				'reference_order'    => $result['real_order_id'],
-				'email'              => $customer->email,
-				'id_order_formatted' => $order->reference,
-			) );
-			$slowvalidation = '';
-			if ( ! ( $result['real_order_id'] ) ) {
-				$slowvalidation = "&slowvalidation=1";
-			}
-			if ( $result['state'] == 'PAID' ) {
-				// unset cartId
-				$this->resetCart();
-                Tools::redirect( 'index.php?controller=order-confirmation&id_cart=' . $result['orderId'] . '&id_module=' . $this->module->id . '&id_order=' . $result['real_order_id'] . '&key=' . $customer->secure_key . $slowvalidation );
+            $this->context->smarty->assign(array('reference_order' => $result['real_order_id'], 'email' => $customer->email, 'id_order_formatted' => $order->reference,));
+            $slowvalidation = '';
+            if (!($result['real_order_id'])) {
+                $slowvalidation = "&slowvalidation=1";
+            }
+            if ($result['state'] == 'PAID') {
+                // unset cartId
+                $this->resetCart();
+                Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $result['orderId'] . '&id_module=' . $this->module->id . '&id_order=' . $result['real_order_id'] . '&key=' . $customer->secure_key . $slowvalidation);
 
             }
-			if ( $result['state'] == 'CHECKAMOUNT' ) {
-				$this->setTemplate( 'return_checkamount.tpl' );
-			}
+            if ($result['state'] == 'CHECKAMOUNT') {
+                $this->setTemplate('return_checkamount.tpl');
+            }
             if ($result['state'] == 'CANCEL') {
                 # If transaction is denied by the payment option give an error
                 if ($status == -63) {
@@ -79,17 +77,18 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
                     Tools::redirect('index.php?controller=order&step=3');
                 }
             }
-			if ( $result['state'] == 'PENDING' ) {
-				$this->resetCart();
-				Tools::redirect( 'index.php?controller=order-confirmation&id_cart=' . $result['orderId'] . '&id_module=' . $this->module->id . '&id_order=' . $result['real_order_id'] . '&key=' . $customer->secure_key . $slowvalidation );
-			}
-		} catch ( Exception $ex ) {
-			echo 'Error: ' . $ex->getMessage();
-			die();
-		}
-	}
+            if ($result['state'] == 'PENDING') {
+                $this->resetCart();
+                Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $result['orderId'] . '&id_module=' . $this->module->id . '&id_order=' . $result['real_order_id'] . '&key=' . $customer->secure_key . $slowvalidation);
+            }
+        } catch (Exception $ex) {
+            echo 'Error: ' . $ex->getMessage();
+            die();
+        }
+    }
 
-	private function reorder($oldCart){
+    private function reorder($oldCart)
+    {
         $duplication = $oldCart->duplicate();
         if (!$duplication || !Validate::isLoadedObject($duplication['cart'])) {
             $this->errors[] = Tools::displayError('Sorry. We cannot renew your order.');
@@ -107,9 +106,11 @@ class paynl_paymentmethodsReturnModuleFrontController extends ModuleFrontControl
             Tools::redirect('index.php?controller=order');
         }
     }
-	private function resetCart() {
+
+    private function resetCart()
+    {
         unset($this->context->cart);
         unset($this->context->cookie->id_cart);
-	}
+    }
 
 }
