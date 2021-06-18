@@ -281,8 +281,9 @@ class paynl_paymentmethods extends PaymentModule
             // Order remaining profiles based by order...
             asort($methodOrder);
 
-            $activeProfilesTemp = $activeProfiles;
-            $activeProfiles     = array();
+            $activeProfilesTemp = $activeProfiles;            
+            $ideal_banks            = array();
+            $activeProfiles         = array();
 
             foreach (array_keys($methodOrder) as $iProfileId) {
                 foreach ($activeProfilesTemp as $iKey => $arrActiveProfile) {
@@ -305,18 +306,27 @@ class paynl_paymentmethods extends PaymentModule
                             $arrActiveProfile['extraCosts'] = Tools::displayPrice($feeCurrency, $objCurrency,false);
                         }
 
+                        if ($arrActiveProfile['id'] == 10) {
+                            $ideal_banks = $arrActiveProfile['paymentOptionSubList'];
+                        }
+
                         array_push($activeProfiles, $arrActiveProfile);
                         unset($activeProfilesTemp[$iKey]);
                     }
                 }
             }
 
+            $showbanks = Configuration::get('PAYNL_SHOWBANKS');
             $smarty->assign(array(
                 'this_path'     => $this->_path,
                 'profiles'      => $activeProfiles,
-                //'banks' => $paynl->getIdealBanks(),
-                'this_path_ssl' => (Configuration::get('PS_SSL_ENABLED') ? 'https://' : 'http://') . htmlspecialchars($_SERVER['HTTP_HOST'],
-                        ENT_COMPAT, 'UTF-8') . __PS_BASE_URI__ . 'modules/' . $this->name . '/'
+                'banks'         => $ideal_banks,
+                'showbanks'     => $showbanks,
+                'this_path_ssl' => (Configuration::get('PS_SSL_ENABLED') ? 'https://' : 'http://') . htmlspecialchars(
+                    $_SERVER['HTTP_HOST'],
+                    ENT_COMPAT,
+                    'UTF-8'
+                ) . __PS_BASE_URI__ . 'modules/' . $this->name . '/'
             ));
 
             return $this->display(_PS_MODULE_DIR_ . '/' . $this->name . '/' . $this->name . '.php', 'payment.tpl');
@@ -408,6 +418,7 @@ class paynl_paymentmethods extends PaymentModule
                 Configuration::updateValue('PAYNL_SUCCESS', $_POST['success']);
                 Configuration::updateValue('PAYNL_CANCEL', $_POST['cancel']);
                 Configuration::updateValue('PAYNL_LOGGING', $_POST['logging']);
+                Configuration::updateValue('PAYNL_SHOWBANKS', $_POST['showbanks']);
                 if (isset($_POST['enaC'])) {
                     Configuration::updateValue('PAYNL_COUNTRY_EXCEPTIONS', serialize($_POST['enaC']));
                 }
@@ -507,6 +518,7 @@ class paynl_paymentmethods extends PaymentModule
         $arrConfig[] = 'PAYNL_PAYMENT_MIN';
         $arrConfig[] = 'PAYNL_PAYMENT_MAX';
         $arrConfig[] = 'PAYNL_LOGGING';
+        $arrConfig[] = 'PAYNL_SHOWBANKS';
 
         $conf = Configuration::getMultiple($arrConfig);
 
@@ -583,6 +595,16 @@ class paynl_paymentmethods extends PaymentModule
             $osLogging .= '<option value="' . $stateVal . '"' . $selected . '>' . $stateText . '</option>';
         }
         $osLogging .= '</select>';
+
+        $osBanks = '<select name="showbanks">';
+
+        $BankStates = array(0 => $this->l('Disabled'), 1 => $this->l('Enabled'));
+
+        foreach ($BankStates as $stateVal => $stateText) {
+            $selected = $conf['PAYNL_SHOWBANKS'] == $stateVal ? ' selected' : '';
+            $osBanks .= '<option value="' . $stateVal . '"' . $selected . '>' . $stateText . '</option>';
+        }
+        $osBanks .= '</select>';
 
 
         $countries = DB::getInstance()->ExecuteS('SELECT id_country FROM ' . _DB_PREFIX_ . 'module_country WHERE id_module = ' . (int)($this->id));
@@ -780,6 +802,8 @@ class paynl_paymentmethods extends PaymentModule
       <div class="margin-form">' . $osCancel . '</div>
       <label>' . $this->l('Log process information') . '</label>
       <div class="margin-form">' . $osLogging . '</div>
+      <label>' . $this->l('Show Ideal banks') . '</label>
+      <div class="margin-form">' . $osBanks . '</div>
 
       <br />'
                         . $exceptions .

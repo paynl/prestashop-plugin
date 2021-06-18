@@ -1,4 +1,5 @@
-p.payment_module a.paynl_paymentmethod:after {
+p.payment_module a.paynl_paymentmethod:after,
+#showbanks_submenu a:after  {
     color: #777777;
     content: "";
     display: block;
@@ -17,10 +18,55 @@ p.payment_module a.paynl_paymentmethod{
     padding: 3px;
     padding-left: 10px;    
     vertical-align: middle;
+    cursor: pointer;
 }
+
 p.payment_module a.paynl_paymentmethod label{
     margin-right:10px;
 }
+
 a.paynl_paymentmethod{
     height: 85px;
+}
+
+#showbanks_submenu a:after  {
+    font-size:15px;
+}
+
+#showbanks_submenu {
+    display: block;
+    border: 1px solid #d6d4d4;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    font-size: 17px;
+    line-height: 23px;
+    color: #333;
+    font-weight: bold;
+    padding: 5px;
+    letter-spacing: -1px;
+    position: relative;
+    background: #0000000d;   
+}
+
+#showbanks_submenu_container{
+    max-height: 0;
+    -webkit-transition: max-height 1s;
+    -o-transition: max-height .5s;
+    transition: max-height 1s;
+    overflow: hidden;
+    display: block;    
+}
+
+#showbanks_submenu_container.active{
+    max-height: 1000px;
+}
+
+p.payment_module a.paynl_paymentmethod.bank {
+    height: auto;
+    padding: 7px;    
+}
+
+p.payment_module a.paynl_paymentmethod.bank img {
+    padding-right: 10px;
 }
