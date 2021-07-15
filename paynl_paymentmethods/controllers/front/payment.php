@@ -46,7 +46,7 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
         $invoiceAddress = new Address((int)$cart->id_address_invoice);
 
         $paymentOptionId = Tools::getValue('pid');
-
+        $bank_id = Tools::getValue('bankid');
 
         $token = Configuration::get('PAYNL_TOKEN');
         $serviceId = Configuration::get('PAYNL_SERVICE_ID');
@@ -211,7 +211,10 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             $apiStart->setExtra1('CartId: ' . $cart->id);
             $apiStart->setObject('prestashop16 ' . $module->getVersion());
             $apiStart->setOrderNumber($cart->id);
-
+            if($bank_id){
+                $apiStart->setPaymentOptionSubId($bank_id);
+            }
+            
             $apiStart->setPaymentOptionId($paymentOptionId);
 
             $finishUrl = Context::getContext()->link->getModuleLink('paynl_paymentmethods', 'return');
