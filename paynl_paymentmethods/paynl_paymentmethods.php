@@ -13,7 +13,7 @@ class paynl_paymentmethods extends PaymentModule
     {
         $this->name        = 'paynl_paymentmethods';
         $this->tab         = 'payments_gateways';
-        $this->version     = '3.5.8';
+        $this->version     = '3.6.0';
         $this->_postErrors = array();
         $this->module_key  = '6c2f48f238008e8f68271f5e4763d308';
 
@@ -281,7 +281,7 @@ class paynl_paymentmethods extends PaymentModule
             // Order remaining profiles based by order...
             asort($methodOrder);
 
-            $activeProfilesTemp = $activeProfiles;            
+            $activeProfilesTemp = $activeProfiles;
             $ideal_banks            = array();
             $activeProfiles         = array();
 
@@ -598,9 +598,9 @@ class paynl_paymentmethods extends PaymentModule
 
         $osBanks = '<select name="showbanks">';
 
-        $BankStates = array(0 => $this->l('Disabled'), 1 => $this->l('Enabled'));
+        $bankStates = array(0 => $this->l('Disabled'), 1 => $this->l('Enabled'));
 
-        foreach ($BankStates as $stateVal => $stateText) {
+        foreach ($bankStates as $stateVal => $stateText) {
             $selected = $conf['PAYNL_SHOWBANKS'] == $stateVal ? ' selected' : '';
             $osBanks .= '<option value="' . $stateVal . '"' . $selected . '>' . $stateText . '</option>';
         }
