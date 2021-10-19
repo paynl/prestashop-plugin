@@ -93,6 +93,7 @@ class paynl_paymentmethods extends PaymentModule
 
             if (!empty($extraCosts)) {
                 $extra_vars ['{extra_costs}'] = Tools::displayPrice($extraCosts, $currency_special, false);
+                $extra_vars ['{total_paid}'] = Tools::displayPrice($amount_paid, $currency_special, false);
             } else {
                 $extra_vars ['{extra_costs}'] = Tools::displayPrice(0, $currency_special, false);
             }
