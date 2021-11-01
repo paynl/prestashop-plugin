@@ -91,6 +91,12 @@ class paynl_paymentmethods extends PaymentModule
                 $id_order_state_tmp = $id_order_state;
             }
 
+            if (!empty($extraCosts)) {
+                $extra_vars ['{extra_costs}'] = Tools::displayPrice($extraCosts, $currency_special, false);
+                $extra_vars ['{total_paid}'] = Tools::displayPrice($amount_paid, $currency_special, false);
+            } else {
+                $extra_vars ['{extra_costs}'] = Tools::displayPrice(0, $currency_special, false);
+            }
             $result  = parent::validateOrder($id_cart, $id_order_state_tmp, $amount_paid, $payment_method, $message,
                 $extra_vars, $currency_special, $dont_touch_amount, $secure_key, $shop);
 
