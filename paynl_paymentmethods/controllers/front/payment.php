@@ -159,6 +159,10 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
 
             $arrEnduser['invoiceAddress'] = $arrAddress;
 
+            $arrEnduser['company']['name'] = $invoiceAddress->company;
+            $arrEnduser['company']['countryCode'] = $country->iso_code;            
+            $arrEnduser['company']['vatNumber'] = $invoiceAddress->vat_number;   
+
             $apiStart->setEnduser($arrEnduser);
 
 
