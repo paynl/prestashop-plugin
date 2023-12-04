@@ -172,7 +172,8 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             $products = $cart->getProducts();
             foreach ($products as $product) {
                 $taxClass = Pay_Helper::calculateTaxClass($product['price_wt'], $product['price_wt'] - $product['price']);
-                $apiStart->addProduct($product['id_product'], $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass);
+                $taxPercentage = $this->calculateTaxPercentage($product['price_wt'], $product['price']);
+                $apiStart->addProduct($product['id_product'], $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
             }
 
             //verzendkosten toevoegen
@@ -180,7 +181,8 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             $shippingCost_no_tax = $cart->getTotalShippingCost(null,false);
             if ($shippingCost != 0) {
                 $taxClass= Pay_Helper::calculateTaxClass($shippingCost, $shippingCost-$shippingCost_no_tax);
-                $apiStart->addProduct('SHIPPING', 'Verzendkosten', round($shippingCost * 100), 1, $taxClass);
+                $taxPercentage = $this->calculateTaxPercentage($shippingCost, $shippingCost_no_tax);
+                $apiStart->addProduct('SHIPPING', 'Verzendkosten', round($shippingCost * 100), 1, $taxClass, $taxPercentage);
             }
 
             //Inpakservice toevoegen
@@ -189,7 +191,8 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
                 $packingCost_no_tax = $cart->getGiftWrappingPrice(false);
                 if ($packingCost != 0) {
                     $taxClass = Pay_Helper::calculateTaxClass($packingCost, $packingCost-$packingCost_no_tax);
-                    $apiStart->addProduct('PACKING', 'Inpakservice', round($packingCost * 100), 1, $taxClass);
+                    $taxPercentage = $this->calculateTaxPercentage($packingCost, $packingCost_no_tax);
+                    $apiStart->addProduct('PACKING', 'Inpakservice', round($packingCost * 100), 1, $taxClass, $taxPercentage);
                 }
             }
 
@@ -202,7 +205,7 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             if ($extraFee != 0) {
                 $vatRate = $this->module->getHighestVatRate($cart);
                 $vatClass = Pay_Helper::nearestTaxClass($vatRate);
-                $apiStart->addProduct('PAYMENTFEE', 'Betaalkosten', round($extraFee * 100), 1, $vatClass);
+                $apiStart->addProduct('PAYMENTFEE', 'Betaalkosten', round($extraFee * 100), 1, $vatClass, $vatRate);
             }
 
 
@@ -252,4 +255,24 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
         //betaling starten
     }
 
+    public function calculateTaxPercentage($amountInclTax, $amountexclTax)
+    {
+        $taxAmount = $amountInclTax - $amountexclTax;
+        if ($taxAmount == 0 || $amountInclTax == 0) {
+            return 0;
+        }
+        $amountExclTax = $amountInclTax - $taxAmount;
+        if ($amountExclTax == 0) {
+            return 100;
+        }
+
+        return $this->roundDown(($taxAmount / $amountExclTax) * 100, 2);
+    }
+
+    public function roundDown($decimal, $precision)
+    {
+        $sign = $decimal > 0 ? 1 : -1;
+        $base = pow(10, $precision);
+        return floor(abs($decimal) * $base) / $base * $sign;
+    }
 }
