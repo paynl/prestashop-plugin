@@ -33,6 +33,7 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
 
     public $ssl = true;
     public $display_column_left = false;
+    public $addedProductIds = array();
 
     /**
      * @see FrontController::initContent()
@@ -173,7 +174,8 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             foreach ($products as $product) {
                 $taxClass = Pay_Helper::calculateTaxClass($product['price_wt'], $product['price_wt'] - $product['price']);
                 $taxPercentage = $this->calculateTaxPercentage($product['price_wt'], $product['price']);
-                $apiStart->addProduct($product['id_product'], $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
+                $productId = ($paymentOptionId == 2931) ? $this->createUniqueId($product['id_product']) : $product['id_product'];
+                $apiStart->addProduct($productId, $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
             }
 
             //verzendkosten toevoegen
@@ -274,5 +276,24 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
         $sign = $decimal > 0 ? 1 : -1;
         $base = pow(10, $precision);
         return floor(abs($decimal) * $base) / $base * $sign;
+    }
+
+    /**
+     * @param string $productId
+     * @return string
+     */
+    public function createUniqueId($productId)
+    {
+        if (isset($this->addedProductIds[$productId])) {
+            $i = 1;
+            $newProductId = $productId . '.' . $i;
+            while (isset($this->addedProductIds[$newProductId])) {
+                $i++;
+                $newProductId = $productId . '.' . $i;
+            }
+            $productId = $newProductId;
+        }
+        $this->addedProductIds[$productId] = $productId;
+        return $productId;
     }
 }
