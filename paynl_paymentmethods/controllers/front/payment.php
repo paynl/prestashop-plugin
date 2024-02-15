@@ -173,7 +173,7 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             foreach ($products as $product) {
                 $taxClass = Pay_Helper::calculateTaxClass($product['price_wt'], $product['price_wt'] - $product['price']);
                 $taxPercentage = $this->calculateTaxPercentage($product['price_wt'], $product['price']);
-                $apiStart->addProduct("{$product['id_product']}_{$product['id_product_attribute']}", $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
+                $apiStart->addProduct("{$product['id_product']}_{$product['id_product_attribute']}", $product['name'] . ' - ' . $product['attributes'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
             }
 
             //verzendkosten toevoegen
