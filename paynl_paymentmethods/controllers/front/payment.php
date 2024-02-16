@@ -161,8 +161,8 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             $arrEnduser['invoiceAddress'] = $arrAddress;
 
             $arrEnduser['company']['name'] = $invoiceAddress->company;
-            $arrEnduser['company']['countryCode'] = $country->iso_code;            
-            $arrEnduser['company']['vatNumber'] = $invoiceAddress->vat_number;   
+            $arrEnduser['company']['countryCode'] = $country->iso_code;
+            $arrEnduser['company']['vatNumber'] = $invoiceAddress->vat_number;
 
             $apiStart->setEnduser($arrEnduser);
 
@@ -174,8 +174,15 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
             foreach ($products as $product) {
                 $taxClass = Pay_Helper::calculateTaxClass($product['price_wt'], $product['price_wt'] - $product['price']);
                 $taxPercentage = $this->calculateTaxPercentage($product['price_wt'], $product['price']);
-                $productId = ($paymentOptionId == 2931) ? $this->createUniqueId($product['id_product']) : $product['id_product'];
-                $apiStart->addProduct($productId, $product['name'], round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
+                $productId = $product['id_product'];
+                $productName = $product['id_product'];
+
+                # In case of NOTYD payment method
+                if ($paymentOptionId == 2931) {
+                    $productId = $product['id_product'] . '_' . $product['id_product_attribute'];
+                    $productName = $product['name'] . '_' . $product['attributes'];
+                }
+                $apiStart->addProduct($productId, $productName, round($product['price_wt'] * 100), $product['cart_quantity'], $taxClass, $taxPercentage);
             }
 
             //verzendkosten toevoegen
@@ -278,22 +285,4 @@ class paynl_paymentmethodsPaymentModuleFrontController extends ModuleFrontContro
         return floor(abs($decimal) * $base) / $base * $sign;
     }
 
-    /**
-     * @param string $productId
-     * @return string
-     */
-    public function createUniqueId($productId)
-    {
-        if (isset($this->addedProductIds[$productId])) {
-            $i = 1;
-            $newProductId = $productId . '.' . $i;
-            while (isset($this->addedProductIds[$newProductId])) {
-                $i++;
-                $newProductId = $productId . '.' . $i;
-            }
-            $productId = $newProductId;
-        }
-        $this->addedProductIds[$productId] = $productId;
-        return $productId;
-    }
 }
