@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "97aeef7040866292e8986203809b4de9",
+    "content-hash": "380c8b79a42cd3cb473dafaea48a84eb",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -333,16 +333,16 @@
         },
         {
             "name": "paynl/php-sdk",
-            "version": "dev-fromPriv",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paynl/php-sdk.git",
-                "reference": "ad7f574d69ceeb674d8b0ff3173c39673675edee"
+                "reference": "e657d40052737fbe2e73233d1e6211790d83b847"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paynl/php-sdk/zipball/ad7f574d69ceeb674d8b0ff3173c39673675edee",
-                "reference": "ad7f574d69ceeb674d8b0ff3173c39673675edee",
+                "url": "https://api.github.com/repos/paynl/php-sdk/zipball/e657d40052737fbe2e73233d1e6211790d83b847",
+                "reference": "e657d40052737fbe2e73233d1e6211790d83b847",
                 "shasum": ""
             },
             "require": {
@@ -387,9 +387,9 @@
             "support": {
                 "email": "webshop@pay.nl",
                 "issues": "https://github.com/paynl/php-sdk/issues",
-                "source": "https://github.com/paynl/php-sdk/tree/fromPriv"
+                "source": "https://github.com/paynl/php-sdk/tree/v0.2.1"
             },
-            "time": "2025-03-24T10:00:09+00:00"
+            "time": "2025-03-25T15:29:08+00:00"
         },
         {
             "name": "psr/container",
@@ -719,9 +719,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "paynl/php-sdk": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
