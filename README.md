@@ -29,10 +29,9 @@ Download the latest .zip file (paynlpaymentmethods_X.zip) and upload it into *Mo
 2. Go to *Modules* > *Module Manager*
 3. Scroll down or search for Pay.
 4. Click Configure
-5. Enter you Pay configuration
+5. Enter you Pay credentials
 6. Save the settings
-7. Enable the desired payment methods
-8. Save the settings
+7. Enable the desired payment methods and save your settings
 
 Go to the *Manage* > *Services* tab in the Pay. Admin Panel to enable extra payment methods
 
