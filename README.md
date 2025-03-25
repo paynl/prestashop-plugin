@@ -19,11 +19,10 @@ Visit the [Pay.](https://www.pay.nl) website for a complete overview of our feat
     Tested up to PrestaShop 8.2.0
 
   
-## Installation
-
+## Installation or plugin update
 Download the latest .zip file (paynlpaymentmethods_X.zip) and upload it into *Modules* > *Module Manager* > *Upload a module*
 
-##### Setup
+### Setup
 
 1. Log into your PrestaShop 8 admin
 2. Go to *Modules* > *Module Manager*
@@ -34,14 +33,6 @@ Download the latest .zip file (paynlpaymentmethods_X.zip) and upload it into *Mo
 7. Enable the desired payment methods and save your settings
 
 Go to the *Manage* > *Services* tab in the Pay. Admin Panel to enable extra payment methods
-
-#### Update instructions
-
-1. Log into the PrestaShop 8 admin
-2. Go to *Modules* > *Module Manager*
-3. Click on upload a module
-4. Upload the newest Pay. plugin zip file (paynlpaymentmethods_X.zip)
-5. CLick 'configure' to continue
 
 ## Support
 Contact us: support@pay.nl
