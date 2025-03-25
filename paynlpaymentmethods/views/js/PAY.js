@@ -1,4 +1,6 @@
-jQuery(document).ready(function () {
+jQuery(document).ready(function ()
+{
+
     var customFailoverGateway = jQuery("#PAYNL_CUSTOM_FAILOVER_GATEWAY").parents(":eq(1)");
 
     if (jQuery("#PAYNL_FAILOVER_GATEWAY").val() !== 'custom') {
@@ -26,7 +28,7 @@ jQuery(document).ready(function () {
         }
 
         if (amount.indexOf(',') === -1) {
-            amount = amount / 100;
+            amount = parseFloat(amount);
         } else {
             amount = parseFloat(amount.replace(',', '.').replace(' ', ''));
         }
@@ -72,8 +74,7 @@ jQuery(document).ready(function () {
         }
 
         if (amount.indexOf(',') === -1) {
-
-            amount = amount / 100;
+            amount = parseFloat(amount);
         } else {
             amount = parseFloat(amount.replace(',', '.').replace(' ', ''));
         }

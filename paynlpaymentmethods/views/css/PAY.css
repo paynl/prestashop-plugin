@@ -61,7 +61,12 @@
     cursor: default;
 }
 
-.PAY.panel div.payFields div.labelvalue {
+.PAY.panel div.payFields {
+    margin-top: 6px;
+    margin-bottom: -10px;
+}
+
+.PAY.panel  div.labelvalue {
     display: inline-block;
     padding: 4px 7px;
     background-color: transparent;
@@ -70,15 +75,19 @@
     margin-right: 30px;
 }
 
-.PAY.panel div.payFields div.label {
+.PAY.panel   div.label {
     display: inline-block;
-    padding: 8px;
-    background-color: #eaeaea;
-    margin-right: 4px;
+    padding: 3px 8px;
+    padding-right: 8px;
+    margin-right: 0px;
     margin-left: 0;
-    border-radius: 4px;
+    border-radius: 1px;
     color: #272727;
+    font-weight: bold;
+    padding-right: 0;
 }
+
+
 
 .FR_Error {
     padding: 15px;

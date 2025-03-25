@@ -4,32 +4,67 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInita3a46c0e362da920ffeb331fe601b182
+class ComposerStaticInit380c8b79a42cd3cb473dafaea48a84eb
 {
+    public static $files = array (
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        '5bf428dd84f5ecb8e8202912b0038b1b' => __DIR__ . '/..' . '/paynl/php-sdk/src/Resources/functions/text.php',
+        '48e18ac72480eddefee64cb6389673a2' => __DIR__ . '/..' . '/paynl/php-sdk/src/Resources/functions/vat.php',
+        'ce5c738fd80c057908cab4ecc229ec3d' => __DIR__ . '/..' . '/paynl/php-sdk/src/Resources/functions/misc.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
         'P' => 
         array (
-            'Paynl\\' => 6,
+            'Psr\\Http\\Message\\' => 17,
+            'Psr\\Http\\Client\\' => 16,
+            'Psr\\Container\\' => 14,
             'PaynlPaymentMethods\\PrestaShop\\' => 31,
+            'PayNL\\Sdk\\' => 10,
         ),
-        'C' => 
+        'G' => 
         array (
-            'Curl\\' => 5,
+            'GuzzleHttp\\Psr7\\' => 16,
+            'GuzzleHttp\\Promise\\' => 19,
+            'GuzzleHttp\\' => 11,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Paynl\\' => 
+        'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/paynl/sdk/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
+        ),
+        'Psr\\Http\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-client/src',
+        ),
+        'Psr\\Container\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
         ),
         'PaynlPaymentMethods\\PrestaShop\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'Curl\\' => 
+        'PayNL\\Sdk\\' => 
         array (
-            0 => __DIR__ . '/..' . '/php-curl-class/php-curl-class/src/Curl',
+            0 => __DIR__ . '/..' . '/paynl/php-sdk/src',
+        ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
+        'GuzzleHttp\\Promise\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
+        ),
+        'GuzzleHttp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
     );
 
@@ -40,9 +75,9 @@ class ComposerStaticInita3a46c0e362da920ffeb331fe601b182
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInita3a46c0e362da920ffeb331fe601b182::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInita3a46c0e362da920ffeb331fe601b182::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInita3a46c0e362da920ffeb331fe601b182::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit380c8b79a42cd3cb473dafaea48a84eb::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit380c8b79a42cd3cb473dafaea48a84eb::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit380c8b79a42cd3cb473dafaea48a84eb::$classMap;
 
         }, null, ClassLoader::class);
     }
