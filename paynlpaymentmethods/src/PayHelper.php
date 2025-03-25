@@ -1,66 +1,38 @@
 <?php
 
 namespace PaynlPaymentMethods\PrestaShop;
-
-use Configuration;
+use PayNL\Sdk\Config\Config as PayConfig;
 use Tools;
+use Configuration;
+use PrestaShopLogger;
 
 class PayHelper
 {
-    /**
-     * @param $useMultiCore
-     * @return void
-     */
-    public static function sdkLogin($useMultiCore = false)
-    {
-        $apitoken = Tools::getValue('PAYNL_API_TOKEN', Configuration::get('PAYNL_API_TOKEN'));
-        if (empty($apitoken) && !empty(Configuration::get('PAYNL_API_TOKEN'))) {
-            $apitoken = Configuration::get('PAYNL_API_TOKEN');
-        }
-        $serviceId = Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID'));
+    private $payLogEnabled = null;
 
-        if ($useMultiCore) {
-            $gateway = self::getFailoverGateway();
-            if (!empty(trim($gateway))) {
-                \Paynl\Config::setApiBase(trim($gateway));
-            }
+    /**
+     * @return false|string
+     */
+    private function getCore()
+    {
+        $core = Configuration::get('PAYNL_FAILOVER_GATEWAY');
+        if ($core == 'custom') {
+            $core = Configuration::get('PAYNL_CUSTOM_FAILOVER_GATEWAY');
         }
-        \Paynl\Config::setApiToken($apitoken);
-        \Paynl\Config::setServiceId($serviceId);
+        return $core;
     }
 
     /**
-     * @return boolean
+     * @return PayConfig
      */
-    public static function isLoggedIn()
+    public function getConfig() : PayConfig
     {
-        try {
-            PayHelper::sdkLogin();
-            \Paynl\Paymentmethods::getList();
-            return ['status' => true];
-        } catch (\Paynl\Error\Error $e) {
-            $gateway = self::getFailoverGateway();
-
-            if (!empty($gateway) && str_contains($gateway, 'https://rest.achterelkebetaling.nl')) {
-                return ['status' => true];
-            }
-            return ['status' => false, 'error' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @param $exchange
-     * @return string
-     */
-    public static function getExchangeUrl(string $exchange)
-    {
-        $alternativeExchangeUrl = trim(Configuration::get('PAYNL_EXCHANGE_URL'));
-
-        if (!empty($alternativeExchangeUrl)) {
-            return $alternativeExchangeUrl;
-        }
-
-        return $exchange;
+        $config = new PayConfig();
+        $config->setUsername(Tools::getValue('PAYNL_TOKEN_CODE', Configuration::get('PAYNL_TOKEN_CODE')));
+        $config->setPassword(Tools::getValue('PAYNL_API_TOKEN', Configuration::get('PAYNL_API_TOKEN')));
+        $config->setCore($this->getCore());
+        #$serviceId = Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID'));
+        return $config;
     }
 
     /**
@@ -73,10 +45,10 @@ class PayHelper
         if (!empty($ipconfig)) {
             $allowed_ips = explode(',', $ipconfig);
             if (
-                in_array($ip, $allowed_ips) &&
-                filter_var($ip, FILTER_VALIDATE_IP) &&
-                strlen($ip) > 0 &&
-                count($allowed_ips) > 0
+              in_array($ip, $allowed_ips) &&
+              filter_var($ip, FILTER_VALIDATE_IP) &&
+              strlen($ip) > 0 &&
+              count($allowed_ips) > 0
             ) {
                 return true;
             }
@@ -84,80 +56,48 @@ class PayHelper
         return Configuration::get('PAYNL_TEST_MODE');
     }
 
-    /**
-     * @param string $exceptionMessage
-     * @return string
-     */
-    public static function getFriendlyMessage($exceptionMessage, $object)
-    {
-        $exceptionMessage = strtolower(trim($exceptionMessage));
-
-        if (stripos($exceptionMessage, 'minimum amount') !== false) {
-            $strMessage = $object->l('Unfortunately the order amount does not fit the requirements for this payment method.');
-        } elseif (stripos($exceptionMessage, 'not enabled for this service') !== false) {
-            $strMessage = $object->l('The selected payment method is not enabled. Please select another payment method.');
-        } else {
-            $strMessage = $object->l('Unfortunately something went wrong.');
-        }
-
-        return $strMessage;
-    }
 
     /**
-     * @param string $object
-     * @return array
+     * @param $method
+     * @param $message
+     * @param null $cartid
+     * @param null $transactionId
      */
-    public static function checkCredentials($object)
+    public function payLog($method, $message, $cartid = null, $transactionId = null)
     {
+      if ($this->payLogEnabled === null) {
+        $this->payLogEnabled = Configuration::get('PAYNL_PAYLOGGER') == 1;
+      }
 
-        $apiToken = Tools::getValue('PAYNL_API_TOKEN', Configuration::get('PAYNL_API_TOKEN'));
-        if (empty($apiToken) && !empty(Configuration::get('PAYNL_API_TOKEN'))) {
-            $apiToken = Configuration::get('PAYNL_API_TOKEN');
-        }
-        $serviceId = Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID'));
+        if ($this->payLogEnabled) {
+            $strCartId = empty($cartid) ? '' : ' CartId: ' . $cartid;
+            $strTransaction = empty($transactionId) ? '' : ' [ ' . $transactionId . ' ] ';
 
-        $error = '';
-        $status = true;
-        if (!empty($apiToken) && !empty($serviceId)) {
-            try {
-                PayHelper::sdkLogin();
-                \Paynl\Paymentmethods::getList();
-            } catch (\Exception $e) {
-                $error = $e->getMessage();
+            if (is_array($message)) {
+                $message = print_r($message, true);
             }
-        } elseif (!empty($apiToken) || !empty($serviceId)) {
-            $error = $object->l('API token and SL-code are required.');
-        } else {
-            $status = false;
-        }
-        if (!empty($error)) {
-            switch ($error) {
-                case 'HTTP/1.0 401 Unauthorized':
-                    $error = $object->l('SL-code or API token invalid');
-                    break;
-                case 'PAY-404 - Service not found':
-                    $error = $object->l('SL-code is invalid');
-                    break;
-                case 'PAY-403 - Access denied: Token not valid for this company':
-                    $error = $object->l('SL-code / API token combination invalid');
-                    break;
-                default:
-                    $error = $object->l('Could not authorize');
+
+            PrestaShopLogger::addLog('Pay. - ' . $method . ' - ' . $strTransaction . $strCartId . ': ' . $message);
+
+            if(function_exists('displayPayDebug'))  {
+                displayPayDebug('Pay. - ' . $method . ' - ' . $strTransaction . $strCartId . ': ' . $message);
             }
-            $status = false;
         }
-        return ['status' => $status, 'error' => $error];
     }
 
     /**
-     * @return mixed
+     * @return false|string
      */
-    public static function getFailoverGateway()
+    public function getObjectInfo($module)
     {
-        $gateway = Tools::getValue('PAYNL_FAILOVER_GATEWAY', Configuration::get('PAYNL_FAILOVER_GATEWAY'));
-        if ($gateway == 'custom') {
-            $gateway = Tools::getValue('PAYNL_CUSTOM_FAILOVER_GATEWAY', Configuration::get('PAYNL_CUSTOM_FAILOVER_GATEWAY'));
-        }
-        return $gateway;
+        $object_string = 'prestashop ';
+        $object_string .= !empty($module->version) ? $module->version : '-';
+        $object_string .= ' | ';
+        $object_string .= defined('_PS_VERSION_') ? _PS_VERSION_ : '-';
+        $object_string .= ' | ';
+        $object_string .= substr(phpversion(), 0, 3);
+
+        return substr($object_string, 0, 64);
     }
+
 }

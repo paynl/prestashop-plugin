@@ -1,102 +1,69 @@
 <?php
-/*
-* 2007-2015 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2015 PrestaShop SA
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
 
-/**
- * @since 1.5.0
- */
-
+use PayNL\Sdk\Util\ExchangeResponse;
 use PaynlPaymentMethods\PrestaShop\Transaction;
+use PaynlPaymentMethods\PrestaShop\PayHelper;
+use PayNL\Sdk\Util\Exchange;
 
 class PaynlPaymentMethodsExchangeModuleFrontController extends ModuleFrontController
 {
+    private string $payOrderId;
+
     /**
      * @see FrontController::postProcess()
      */
     public function postProcess()
     {
-        $transactionId = Tools::getValue('order_id');
-        $action = Tools::getValue('action');
-        $cartid = Tools::getValue('extra1');
-
-        if (empty($action)) {
-            $jsonRequest = Tools::file_get_contents('php://input');
-
-            if (!empty($jsonRequest)) {
-                $exchange = json_decode($jsonRequest, true);
-                $transactionId = empty($exchange['order_id']) ? null : $exchange['order_id'];
-                $action = empty($exchange['action']) ? null : $exchange['action'];
-                $cartid = empty($exchange['extra1']) ? null : $exchange['extra1'];
-
-                if (empty($action)) {
-                    die('TRUE| Empty action value in JSON call');
-                }
-                if (empty($cartid)) {
-                    die('TRUE| Empty cart id in JSON call');
-                }
-            } else {
-                die('TRUE| Missing action');
-            }
-        }
-
-        /**
-         * @var $module PaynlPaymentMethods
-         */
-        $module = $this->module;
-
-        $module->payLog('Exchange', 'Action: ' . $action, $cartid, $transactionId);
-
-        if ($action == 'pending') {
-            die('TRUE| Ignoring pending');
-        }
-        if ($action == 'partial_payment') {
-            die('TRUE| Processing partial payment');
-        }
-        if (empty($transactionId)) {
-            die('TRUE| Empty transactionId in call');
-        }
-
-        if ($action == 'new_ppt') {
-            $processing = Transaction::checkProcessing($transactionId);
-            if (!empty($processing)) {
-                die('FALSE| Already Processing payment');
-            }
-        }
+        $exchange = new Exchange();
+        $config = (new PayHelper())->getConfig();
 
         try {
-            $message = '';
-            $module->processPayment($transactionId, $message);
-            $response = 'TRUE| ' . $message;
+            $this->payOrderId = $exchange->getPayOrderId();
+            $this->checkProcessing($exchange);
+            $payOrder = $exchange->process($config);
         } catch (Exception $e) {
-            $response = 'FALSE| ' . $e->getMessage();
+            exit('FALSE|Exception: ' . $e->getMessage());
         }
 
-        if ($action == 'new_ppt') {
-            Transaction::removeProcessing($transactionId);
+        if ($payOrder->isPending()) {
+            $eResponse = new ExchangeResponse(true, 'Ignoring pending');
+
+        } elseif ($payOrder->isPartialPayment()) {
+            $eResponse = new ExchangeResponse(true, 'Processing partial payment');
+
+        } elseif ($payOrder->isBeingVerified()) {
+            $eResponse = new ExchangeResponse(true, 'Ignoring verified');
+        } else {
+            try {
+                $eResponse = $this->module->processPayment($this->payOrderId, $payOrder);
+            } catch (Exception $e) {
+                $responseDescription = $e->getMessage();
+                $responseDescription = empty($responseDescription) ? 'Error, No message ' : $responseDescription;
+                $eResponse = new ExchangeResponse(false, 'Exception: ' . $responseDescription);
+            }
         }
 
-        exit($response);
+        $this->checkProcessing($exchange, 'out');
+        $exchange->setExchangeResponse($eResponse);
+    }
+
+    /**
+     * @param Exchange $exchange
+     * @param string $mode
+     * @return void
+     * @throws \PayNL\Sdk\Exception\PayException
+     */
+    private function checkProcessing(Exchange $exchange, string $mode = 'in')
+    {
+        if ($exchange->eventPaid(true)) {
+            if ($mode == 'in') {
+                $processing = Transaction::checkProcessing($this->payOrderId);
+                if (!empty($processing)) {
+                    $exchange->setResponse(false, 'Already Processing payment');
+                }
+            } else {
+                Transaction::removeProcessing($this->payOrderId);
+            }
+        }
     }
 }

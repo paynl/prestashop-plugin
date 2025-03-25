@@ -17,8 +17,8 @@
                         <span class="col-xs-1">   
                             <span class="paynl_switch enabledSwitch green switch {if $paymentmethod->enabled}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->enabled}" name="enabled" {if $paymentmethod->enabled}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                     
                         </span>
-                        <span class="col-xs-1 clickable openPaymentDetails">
-                            <img width="50" {if $paymentmethod->brand_id} src="{$image_url}{$paymentmethod->brand_id}.png" {/if}>
+                        <span class="col-xs-1 clickable openPaymentDetails checkfew">
+                            <img width="50" src="{$image_url}{$paymentmethod->image_path}">
                         </span>
                         <span class="col-xs-9 clickable openPaymentDetails">
                             <h4 class="list-group-item-heading">{$paymentmethod->name}</h4>
@@ -196,28 +196,13 @@
                                     <label class="control-label col-lg-3 align-right">{l s='Order Create' mod='paynlpaymentmethods'}</label>
                                     <div class="col-lg-9">                                    
                                         <select name="create_order_on">
-                                            <option value="success" {if $paymentmethod->create_order_on == 'success'}selected{/if}>Create order on success (default)</option>
-                                            <option value="start" {if $paymentmethod->create_order_on == 'start'}selected{/if}>Create order on payment start</option>                                 
+                                            <option value="success" {if $paymentmethod->create_order_on == 'success'}selected{/if}>{l s='Create order on success (default)' mod='paynlpaymentmethods'}</option>
+                                            <option value="start" {if $paymentmethod->create_order_on == 'start'}selected{/if}>{l s='Create order on payment start' mod='paynlpaymentmethods'}</option>
                                         </select>                                    
                                         <p class="help-block">
-                                            {l s='Default setting uses cart-ID. Create order on payment start, gives you the Prestashop order number. For more information, see our' mod='paynlpaymentmethods'}
-                                            <a href="https://docs.pay.nl/plugins#prestashop-oneseven-download" target="_BLANK">{l s=' documentation' mod='paynlpaymentmethods'}</a>
+                                            {l s='For more information, see our' mod='paynlpaymentmethods'}
+                                            <a href="https://developer.pay.nl/docs/prestashop" target="_blank">{l s=' documentation' mod='paynlpaymentmethods'}</a>
                                             .
-                                        </p>
-                                    </div>
-                                </div>
-                            {/if}
-                            {if ($paymentmethod->id == 10)}
-                                <div class="form-group">
-                                    <label class="control-label col-lg-3 align-right">{l s='Bank Selection' mod='paynlpaymentmethods'}</label>
-                                    <div class="col-lg-9">                                    
-                                        <select name="bank_selection">
-                                            <option value="off" {if $paymentmethod->bank_selection == 'off'}selected{/if}>Off</option>  
-                                            <option value="radio" {if $paymentmethod->bank_selection == 'radio'}selected{/if}>Radiobuttons</option>   
-                                            <option value="dropdown" {if $paymentmethod->bank_selection == 'dropdown'}selected{/if}>Selectbox</option>                                                                          
-                                        </select>                                    
-                                        <p class="help-block">
-                                            {l s='Choose the type of bank selection'}
                                         </p>
                                     </div>
                                 </div>
@@ -279,10 +264,10 @@
         return $paymentmethods;
     }
 
-    function updatePaynlForm(){
+    function updatePaynlForm() {
         //Get the updated data and assign it to the PAYNL_PAYMENTMETHODS field
         var $updatedata = paynlFormData();
-        if($updatedata){
+        if ($updatedata) {
             $('#PAYNL_PAYMENTMETHODS').val(JSON.stringify($updatedata));
         }                      
     }

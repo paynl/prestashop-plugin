@@ -1,37 +1,17 @@
 <?php
 
-/*
- * 2007-2015 PrestaShop
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
- * versions in the future. If you wish to customize PrestaShop for your
- * needs please refer to http://www.prestashop.com for more information.
- *
- *  @author PrestaShop SA <contact@prestashop.com>
- *  @copyright  2007-2015 PrestaShop SA
- *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
- */
-
-use PaynlPaymentMethods\PrestaShop\Transaction;
+use PayNL\Sdk\Model\Request\TransactionRefundRequest;
+use PayNL\Sdk\Model\Request\OrderCaptureRequest;
+use PayNL\Sdk\Exception\PayException;
+use PaynlPaymentMethods\PrestaShop\PayHelper;
+use \PaynlPaymentMethods\PrestaShop\Transaction;
 
 /**
  * @since 1.5.0
  */
 class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
 {
+
     /**
      * @return void
      */
@@ -64,92 +44,125 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      */
     public function initContent()
     {
-        $calltype = Tools::getValue('calltype');
+        $callType = Tools::getValue('calltype');
+        $prestaOrderId = Tools::getValue('prestaorderid');
+        $amount = Tools::getValue('amount');
         $module = $this->module;
-        if ($calltype == 'refund' || $calltype == 'capture') {
-            $prestaorderid = Tools::getValue('prestaorderid');
-            $amount = Tools::getValue('amount');
-            try {
-                $order = new Order($prestaorderid);
-            } catch (Exception $e) {
-                $amount = empty($amount) ? '' : $amount;
-                $module->payLog('Capture', 'Failed trying to ' . $calltype . ' ' . $amount . ' on ps-orderid ' . $prestaorderid . ' Order not found. Errormessage: ' . $e->getMessage());
-                $this->returnResponse(false, 0, 'Could not find order');
-            }
+        $helper = new PayHelper();
 
-            $paymenyArr = $order->getOrderPayments();
-            $orderPayment = reset($paymenyArr);
-            $transactionId = $orderPayment->transaction_id;
-            $currencyId = $orderPayment->id_currency;
-            $currency = new Currency($currencyId);
-            $strCurrency = $currency->iso_code;
-            $cartId = !empty($order->id_cart) ? $order->id_cart : null;
-        }
-
-        if ($calltype == 'refund') {
-            $this->processRefund($prestaorderid, $amount, $cartId, $transactionId, $strCurrency, $module);
-        } elseif ($calltype == 'capture') {
-            $this->processCapture($prestaorderid, $amount, $cartId, $transactionId, $strCurrency, $module);
-        } elseif ($calltype == 'feature_request') {
+        if ($callType == 'feature_request') {
             $email = Tools::getValue('email');
             $message = Tools::getValue('message');
             $this->processFeatureRequest($module, $email, $message);
+            return;
         }
-    }
-
-    /**
-     * @param string $prestaorderid
-     * @param string $amount
-     * @param string $cartId
-     * @param string $transactionId
-     * @param string $strCurrency
-     * @param string $module
-     * @return void
-     */
-    public function processRefund($prestaorderid, $amount, $cartId, $transactionId, $strCurrency, $module)
-    {
         try {
-            $module->payLog('Refund', 'Trying to refund ' . $amount . ' ' . $strCurrency . ' on prestashop-orderid ' . $prestaorderid, $cartId, $transactionId);
-            $arrRefundResult = Transaction::doRefund($transactionId, $amount, $strCurrency);
-            $refundResult = $arrRefundResult['data'];
-            if ($arrRefundResult['result']) {
-                $arrResult = $refundResult->getData();
-                $amountRefunded = !empty($arrResult['amountRefunded']) ? $arrResult['amountRefunded'] : '';
-                $desc = !empty($arrResult['description']) ? $arrResult['description'] : 'empty';
-                $module->payLog('Refund', 'Refund success, result message: ' . $desc, $cartId, $transactionId);
-                $this->returnResponse(true, $amountRefunded, 'succesfully_refunded ' . $strCurrency . ' ' . $amount);
-            } else {
-                throw new Exception('Could not process refund.');
+            $order = new Order($prestaOrderId);
+
+            if (empty($order->id)) {
+                throw new Exception('Order not found');
             }
-        } catch (\Exception $e) {
-            $module->payLog('Refund', 'Refund failed: ' . $e->getMessage(), $cartId, $transactionId);
-            $this->returnResponse(false, 0, $e->getMessage());
+
+            $paymentCollection = $order->getOrderPayments();
+            $orderPayment = reset($paymentCollection);
+            $transactionId = $orderPayment->transaction_id;
+
+            $currencyId = $orderPayment->id_currency;
+            $currency = new Currency($currencyId);
+            $strCurrency = $currency->iso_code;
+
+            $cartId = !empty($order->id_cart) ? $order->id_cart : null;
+
+            $callType = 'process' . ucfirst($callType);
+
+            $this->$callType($prestaOrderId, $amount, $cartId, $transactionId, $strCurrency, $module);
+        } catch (Exception $e) {
+            $amount = empty($amount) ? '' : $amount;
+            $helper->payLog('Capture', 'Failed trying to ' . $callType . ' ' . $amount . ' on ps-order id ' . $prestaOrderId . ' Order not found. Errormessage: ' . $e->getMessage());
+            $this->returnResponse(false, 0, 'Could not find order');
         }
     }
 
     /**
-     * @param string $prestaorderid
-     * @param string $amount
-     * @param string $cartId
-     * @param string $transactionId
-     * @param string $strCurrency
-     * @param string $module
-     * @return void
+     * @param $prestaOrderId
+     * @param $amount
+     * @param $cartId
+     * @param $transactionId
+     * @param $strCurrency
+     * @param $module
      */
-    public function processCapture($prestaorderid, $amount, $cartId, $transactionId, $strCurrency, $module)
+    public function processRefund($prestaOrderId, $amount, $cartId, $transactionId, $strCurrency, $module)
     {
-        $amount = empty($amount) ? '' : $amount;
-        $module->payLog('Capture', 'Trying to capture ' . $amount . ' ' . $strCurrency . ' on prestashop-orderid ' . $prestaorderid, $cartId, $transactionId);
-        $arrCaptureResult = Transaction::doCapture($transactionId, $amount);
-        $captureResult = $arrCaptureResult['data'];
-        if ($arrCaptureResult['result']) {
-            $module->payLog('Capture', 'Capture success', $cartId, $transactionId);
-            $amount = empty($amount) ? '' : $amount;
-            $this->returnResponse(true, $amount, 'succesfully_captured ' . $strCurrency . ' ' . $amount);
-        } else {
-            $module->payLog('Capture', 'Capture failed: ' . $captureResult, $cartId, $transactionId);
+        $helper = new PayHelper();
+
+        $helper->payLog('Refund', 'Trying to refund ' . $amount . ' ' . $strCurrency . ' on prestashop-order id ' . $prestaOrderId, $cartId, $transactionId);
+
+        try {
+            $transactionRefundRequest = new TransactionRefundRequest($transactionId, $amount, $strCurrency);
+            $transactionRefundRequest->setConfig($helper->getConfig());
+
+            $refund = $transactionRefundRequest->start();
+
+            $amountRefunded = $refund->getAmountRefunded()->getValue();
+
+            $desc = $refund->getDescription();
+            $helper->payLog('Refund', 'Refund success, result message: ' . $desc, $cartId, $transactionId);
+
+            $this->returnResponse(true, $amountRefunded, 'successfully_refunded ' . $strCurrency . ' ' . $amount);
+        } catch (PayException $e) {
+            $helper->payLog('Refund', 'Refund failed: ' . $e->getMessage(), $cartId, $transactionId);
+            $this->returnResponse(false, 0, 'could_not_process_refund');
+        }
+    }
+
+    /**
+     * @param $prestaOrderId
+     * @param $amount
+     * @param $cartId
+     * @param $transactionId
+     * @param $strCurrency
+     * @param $module
+     */
+    public function processCapture($prestaOrderId, $amount, $cartId, $transactionId, $strCurrency, $module)
+    {
+        $helper = new PayHelper();
+
+        $helper->payLog('Capture', 'Trying to capture ' . $amount . ' ' . $strCurrency . ' on prestashop-order id ' . $prestaOrderId, $cartId, $transactionId);
+
+        try {
+            $captureRequest = new OrderCaptureRequest($transactionId, $amount);
+            $captureRequest->setConfig($helper->getConfig());
+
+            $capture = $captureRequest->start();
+
+            $amountCaptured = $capture->getAmount();
+
+            $helper->payLog('Capture', 'Capture success, result message: ' . $capture->getDescription(), $cartId, $transactionId);
+
+            $this->returnResponse(true, $amountCaptured, 'successfully_captured ' . $strCurrency . ' ' . $amount);
+        } catch (PayException $e) {
+            $helper->payLog('Capture', 'Capture failed: ' . $e->getMessage(), $cartId, $transactionId);
             $this->returnResponse(false, 0, 'could_not_process_capture');
         }
+    }
+
+    /**
+     * @param $result
+     * @param string $amountRefunded
+     * @param string $message
+     * @return void
+     */
+    private function returnResponse($result, string $amountRefunded = '', string $message = '')
+    {
+        header('Content-Type: application/json;charset=UTF-8');
+
+        $returnarray = array(
+            'success' => $result,
+            'amountrefunded' => $amountRefunded,
+            'message' => $message,
+        );
+
+        die(json_encode($returnarray));
     }
 
     /**
@@ -158,8 +171,9 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      * @param string $message
      * @return void
      */
-    public function processFeatureRequest($module, $email = '', $message = '')
+    public function processFeatureRequest(string $module, string $email = '', string $message = ''): void
     {
+        $helper = new PayHelper();
         try {
             $message_HTML = '<p>A client has sent a feature request via Prestashop.</p><br/>';
             if (!empty($email)) {
@@ -170,40 +184,24 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $message_HTML .= '<p> Prestashop version: ' . _PS_VERSION_ . '</p>';
             $message_HTML .= '<p> PHP version: ' . substr(phpversion(), 0, 3) . '</p>';
             Mail::Send(
-                (int) (Configuration::get('PS_LANG_DEFAULT')), // defaut language id
-                'reply_msg', // email template file to be use
-                ' Feature Request - Prestashop', // email subject
-                array(
-                    '{firstname}' => 'Pay.',
-                    '{lastname}' => 'Plugin Team',
-                    '{reply}' => $message_HTML,
-                ),
-                'webshop@pay.nl', // receiver email address
-                'Pay. Plugins', //receiver name
-                null, //from email address
-                null//from name
+              (int) (Configuration::get('PS_LANG_DEFAULT')), // Defaut language id
+              'reply_msg', // Email template file to be use
+              ' Feature Request - Prestashop', // Email subject
+              array(
+                '{firstname}' => 'Pay.',
+                '{lastname}' => 'Plugin Team',
+                '{reply}' => $message_HTML,
+              ),
+              'webshop@pay.nl', // Receiver email address
+              'Pay. Plugins', // Receiver name
+              null, // From email address
+              null // From name
             );
-            $this->returnResponse(true, 0, 'succesfully_sent');
+            $this->returnResponse(true, 0, 'successfully_sent');
         } catch (Exception $e) {
-            $module->payLog('FeatureRequest', 'Failed:' . $e->getMessage());
+            $helper->payLog('FeatureRequest', 'Failed:' . $e->getMessage());
             $this->returnResponse(false, 0, 'error');
         }
     }
 
-    /**
-     * @param string $result
-     * @param string $amountRefunded
-     * @param string $message
-     * @return void
-     */
-    private function returnResponse($result, $amountRefunded = '', $message = '')
-    {
-        header('Content-Type: application/json;charset=UTF-8');
-        $returnarray = array(
-            'success' => $result,
-            'amountrefunded' => $amountRefunded,
-            'message' => $message,
-        );
-        die(json_encode($returnarray));
-    }
 }

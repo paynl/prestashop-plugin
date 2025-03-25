@@ -24,6 +24,8 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
+use PaynlPaymentMethods\PrestaShop\PayHelper;
+
 /**
  * @since 1.5.0
  */
@@ -44,26 +46,23 @@ class PaynlPaymentMethodsStartPaymentModuleFrontController extends ModuleFrontCo
         $paymentOptionId = Tools::getValue('payment_option_id');
         foreach (Module::getPaymentModules() as $module) {
             if ($module['name'] == 'paynlpaymentmethods') {
-                $authorized = $this->module->isPaymentMethodAvailable($cart, $paymentOptionId);
+                $authorized = true;
                 break;
             }
         }
 
         if (!$authorized) {
-            die($this->module->l('This payment method is not available.', 'validation'));
+            Tools::redirect('/index.php?controller=order&step=1');
+            return null;
         }
 
-        $extra_data = array();
-        $bank = Tools::getValue('bank');
-        if (!empty($bank)) {
-            $extra_data['bank'] = $bank;
-        }
         try {
-            $redirectUrl = $this->module->startPayment($cart, $paymentOptionId, $extra_data);
+            $redirectUrl = $this->module->startPayment($cart, $paymentOptionId, ['terminalCode' => Tools::getValue('terminalCode')]);
             Tools::redirect($redirectUrl);
-        } catch (Exception $e) {
-            $this->module->payLog('postProcess', 'Error startPayment: ' . $e->getMessage(), $cart->id);
-            die('Error: ' . $e->getMessage());
+        } catch (Throwable $e) {
+            (new PayHelper())->payLog('postProcess', 'Error startPayment: ' . $e->getMessage(), $cart->id);
+            $this->warning[] = $this->module->l($e->getMessage(), 'startpayment');
+            $this->redirectWithNotifications('index.php?controller=order&step=1');
         }
     }
 }

@@ -11,6 +11,7 @@ class PaymentMethod
     const METHOD_IDEAL = 10; // phpcs:ignore
     const METHOD_SOFORT = 556; // phpcs:ignore
     const METHOD_INSTORE = 1729; // phpcs:ignore
+    const METHOD_PIN = 1927; // phpcs:ignore
     const METHOD_INSTORE_PROFILE_ID = 1633; // phpcs:ignore
     const METHOD_GIVACARD = 1657; // phpcs:ignore
     const METHOD_PAYPAL = 138;  // phpcs:ignore
@@ -34,7 +35,7 @@ class PaymentMethod
             $paymentMethodName = empty($settings->name) ? '' : $settings->name;
         }
         if (empty(trim($paymentMethodName))) {
-            $paymentMethodName = 'PAY.';
+            $paymentMethodName = 'Pay.';
         }
         return $paymentMethodName;
     }

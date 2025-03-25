@@ -10,14 +10,17 @@ use DbQuery;
  */
 class Transaction
 {
+
     /**
      * Adds the transaction to the pay_transactions table
-     * @param $transaction_id
-     * @param $cart_id
-     * @param $customer_id
-     * @param $payment_option_id
-     * @param $amount
+     *
+     * @param int $transaction_id
+     * @param int $cart_id
+     * @param int $customer_id
+     * @param int $payment_option_id
+     * @param float $amount
      * @return void
+     * @throws \PrestaShopDatabaseException
      */
     public static function addTransaction($transaction_id, $cart_id, $customer_id, $payment_option_id, $amount)
     {
@@ -35,7 +38,7 @@ class Transaction
     }
 
     /**
-     *  Adds the pinnterminal hash to the transaction, this is required for the instore option
+     *  Adds the pinterminal hash to the transaction, this is required for the instore option
      * @param $transaction_id
      * @param $hash
      * @return void
@@ -43,68 +46,20 @@ class Transaction
     public static function addTransactionHash($transaction_id, $hash)
     {
         $db = Db::getInstance();
-
         $sql = "UPDATE `" . _DB_PREFIX_ . "pay_transactions` SET `hash` = '" . Db::getInstance()->escape($hash) . "', `updated_at` = now() WHERE `" . _DB_PREFIX_ . "pay_transactions`.`transaction_id` = '" . Db::getInstance()->escape($transaction_id) . "';"; // phpcs:ignore
         $db->execute($sql);
     }
 
     /**
-     *  Returns the transaction based on transaction_id from the pay_transactions table
+     * Returns the transaction based on transaction_id from the pay_transactions table
+     *
      * @param $transaction_id
      * @return array
      */
     public static function get($transaction_id)
     {
         $result = Db::getInstance()->getRow("SELECT * FROM `" . _DB_PREFIX_ . "pay_transactions` WHERE `transaction_id` = '" . Db::getInstance()->escape($transaction_id) . "';");
-
         return is_array($result) ? $result : array();
-    }
-
-    /**
-     * @param $transactionId
-     * @param $amount
-     * @param $strCurrency
-     * @return array
-     * @throws \Paynl\Error\Api
-     * @throws \Paynl\Error\Error
-     * @throws \Paynl\Error\Required\ApiToken
-     * @throws \Paynl\Error\Required\ServiceId
-     */
-    public static function doRefund($transactionId, $amount = null, $strCurrency = null)
-    {
-        try {
-            PayHelper::sdkLogin();
-            $result = true;
-            $refundResult = \Paynl\Transaction::refund($transactionId, $amount, null, null, null, $strCurrency);
-        } catch (Exception $objException) {
-            $refundResult = $objException->getMessage();
-            $result = false;
-        }
-
-        return array('result' => $result, 'data' => $refundResult);
-    }
-
-    /**
-     * @param $transactionId
-     * @param $amount
-     * @return array
-     * @throws \Paynl\Error\Api
-     * @throws \Paynl\Error\Error
-     * @throws \Paynl\Error\Required\ApiToken
-     * @throws \Paynl\Error\Required\ServiceId
-     */
-    public static function doCapture($transactionId, $amount = null)
-    {
-        try {
-            PayHelper::sdkLogin();
-            $result = true;
-            $captureResult = \Paynl\Transaction::capture($transactionId, $amount);
-        } catch (Exception $objException) {
-            $captureResult = $objException->getMessage();
-            $result = false;
-        }
-
-        return array('result' => $result, 'data' => $captureResult);
     }
 
     /**
@@ -129,7 +84,7 @@ class Transaction
             $result = array();
         }
 
-        return is_array($result) ? $result : array();
+       return is_array($result) ? $result : array();
     }
 
     /**
@@ -143,7 +98,6 @@ class Transaction
 
     /**
      * @param $transactionId
-     * @param $orderId
      * @param $paymentOptionId
      * @return void
      */

@@ -1,17 +1,10 @@
 {
   "name": "paynl/paynlpaymentmethods",
-  "description": "PrestaShop module paymentexample",
+  "description": "Pay, payment methods module for PrestaShop",
   "homepage": "https://github.com/Paynl/prestashop-plugin",
-  "license": "AFL - Academic Free License (AFL 3.0)",
-  "authors": [
-    {
-      "name": "Andy Pieters",
-      "email": "andy@pay.nl"
-    }
-  ],
   "require": {
-    "php": ">=5.3.2",
-    "paynl/sdk": "^1.5"
+    "php": "^8.1",
+    "paynl/php-sdk": "dev-fromPriv"
   },
   "autoload": {
     "psr-4": {

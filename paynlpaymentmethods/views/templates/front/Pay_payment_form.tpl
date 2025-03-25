@@ -1,31 +1,31 @@
 <form action="{$action}" method="POST" id="payment-form" class="paynl">
     <input type="hidden" name="payment_option_id" value="{$payment_option_id}"/>
-    {if !empty($banks)}
-        <div class="form-group row PaynlBanks {$logoClass} {$type}">   
-            {if $type == 'dropdown'}     
+    {if !empty($payment_options)}
+        <div class="form-group row PaynlBanks {$logoClass} {$type}">
+            {if $type == 'dropdown'}
                 <fieldset>
                     <legend>{$payment_dropdown_text}</legend>
-                    <select class="form-control form-control-select" id="bank" name="bank">
-                        {foreach from=$banks item=bank}
-                            <option value="{$bank['id']}">{$bank['name']}</option>
+                    <select class="form-control form-control-select" name="{$payment_option_name}">
+                        <option value="">{$payment_option_text}</option>
+                        {foreach from=$payment_options item=_option}
+                            <option value="{$_option['id']}">{$_option['name']}</option>
                         {/foreach}
                     </select>
-                </fieldset>       
-             {elseif $type == 'radio'}     
+                </fieldset>
+            {elseif $type == 'radio'}
                 <ul class="pay_radio_select">
-                    {foreach from=$banks item=bank}
-                        <li>
-                            <label>
-                                <input type="radio" name="bank" value="{$bank['id']}">
-                                {if $logoClass != 'noLogo'}  
-                                    <img src="/modules/paynlpaymentmethods/views/images/issuers/qr-{$bank['id']}.png" loading="lazy" style="max-width: 50px; max-height: 35px; object-fit: scale-down;">
-                                {/if}  
-                                &nbsp;
-                                <span>{$bank['name']}</span>
-                            </label>
-                    {/foreach}
+                    {foreach from=$payment_options item=_option}
+                    <li>
+                        <label>
+                            <input type="radio" name="{$payment_option_name}" value="{$_option['id']}">
+                            {if $logoClass != 'noLogo'}
+                                <img src="/modules/paynlpaymentmethods/views/images/issuers/qr-{$_option['id']}.png" loading="lazy">
+                            {/if}
+                            <span>{$_option['name']}</span>
+                        </label>
+                        {/foreach}
                 </ul>
-             {/if}   
+            {/if}
         </div>
     {/if}
     {if !empty($description)}

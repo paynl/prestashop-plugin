@@ -1,114 +1,88 @@
 <?php
 
-/*
-* 2007-2015 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2015 PrestaShop SA
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
-
-/**
- * @since 1.5.0
- */
-
-use PaynlPaymentMethods\PrestaShop\Transaction;
+use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PaynlPaymentMethods\PrestaShop\PaymentMethod;
-use PaynlPaymentMethods\PrestaShop\Instore;
+use PayNL\Sdk\Exception\PayException;
 
 class PaynlPaymentMethodsFinishModuleFrontController extends ModuleFrontController
 {
+    private $helper;
     private $order = null;
     private $payOrderId = null;
-    private $orderStatusId = null;
-    private $paymentSessionId = null;    
+    private $reference = null;
+    private $statusAction = null;
+    private $statusCode = null;
     private $paymentProfileId = null;
-/**
-   * @see FrontController::postProcess()
-   * @return void
-   */
+
+    /**
+     * @return void
+     * @see FrontController::postProcess()
+     */
     public function postProcess()
     {
-        $transactionId = Tools::getValue('orderId');
+        $this->helper = new PayHelper();
+        $this->statusAction = Tools::getValue('statusAction');
+        $payOrderId = Tools::getValue('id');
         $iAttempt = Tools::getValue('attempt');
         $bValidationDelay = Configuration::get('PAYNL_VALIDATION_DELAY') == 1;
-        $this->payOrderId = $transactionId;
-        $this->orderStatusId = Tools::getValue('orderStatusId');
-        $this->paymentSessionId = Tools::getValue('paymentSessionId');
-        if (Tools::getValue('paymentError') == 1) {
-            PaymentMethod::paymentError(Tools::getValue('error'), $this);
-        }
+        $this->payOrderId = $payOrderId;
+        $this->statusCode = Tools::getValue('statusCode');
+        $this->reference = Tools::getValue('reference');
 
-      /**
-       * @var $module PaynlPaymentMethods
-       */
+        /**
+         * @var $module PaynlPaymentMethods
+         */
         $module = $this->module;
         try {
-            $transaction = $module->getTransaction($transactionId);
-            $transactionData = $transaction->getData();
-            $ppid = !empty($transactionData['paymentDetails']['paymentOptionId']) ? $transactionData['paymentDetails']['paymentOptionId'] : null;
-            $stateName = !empty($transactionData['paymentDetails']['stateName']) ? $transactionData['paymentDetails']['stateName'] : 'unknown';
-            $this->paymentProfileId = $transactionData['paymentDetails']['paymentProfileId'] ?? 0;
-        } catch (Exception $e) {
-            $module->payLog('finishPostProcess', 'Could not retrieve transaction', null, $transactionId);
+            $transaction = $module->getPayOrder($payOrderId);
+            $ppid = $transaction->getPaymentMethod();
+            $stateName = $transaction->getStatusName();
+            $this->statusCode = $transaction->getStatusCode();
+            $this->paymentProfileId = $transaction->getPaymentMethod();
+
+        } catch (PayException $e) {
+            $this->helper->payLog('finishPostProcess', 'Could not retrieve transaction', null, $payOrderId);
             return;
         }
 
-        $cartId = $transaction->getOrderNumber();
-        $orderId = Order::getIdByCartId($cartId);
+        $this->helper->payLog('finishPostProcess', 'Returning to webshop. Method: ' . $ppid . '. Status: ' . $stateName . ', code:' . $this->statusCode, $transaction->getOrderId(), $payOrderId);
 
-        $module->payLog('finishPostProcess', 'Returning to webshop. Method: ' . $transaction->getPaymentMethodName() . '. Status: ' . $stateName, $transaction->getOrderNumber(), $transactionId);
         if ($transaction->isPaid() || $transaction->isPending() || $transaction->isBeingVerified() || $transaction->isAuthorized()) {
-            $cart = $this->context->cart;
-            $customer = new Customer($cart->id_customer);
-            $dbTransaction = Transaction::get($transactionId);
-            if (!empty($dbTransaction['hash']) && !empty($dbTransaction['payment_option_id']) && $dbTransaction['payment_option_id'] == PaymentMethod::METHOD_INSTORE) {
-                Instore::handlePin($dbTransaction['hash'], $transactionId, $this);
-            }
 
-            if ($transaction->isPending()) {
+            if (!$transaction->isPaid()) {
                 $iTotalAttempts = in_array($ppid, array(PaymentMethod::METHOD_OVERBOEKING, PaymentMethod::METHOD_SOFORT)) ? 1 : 20;
                 if ($bValidationDelay == 1 && $iAttempt < $iTotalAttempts) {
+                    # Wait for exchange to process of validationDelay is enabled
                     return;
                 }
             }
-
+            if (empty($cart->id_customer)) {
+                $cart = $this->context->cart;
+            }
             unset($this->context->cart);
             unset($this->context->cookie->id_cart);
 
+            $cartId = $transaction->getReference();
+            $orderId = Order::getIdByCartId($cartId);
             if (empty($orderId) && $iAttempt < 1) {
                 return;
             }
 
+            $customer = new Customer($cart->id_customer);
             $this->order = $orderId;
             Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cartId . '&id_module=' . $this->module->id . '&id_order=' . $orderId . '&key=' . $customer->secure_key);
         } else {
             # Delete old payment fee
             $this->context->cart->deleteProduct(Configuration::get('PAYNL_FEE_PRODUCT_ID'), 0);
-            if ($this->orderStatusId == '-63') {
+            if (in_array($this->statusCode, ['-63', '-64'])) {
                 $this->createNewCart($this->context->cart);
                 $this->errors[] = $this->module->l('The payment has been denied', 'finish');
                 $this->redirectWithNotifications('index.php?controller=order&step=1');
-            } elseif ($transaction->isCanceled()) {
-                if (!empty($orderId) || $this->paymentProfileId == '138') {
-                    $this->createNewCart($cartId);
+            } elseif ($transaction->isCancelled() || $this->paymentProfileId == '138') {
+                if ($this->paymentProfileId == '138') {
+                    $this->createNewCart($this->context->cart);
+                } else {
+                    $this->restoreCart();
                 }
                 $this->errors[] = $this->module->l('The payment has been canceled', 'finish');
                 $this->redirectWithNotifications('index.php?controller=order&step=1');
@@ -121,6 +95,7 @@ class PaynlPaymentMethodsFinishModuleFrontController extends ModuleFrontControll
 
     /**
      * @return void
+     * @throws PrestaShopException
      */
     public function initContent()
     {
@@ -128,23 +103,26 @@ class PaynlPaymentMethodsFinishModuleFrontController extends ModuleFrontControll
         if (empty($iAttempt)) {
             $iAttempt = 0;
         }
+        $arrUrl = parse_url($_SERVER['REQUEST_URI']);
 
         $iAttempt += 1;
-        $url =  '/module/paynlpaymentmethods/finish?orderId=' . $this->payOrderId .
-        '&orderStatusId=' . $this->orderStatusId .
-        '&paymentSessionId=' . $this->paymentSessionId . '&utm_nooverride=1&attempt=' . $iAttempt;
+        $url = _PS_BASE_URL_ . $arrUrl['path'] . '?id=' . $this->payOrderId .
+            '&reference=' . $this->reference .
+            '&statusAction=' . $this->statusAction .
+            '&statusCode=' . $this->statusCode .
+            '&utm_nooverride=1&attempt=' . $iAttempt;
+
         $this->context->smarty->assign(array('order' => $this->payOrderId, 'extendUrl' => $url));
         $this->setTemplate('module:paynlpaymentmethods/views/templates/front/waiting.tpl');
     }
 
     /**
-     * @param string $cartId
+     * @param object $oldCart
      * @phpcs:disable Squiz.Commenting.FunctionComment.TypeHintMissing
      * @return void
      */
-    public function createNewCart($cartId)
+    public function createNewCart($oldCart)
     {
-        $oldCart = new Cart($cartId);
         $newCart = $oldCart->duplicate();
         if (!empty($newCart["cart"]->id)) {
             $this->context->cookie->id_cart = $newCart["cart"]->id;
@@ -155,6 +133,22 @@ class PaynlPaymentMethodsFinishModuleFrontController extends ModuleFrontControll
             $sessionData = $db->executeS($sql)[0]["checkout_session_data"];
             $db->update('cart', ['checkout_session_data' => pSQL($sessionData)], 'id_cart = ' . $db->escape($newCart["cart"]->id));
             $oldCart->delete;
+        }
+    }
+
+    public function restoreCart()
+    {
+        $this->context->cookie->id_cart = $this->reference;
+        $cart = new Cart($this->context->cookie->id_cart);
+
+        if (Validate::isLoadedObject($cart) && $cart->id_guest == $this->context->cookie->id_guest) {
+            $this->context->cart = $cart; // Restore guest's cart
+        } else {
+            $debugText = 'Restoring cart failed: ' . PHP_EOL .
+                'cart  id_quest: ' . $cart->id_guest . PHP_EOL .
+                'cookie questid: ' . $this->context->cookie->id_guest;
+
+            $this->helper->payLog('finishPostProcess', $debugText);
         }
     }
 }
