@@ -32,7 +32,7 @@
             <div class="label">{$lang.paymentmethod}</div>
             <div class="labelvalue">{$method}</div>
             <div class="label">{$lang.amount} (Cart)</div>
-            <div class="labelvalue">{$currency} {$amountFormatted}</div>
+            <div class="labelvalue">{$currency} {$amountCart}</div>
             <div class="label">{$lang.amount} (Pay.)</div>
             <div class="labelvalue">EUR {$amountPayFormatted}</div>
         </div>

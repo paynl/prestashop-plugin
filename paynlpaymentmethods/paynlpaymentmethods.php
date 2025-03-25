@@ -237,23 +237,21 @@ class PaynlPaymentMethods extends PaymentModule
 
         $orderPayments = $order->getOrderPayments();
         $orderPayment = reset($orderPayments);
-        $status = 'unavailable';
         $currency = new Currency($orderPayment->id_currency);
         $transactionId = $orderPayment->transaction_id;
         $payOrderAmount = 0;
-        $methodName = 'Pay.';
+        $alreadyRefunded = 0;
 
         try {
             $payOrder = $this->getPayOrder($transactionId);
-
             if ($payOrder->isPaid() || $payOrder->isAuthorized()) {
                 $payGmsOrder = $this->getPayRefundOrder($transactionId);
                 $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
                 if ($payGmsOrder->isRefunded()) {
                     $payOrder = $payGmsOrder;
                 }
+                $alreadyRefunded = $payGmsOrder->getAmountRefunded();
             }
-
 
             $payOrderAmount = $payOrder->getAmount();
             $status = $payOrder->getStatusName();
@@ -268,20 +266,20 @@ class PaynlPaymentMethods extends PaymentModule
             $showCaptureRemainingButton = false;
         }
 
-        $amountFormatted = number_format($order->total_paid, 2, ',', '.');
+        $amountFormatted = number_format(($order->total_paid - $alreadyRefunded), 2, ',', '.');
         $amountPayFormatted = number_format($payOrderAmount, 2, ',', '.');
 
         $this->context->smarty->assign(array(
           'lang' => $this->getMultiLang(),
           'this_version' => $this->version,
           'PrestaOrderId' => $orderId,
+          'amountCart' => number_format(($order->getOrdersTotalPaid() ?? 0), 2, ',', '.'),
           'amountFormatted' => $amountFormatted,
           'amountPayFormatted' => $amountPayFormatted,
-          'amount' => $order->total_paid,
           'currency' => $currency->iso_code,
           'pay_orderid' => $transactionId,
-          'status' => $status,
-          'method' => $methodName,
+          'status' => $status ?? 'unavailable',
+          'method' => $methodName ?? 'Pay.',
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
           'showRefundButton' => $showRefundButton,
           'showCaptureButton' => $showCaptureButton,
