@@ -1,30 +1,5 @@
 <?php
 
-/*
-* 2007-2015 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com, so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2015 PrestaShop SA
-*  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
-
 /**
  * @phpcs:disable Squiz.Commenting.FunctionComment.TypeHintMissing
  */
@@ -699,13 +674,16 @@ class PaynlPaymentMethods extends PaymentModule
         $amountPaid = $this->determineAmount($payOrder, $cart);
 
         if ($orderId) {
-            # Order exists!
+            # Order exists
             $order = new Order($orderId);
             $this->helper->payLog(
-              'processPayment (order)',
-              'orderStateName:' . $arrOrderState['name'] . '. iOrderState: ' . $arrOrderState['id'] . '. ' . 'orderRef:' . $order->reference . '. orderModule:' . $order->module,
-              $cartId,
-              $transactionId
+                'processPayment (order)',
+                'orderStateName: ' . $arrOrderState['name'] . ' ' .
+                'iOrderState: ' . $arrOrderState['id'] . '. ' .
+                'orderRef: ' . $order->reference . ' ' .
+                'orderModule:' . $order->module,
+                $cartId,
+                $transactionId
             );
 
             $saveOrder = false;
@@ -720,7 +698,7 @@ class PaynlPaymentMethods extends PaymentModule
             }
 
             if ($order->hasBeenPaid() && !$payOrder->isRefundedFully()) {
-                return new ExchangeResponse(true, 'Order is already paid | OrderReference: ' . $order->reference);
+                return new ExchangeResponse(true, 'Ignoring ' . $payOrder->getStatusName() . '. Order is already paid | OrderReference: ' . $order->reference);
             }
 
             if (!$payOrder->isRefundedFully() && ($payOrder->isPaid() || $payOrder->isAuthorized())) {

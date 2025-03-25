@@ -16,6 +16,7 @@ class PaynlPaymentMethodsExchangeModuleFrontController extends ModuleFrontContro
     {
         $exchange = new Exchange();
         $config = (new PayHelper())->getConfig();
+        $helper = new PayHelper();
 
         try {
             $this->payOrderId = $exchange->getPayOrderId();
@@ -34,6 +35,7 @@ class PaynlPaymentMethodsExchangeModuleFrontController extends ModuleFrontContro
         } elseif ($payOrder->isBeingVerified()) {
             $eResponse = new ExchangeResponse(true, 'Ignoring verified');
         } else {
+            $helper->payLog('exchange', ' state: ' . $exchange->getAction());
             try {
                 $eResponse = $this->module->processPayment($this->payOrderId, $payOrder);
             } catch (Exception $e) {
