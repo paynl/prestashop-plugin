@@ -6,7 +6,7 @@
 ## Description
 
 This plugin offers a wide range of payment methods for your PrestaShop webshop.
-Visit the [Pay.](https://www.pay.nl) for a complete overview of our features and services, or check out this [link](https://developer.pay.nl/docs/prestashop) for detailed technical documentation.
+Visit the [Pay.](https://www.pay.nl) website for a complete overview of our features and services, or check out this [link](https://developer.pay.nl/docs/prestashop) for detailed technical documentation.
 
 - [Installation](#installation)
 - [Update instructions](#update-instructions)
