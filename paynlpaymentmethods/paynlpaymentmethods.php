@@ -218,7 +218,7 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
 
         try {
-            $payOrder = $this->getPayOrder($transactionId);
+            $payOrder = $this->getPayOrder((string)$transactionId);
             if ($payOrder->isPaid() || $payOrder->isAuthorized()) {
                 $payGmsOrder = $this->getPayRefundOrder($transactionId);
                 $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());

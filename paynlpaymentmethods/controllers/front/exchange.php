@@ -32,8 +32,6 @@ class PaynlPaymentMethodsExchangeModuleFrontController extends ModuleFrontContro
         } elseif ($payOrder->isPartialPayment()) {
             $eResponse = new ExchangeResponse(true, 'Processing partial payment');
 
-        } elseif ($payOrder->isBeingVerified()) {
-            $eResponse = new ExchangeResponse(true, 'Ignoring verified');
         } else {
             $helper->payLog('exchange', ' state: ' . $exchange->getAction());
             try {
