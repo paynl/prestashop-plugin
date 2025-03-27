@@ -19,6 +19,7 @@
                         </span>
                         <span class="col-xs-1 clickable openPaymentDetails checkfew">
                             <img width="50" src="{$image_url}{$paymentmethod->image_path}">
+                            <input type="hidden" name="image_path" value="{$paymentmethod->image_path}"/>
                         </span>
                         <span class="col-xs-9 clickable openPaymentDetails">
                             <h4 class="list-group-item-heading">{$paymentmethod->name}</h4>
