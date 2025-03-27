@@ -530,6 +530,7 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['findSalesLocation'] = $this->l('You can find the SL-code of your Sales location ');
         $trans['multicore'] = $this->l('Multicore');
         $trans['multicoreSettings'] = $this->l('Select the core to be used for processing payments');
+        $trans['multicoreTooltip'] = $this->l('TOOLTIP');
         $trans['customMulticore'] = $this->l('Custom multicore');
         $trans['customMulticoreWarning'] = $this->l('Leave this empty unless Pay. advised otherwise');
         $trans['prefix'] = $this->l('Transaction description prefix');
