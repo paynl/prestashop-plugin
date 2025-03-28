@@ -51,6 +51,7 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_67a4442d18812bbe0
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_021160a7de52fe7aed55a98bb51f02fe'] = 'You can find the SL-code of your Sales location ';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_fa9220086021cf15643ab621794587c0'] = 'Multicore';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_01c996c3babacc60639f144902f8ff41'] = 'Select the core to be used for processing payments';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_96b4a5ed0c3f86ec15c36b7af39e6a81'] = 'If advised, or in case of an outage, you can adjust the connection with which payments are initiated here.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_92b96e80ace7297ed4f4db115375d738'] = 'Custom multicore';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_d0e41db4985fbf4ccbca549ba7aef337'] = 'Leave this empty unless Pay. advised otherwise';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_adc1e83ea8057c3b182f292b223612da'] = 'Transaction description prefix';
