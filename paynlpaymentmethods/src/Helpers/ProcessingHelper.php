@@ -68,11 +68,25 @@ class ProcessingHelper
      * @throws PrestaShopException
      * @throws Exception
      */
-    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName)
+    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount)
     {
         $totalPaid = 0;
+
+        if (!empty($payPayments)) {
+            $payPayments[] = null;
+        }
+
         foreach ($payPayments as $key => $payPayment) {
-            $payAmount = $payPayment['amount']['value'] / 100;
+            if (!empty($payPayments)) {
+                $payAmount = $payPayment['amount']['value'] / 100;
+            } else {
+                $payAmount = $totalAmount;
+            }
+
+            if ($payAmount == 0) {
+                continue;
+            }
+
             $totalPaid += $payAmount;
             $orderPayment = null;
             $arrOrderPayment = OrderPayment::getByOrderReference($order->reference);
@@ -104,6 +118,7 @@ class ProcessingHelper
             if (empty($orderPayment->id_currency)) {
                 $orderPayment->id_currency = $order->id_currency;
             }
+
             $orderPayment->save();
         }
         $order->total_paid_real = ($order->total_paid_real ?? 0) + $totalPaid;

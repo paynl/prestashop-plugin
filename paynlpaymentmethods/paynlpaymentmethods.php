@@ -703,67 +703,14 @@ class PaynlPaymentMethods extends PaymentModule
             }
 
             if (!$payOrder->isRefundedFully() && ($payOrder->isPaid() || $payOrder->isAuthorized())) {
-                if (!empty($payPayments)) {
-                    $dbTransaction = Transaction::get($transactionId);
-                    $dbTransactionId = $dbTransaction['payment_option_id'];
-                    if ($profileId != $dbTransactionId && Configuration::get('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD')) {
-                        Transaction::updatePaymentMethod($transactionId, $profileId);
-                        $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
-                        $this->helper->payLog('processPayment (follow payment method)', $transactionId . ' - When processing order: ' . $orderId . ' the original payment method id: ' . $dbTransactionId . ' was changed to: ' . $profileId); // phpcs:ignore
-                    }
-                    $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName);
-                } else {
-                    $orderPayment = null;
-                    $arrOrderPayment = OrderPayment::getByOrderReference($order->reference);
-                    foreach ($arrOrderPayment as $objOrderPayment) {
-                        if ($objOrderPayment->transaction_id == $transactionId) {
-                            $orderPayment = $objOrderPayment;
-                        }
-                    }
-                    if (empty($orderPayment)) {
-                        if (!$payOrder->isPaid()) {
-                            return new ExchangeResponse(true, 'Ignoring not paid order');
-                        }
-                        $orderPayment = new OrderPayment();
-                        $orderPayment->order_reference = $order->reference;
-                    }
-                    if (empty($orderPayment->payment_method)) {
-                        $orderPayment->payment_method = $paymentMethodName;
-                    }
-                    if (empty($orderPayment->amount)) {
-                        $orderPayment->amount = $amountPaid;
-                    }
-                    if (empty($orderPayment->transaction_id)) {
-                        $orderPayment->transaction_id = $transactionId;
-                    }
-                    if (empty($orderPayment->id_currency)) {
-                        $orderPayment->id_currency = $order->id_currency;
-                    }
-
-                    # In case of bank-transfer the total_paid_real isn't set, we're doing that now.
-                    if ($arrOrderState['id'] == $this->statusPaid && $order->total_paid_real == 0) {
-                        $order->total_paid_real = $orderPayment->amount;
-                        $saveOrder = true;
-                    }
-
-                    $dbTransaction = Transaction::get($transactionId);
-                    $dbTransactionId = $dbTransaction['payment_option_id'];
-                    if ($profileId != $dbTransactionId && Configuration::get('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD')) {
-                        Transaction::updatePaymentMethod($transactionId, $profileId);
-                        $paymentOption = PaymentMethod::getName($transactionId, $profileId);
-
-                        $order->payment = $paymentOption;
-                        $orderPayment->payment_method = $paymentOption;
-
-                        $saveOrder = true;
-                        $this->helper->payLog('processPayment (follow payment method)', $transactionId . ' - When processing order: ' . $orderId . ' the original payment method id: ' . $dbTransactionId . ' was changed to: ' . $profileId); // phpcs:ignore
-                    }
-
-                    if ($saveOrder) {
-                        $order->save();
-                    }
-                    $orderPayment->save();
+                $dbTransaction = Transaction::get($transactionId);
+                $dbTransactionId = $dbTransaction['payment_option_id'];
+                if ($profileId != $dbTransactionId && Configuration::get('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD')) {
+                    Transaction::updatePaymentMethod($transactionId, paymentOptionId: $profileId);
+                    $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
+                    $this->helper->payLog('processPayment (follow payment method)', $transactionId . ' - When processing order: ' . $orderId . ' the original payment method id: ' . $dbTransactionId . ' was changed to: ' . $profileId); // phpcs:ignore
                 }
+                $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);                      
             }
 
             $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
@@ -785,7 +732,7 @@ class PaynlPaymentMethods extends PaymentModule
 
                     $this->validateOrder(
                         (int) $cartId,
-                        (!empty($payPayments)) ? $this->statusPending : $arrOrderState['id'],
+                        $this->statusPending,
                         $amountPaid,
                         $paymentMethodName,
                         null,
@@ -797,10 +744,10 @@ class PaynlPaymentMethods extends PaymentModule
 
                     $orderId = Order::getIdByCartId($cartId);
                     $order = new Order($orderId);
-                    if (!empty($payPayments)) {
-                        $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName);
-                        $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
-                    }
+                    
+                    $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
+                    $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
+                
                     $message = "Validated order (" . $order->reference . ") with status: " . $arrOrderState['name'];
                     $this->helper->payLog('processPayment', 'Order created. Amount: ' . $order->getTotalPaid(), $cartId, $transactionId);
                 } catch (Exception $ex) {
