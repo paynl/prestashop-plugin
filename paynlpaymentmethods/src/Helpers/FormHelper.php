@@ -264,6 +264,24 @@ class FormHelper
                 ),
               ),
               array(
+                  'type' => 'switch',
+                  'label' => $l['sdkCaching'],
+                  'name' => 'PAYNL_SDK_CACHING',
+                  'desc' => $l['sdkCachingSettings'],
+                  'values' => array(
+                      array(
+                          'id' => 'paysdkcaching_on',
+                          'value' => 1,
+                          'label' => $l['enabled']
+                      ),
+                      array(
+                          'id' => 'paysdkcaching_off',
+                          'value' => 0,
+                          'label' => $l['disabled']
+                      )
+                  ),
+              ),
+              array(
                 'type' => 'select',
                 'label' => $l['language'],
                 'name' => 'PAYNL_LANGUAGE',
@@ -309,11 +327,17 @@ class FormHelper
         $paymentMethods = json_encode($module->avMethods);
         $showImage = Configuration::get('PAYNL_SHOW_IMAGE');
         $standardStyle = Configuration::get('PAYNL_STANDARD_STYLE');
-
+        $sdkCaching = Configuration::get('PAYNL_SDK_CACHING');
         $followPaymentMethod = Configuration::get('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD');
+
         if ($followPaymentMethod === false) {
             $followPaymentMethod = 1;
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', $followPaymentMethod);
+        }
+
+        if ($sdkCaching === false) {
+            $sdkCaching = 1;
+            Configuration::updateValue('PAYNL_SDK_CACHING', $sdkCaching);
         }
 
         return array(
@@ -335,6 +359,7 @@ class FormHelper
           'PAYNL_TEST_IPADDRESS' => Tools::getValue('PAYNL_TEST_IPADDRESS', Configuration::get('PAYNL_TEST_IPADDRESS')),
           'PAYNL_AUTO_VOID' => Tools::getValue('PAYNL_AUTO_VOID', Configuration::get('PAYNL_AUTO_VOID')),
           'PAYNL_AUTO_FOLLOW_PAYMENT_METHOD' => $followPaymentMethod,
+          'PAYNL_SDK_CACHING' => $sdkCaching,
         );
     }
 

@@ -539,6 +539,8 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['enabled'] = $this->l('Enabled');
         $trans['disabled'] = $this->l('Disabled');
         $trans['logging'] = $this->l('Pay. logging');
+        $trans['sdkCaching'] = $this->l('SDK Caching');
+        $trans['sdkCachingSettings'] = $this->l('SDK CACHING SETTINGS');
         $trans['loggingSettings'] = $this->l('Log internal Pay. processing information.');
         $trans['testMode'] = $this->l('Test mode');
         $trans['testModeSettings'] = $this->l('Start transactions in sandbox mode for testing.');
@@ -1450,6 +1452,7 @@ class PaynlPaymentMethods extends PaymentModule
             Configuration::updateValue('PAYNL_TEST_IPADDRESS', Tools::getValue('PAYNL_TEST_IPADDRESS'));
             Configuration::updateValue('PAYNL_AUTO_VOID', Tools::getValue('PAYNL_AUTO_VOID'));
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', Tools::getValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD'));
+            Configuration::updateValue('PAYNL_SDK_CACHING', Tools::getValue('PAYNL_SDK_CACHING'));
         }
         return $this->displayConfirmation($this->l('Settings updated'));
     }
