@@ -540,7 +540,7 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['disabled'] = $this->l('Disabled');
         $trans['logging'] = $this->l('Pay. logging');
         $trans['sdkCaching'] = $this->l('SDK Caching');
-        $trans['sdkCachingSettings'] = $this->l('SDK CACHING SETTINGS');
+        $trans['sdkCachingSettings'] = $this->l('Caches connection data to reduce API calls.');
         $trans['loggingSettings'] = $this->l('Log internal Pay. processing information.');
         $trans['testMode'] = $this->l('Test mode');
         $trans['testModeSettings'] = $this->l('Start transactions in sandbox mode for testing.');
