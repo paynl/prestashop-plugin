@@ -186,8 +186,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCSS($this->_path . 'views/css/PAY.css');
-        $this->context->controller->addJS($this->_path . 'views/js/PAY.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/PAY_v501.css');
+        $this->context->controller->addJS($this->_path . 'views/js/PAY_v501.js');
     }
 
     /**
