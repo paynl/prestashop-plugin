@@ -98,7 +98,7 @@ class FormHelper
                 'type' => 'select',
                 'label' => $l['multicore'],
                 'name' => 'PAYNL_FAILOVER_GATEWAY',
-                'desc' => $l['multicoreSettings'],
+                'desc' => $l['multicoreSettings'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['multicoreTooltip'] . '</span></div>',
                 'options' => array(
                   'query' => $this->getCores($module),
                   'id' => 'domain',
