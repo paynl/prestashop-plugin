@@ -54,7 +54,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.0.0.0';
+        $this->version = '5.0.1';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
@@ -186,8 +186,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCSS($this->_path . 'views/css/PAY.css');
-        $this->context->controller->addJS($this->_path . 'views/js/PAY.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/PAY_v501.css');
+        $this->context->controller->addJS($this->_path . 'views/js/PAY_v501.js');
     }
 
     /**
@@ -516,8 +516,9 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function payTranslations(): array
     {
+        $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
-        $trans['accSettings'] = $this->l('Pay. Account Settings. Plugin version %s');
+        $trans['accSettings'] = $this->l('Pay.');
         $trans['versionButton'] = $this->l('Check version');
         $trans['Status'] = $this->l('Status');
         $trans['tokenCode'] = $this->l('Token code');
@@ -540,6 +541,8 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['enabled'] = $this->l('Enabled');
         $trans['disabled'] = $this->l('Disabled');
         $trans['logging'] = $this->l('Pay. logging');
+        $trans['sdkCaching'] = $this->l('SDK Caching');
+        $trans['sdkCachingSettings'] = $this->l('Caches connection data to reduce API calls.');
         $trans['loggingSettings'] = $this->l('Log internal Pay. processing information.');
         $trans['testMode'] = $this->l('Test mode');
         $trans['testModeSettings'] = $this->l('Start transactions in sandbox mode for testing.');
@@ -1451,6 +1454,7 @@ class PaynlPaymentMethods extends PaymentModule
             Configuration::updateValue('PAYNL_TEST_IPADDRESS', Tools::getValue('PAYNL_TEST_IPADDRESS'));
             Configuration::updateValue('PAYNL_AUTO_VOID', Tools::getValue('PAYNL_AUTO_VOID'));
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', Tools::getValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD'));
+            Configuration::updateValue('PAYNL_SDK_CACHING', Tools::getValue('PAYNL_SDK_CACHING'));
         }
         return $this->displayConfirmation($this->l('Settings updated'));
     }

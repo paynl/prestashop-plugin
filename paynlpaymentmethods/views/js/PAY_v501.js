@@ -243,6 +243,10 @@ jQuery(document).ready(function ()
         
     });
 
+    jQuery('#tas').click(function () {
+        toggleAdvancedSettings();
+    });
+
     jQuery('.obscuredInput').each(function () {
         button = jQuery('<a class="obscuredDisplayShow"></a>');
         button.click(function () {
@@ -254,4 +258,9 @@ jQuery(document).ready(function ()
     function toggleObscured (element) {
         jQuery(element).parent().find('.obscuredInput').toggleClass('display');
     }
+
+    function toggleAdvancedSettings() {
+        jQuery('.advancedSetting').slideToggle(200);
+    }
+
 });
