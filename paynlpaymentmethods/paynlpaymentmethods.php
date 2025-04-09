@@ -518,7 +518,7 @@ class PaynlPaymentMethods extends PaymentModule
     {
         $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
-        $trans['accSettings'] = $this->l('Pay. Account Settings. Plugin version %s');
+        $trans['accSettings'] = $this->l('Pay.');
         $trans['versionButton'] = $this->l('Check version');
         $trans['Status'] = $this->l('Status');
         $trans['tokenCode'] = $this->l('Token code');
