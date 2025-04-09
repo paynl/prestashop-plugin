@@ -28,14 +28,11 @@ class PayHelper
     public function getConfig() : PayConfig
     {
         $config = new PayConfig();
-
         $config->setCaching(Configuration::get('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')));
-
-        var_dump($config->isCacheEnabled());
         $config->setUsername(Tools::getValue('PAYNL_TOKEN_CODE', Configuration::get('PAYNL_TOKEN_CODE')));
         $config->setPassword(Tools::getValue('PAYNL_API_TOKEN', Configuration::get('PAYNL_API_TOKEN')));
         $config->setCore($this->getCore());
-        #$serviceId = Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID'));
+
         return $config;
     }
 
@@ -45,9 +42,9 @@ class PayHelper
     public static function isTestMode()
     {
         $ip = Tools::getRemoteAddr();
-        $ipconfig = Configuration::get('PAYNL_TEST_IPADDRESS');
-        if (!empty($ipconfig)) {
-            $allowed_ips = explode(',', $ipconfig);
+        $ipConfig = Configuration::get('PAYNL_TEST_IPADDRESS');
+        if (!empty($ipConfig)) {
+            $allowed_ips = explode(',', $ipConfig);
             if (
               in_array($ip, $allowed_ips) &&
               filter_var($ip, FILTER_VALIDATE_IP) &&

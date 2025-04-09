@@ -342,7 +342,6 @@ class FormHelper
         $paymentMethods = json_encode($module->avMethods);
         $showImage = Configuration::get('PAYNL_SHOW_IMAGE');
         $standardStyle = Configuration::get('PAYNL_STANDARD_STYLE');
-        $sdkCaching = Configuration::get('PAYNL_SDK_CACHING');
         $followPaymentMethod = Configuration::get('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD');
 
         if ($followPaymentMethod === false) {
@@ -350,10 +349,6 @@ class FormHelper
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', $followPaymentMethod);
         }
 
-        if ($sdkCaching === false) {
-            $sdkCaching = 1;
-            Configuration::updateValue('PAYNL_SDK_CACHING', $sdkCaching);
-        }
 
         return array(
           'PAYNL_CORE' => Configuration::get('PAYNL_CORE'),
@@ -374,7 +369,7 @@ class FormHelper
           'PAYNL_TEST_IPADDRESS' => Tools::getValue('PAYNL_TEST_IPADDRESS', Configuration::get('PAYNL_TEST_IPADDRESS')),
           'PAYNL_AUTO_VOID' => Tools::getValue('PAYNL_AUTO_VOID', Configuration::get('PAYNL_AUTO_VOID')),
           'PAYNL_AUTO_FOLLOW_PAYMENT_METHOD' => $followPaymentMethod,
-          'PAYNL_SDK_CACHING' => $sdkCaching,
+          'PAYNL_SDK_CACHING' => Tools::getValue('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')),
         );
     }
 
