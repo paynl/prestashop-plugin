@@ -516,6 +516,7 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function payTranslations(): array
     {
+        $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
         $trans['accSettings'] = $this->l('Pay. Account Settings. Plugin version %s');
         $trans['versionButton'] = $this->l('Check version');

@@ -121,24 +121,6 @@ class FormHelper
               ),
               array(
                 'type' => 'switch',
-                'label' => $l['validationDelay'],
-                'name' => 'PAYNL_VALIDATION_DELAY',
-                'desc' => $l['validationDelaySettings'],
-                'values' => array(
-                  array(
-                    'id' => 'validation_delay_on',
-                    'value' => 1,
-                    'label' => $l['enabled']
-                  ),
-                  array(
-                    'id' => 'validation_delay_off',
-                    'value' => 0,
-                    'label' => $l['disabled']
-                  )
-                ),
-              ),
-              array(
-                'type' => 'switch',
                 'label' => $l['logging'],
                 'name' => 'PAYNL_PAYLOGGER',
                 'desc' => $l['loggingSettings'],
@@ -263,24 +245,7 @@ class FormHelper
                   )
                 ),
               ),
-              array(
-                  'type' => 'switch',
-                  'label' => $l['sdkCaching'],
-                  'name' => 'PAYNL_SDK_CACHING',
-                  'desc' => $l['sdkCachingSettings'],
-                  'values' => array(
-                      array(
-                          'id' => 'paysdkcaching_on',
-                          'value' => 1,
-                          'label' => $l['enabled']
-                      ),
-                      array(
-                          'id' => 'paysdkcaching_off',
-                          'value' => 0,
-                          'label' => $l['disabled']
-                      )
-                  ),
-              ),
+
               array(
                 'type' => 'select',
                 'label' => $l['language'],
@@ -292,13 +257,63 @@ class FormHelper
                   'name' => 'label'
                 )
               ),
-              array(
-                'type' => 'text',
-                'label' => $l['testIp'],
-                'name' => 'PAYNL_TEST_IPADDRESS',
-                'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
-                'required' => false
-              ),
+
+                array(
+                    'type' => 'html',
+                    'name' => 'advanced_settings_separator',
+                    'label' => '',
+                    'html_content' => '<h3 style="background:none;margin-left:-300px; cursor:pointer;margin-top: 20px;" id="tas">' . $l['advancedSettings'] . '</h3>',
+
+                ),
+                array(
+                    'type' => 'switch',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['sdkCaching'],
+                    'name' => 'PAYNL_SDK_CACHING',
+                    'desc' => $l['sdkCachingSettings'],
+                    'values' => array(
+                        array(
+                            'id' => 'paysdkcaching_on',
+                            'value' => 1,
+                            'label' => $l['enabled']
+                        ),
+                        array(
+                            'id' => 'paysdkcaching_off',
+                            'value' => 0,
+                            'label' => $l['disabled']
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'switch',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['validationDelay'],
+                    'name' => 'PAYNL_VALIDATION_DELAY',
+                    'desc' => $l['validationDelaySettings'],
+                    'values' => array(
+                        array(
+                            'id' => 'validation_delay_on',
+                            'value' => 1,
+                            'label' => $l['enabled']
+                        ),
+                        array(
+                            'id' => 'validation_delay_off',
+                            'value' => 0,
+                            'label' => $l['disabled']
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'text',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['testIp'],
+                    'name' => 'PAYNL_TEST_IPADDRESS',
+                    'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
+                    'required' => false
+                ),
+
+
+
               array(
                 'type' => 'hidden',
                 'name' => 'PAYNL_PAYMENTMETHODS',
