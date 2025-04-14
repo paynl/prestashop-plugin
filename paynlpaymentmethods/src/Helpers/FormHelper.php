@@ -75,7 +75,7 @@ class FormHelper
                 'type' => 'text',
                 'label' => $l['tokenCode'],
                 'name' => 'PAYNL_TOKEN_CODE',
-                'desc' => $l['findTokenCode'] . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '</a>',
+                'desc' => $l['findTokenCode'] . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '.</a>',
                 'required' => true
               ),
 
@@ -83,7 +83,7 @@ class FormHelper
                 'type' => 'text',
                 'label' => $l['apiToken'],
                 'name' => 'PAYNL_API_TOKEN',
-                'desc' => $l['findApiToken'] . ' ' . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '</a>',
+                'desc' => $l['findApiToken'] . ' ' . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '.</a>',
                 'required' => true,
                 'class' => 'obscuredInput'
               ),
@@ -91,7 +91,7 @@ class FormHelper
                 'type' => 'text',
                 'label' => $l['salesLocation'],
                 'name' => 'PAYNL_SERVICE_ID',
-                'desc' => $l['findSalesLocation'] . '<a href="https://my.pay.nl/programs/programs" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '</a>',
+                'desc' => $l['findSalesLocation'] . '<a href="https://my.pay.nl/programs/programs" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '.</a>',
                 'required' => true
               ),
               array(

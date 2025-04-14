@@ -516,6 +516,7 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function payTranslations(): array
     {
+        $trans['register'] = $this->l('register');
         $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
         $trans['accSettings'] = $this->l('Pay.');
