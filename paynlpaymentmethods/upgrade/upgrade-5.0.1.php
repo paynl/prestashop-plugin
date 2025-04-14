@@ -11,6 +11,8 @@ function upgrade_module_5_0_1($module)
     if (empty($currentValue) || str_contains($currentValue, 'rest-api.pay.nl')) {
         Configuration::updateValue('PAYNL_FAILOVER_GATEWAY', 'https://connect.pay.nl');
     }
+  
+   Configuration::updateValue('PAYNL_SDK_CACHING', true);
 
     if (method_exists('Tools', 'clearSmartyCache')) {
         Tools::clearSmartyCache();
