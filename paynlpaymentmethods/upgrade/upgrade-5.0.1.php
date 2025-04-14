@@ -22,8 +22,8 @@ function upgrade_module_5_0_1($module)
         Tools::clearAllCache();
     }
 
-    if (isset($module->context->smarty)) {
-        $module->context->smarty->clearCompiledTemplate();
+    if (Context::getContext()->smarty) {
+        Context::getContext()->smarty->clearCompiledTemplate();
     }
 
     return true;
