@@ -12,6 +12,15 @@
     top: 0px;
 }
 
+.tooltipPAYsettings {
+    top: -60px;
+    float: right;
+}
+
+.tooltipPAYdropdown {
+    left: -200px;
+}
+
 .tooltipPAY .tooltipPAYtext {
     font-family: Verdana;
     visibility: hidden;

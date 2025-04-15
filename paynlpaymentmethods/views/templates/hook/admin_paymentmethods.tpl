@@ -181,7 +181,7 @@
                                 </div>
                             </div>
 
-                            {if in_array($paymentmethod->id,$showExternalLogoList)}
+                            {if in_array($paymentmethod->id, $showExternalLogoList)}
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s='External logo' mod='paynlpaymentmethods'}</label>
                                     <div class="col-lg-9">
@@ -192,7 +192,7 @@
                                     </div>
                                 </div>
                             {/if}
-                            {if !in_array($paymentmethod->id,$showCreateOrderOnList)}
+                            {if isset($showCreateOrderOnList) && is_array($showCreateOrderOnList) && in_array($paymentmethod->id, $showCreateOrderOnList)}
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s='Order Create' mod='paynlpaymentmethods'}</label>
                                     <div class="col-lg-9">                                    

@@ -75,7 +75,7 @@ class FormHelper
                 'type' => 'text',
                 'label' => $l['tokenCode'],
                 'name' => 'PAYNL_TOKEN_CODE',
-                'desc' => $l['findTokenCode'] . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '</a>',
+                'desc' => $l['findTokenCode'] . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '.</a>',
                 'required' => true
               ),
 
@@ -83,7 +83,7 @@ class FormHelper
                 'type' => 'text',
                 'label' => $l['apiToken'],
                 'name' => 'PAYNL_API_TOKEN',
-                'desc' => $l['findApiToken'] . ' ' . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '</a>',
+                'desc' => $l['findApiToken'] . ' ' . '<a href="https://my.pay.nl/company/tokens" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '.</a>',
                 'required' => true,
                 'class' => 'obscuredInput'
               ),
@@ -91,14 +91,14 @@ class FormHelper
                 'type' => 'text',
                 'label' => $l['salesLocation'],
                 'name' => 'PAYNL_SERVICE_ID',
-                'desc' => $l['findSalesLocation'] . '<a href="https://my.pay.nl/programs/programs" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '</a>',
+                'desc' => $l['findSalesLocation'] . '<a href="https://my.pay.nl/programs/programs" target="_blank">' . $l['here'] . '</a>' . $l['signUp'] . '<a target="_blank" href="https://www.pay.nl/en/register-now">' . $l['here'] . '.</a>',
                 'required' => true
               ),
               array(
                 'type' => 'select',
                 'label' => $l['multicore'],
                 'name' => 'PAYNL_FAILOVER_GATEWAY',
-                'desc' => $l['multicoreSettings'],
+                'desc' => $l['multicoreSettings'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['multicoreTooltip'] . '</span></div>',
                 'options' => array(
                   'query' => $this->getCores($module),
                   'id' => 'domain',
@@ -118,24 +118,6 @@ class FormHelper
                 'name' => 'PAYNL_DESCRIPTION_PREFIX',
                 'desc' => $l['prefixSettings'],
                 'required' => false
-              ),
-              array(
-                'type' => 'switch',
-                'label' => $l['validationDelay'],
-                'name' => 'PAYNL_VALIDATION_DELAY',
-                'desc' => $l['validationDelaySettings'],
-                'values' => array(
-                  array(
-                    'id' => 'validation_delay_on',
-                    'value' => 1,
-                    'label' => $l['enabled']
-                  ),
-                  array(
-                    'id' => 'validation_delay_off',
-                    'value' => 0,
-                    'label' => $l['disabled']
-                  )
-                ),
               ),
               array(
                 'type' => 'switch',
@@ -263,6 +245,7 @@ class FormHelper
                   )
                 ),
               ),
+
               array(
                 'type' => 'select',
                 'label' => $l['language'],
@@ -274,13 +257,63 @@ class FormHelper
                   'name' => 'label'
                 )
               ),
-              array(
-                'type' => 'text',
-                'label' => $l['testIp'],
-                'name' => 'PAYNL_TEST_IPADDRESS',
-                'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
-                'required' => false
-              ),
+
+                array(
+                    'type' => 'html',
+                    'name' => 'advanced_settings_separator',
+                    'label' => '',
+                    'html_content' => '<h3 style="background:none;margin-left:-300px; cursor:pointer;margin-top: 20px;" id="tas">' . $l['advancedSettings'] . '</h3>',
+
+                ),
+                array(
+                    'type' => 'switch',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['sdkCaching'],
+                    'name' => 'PAYNL_SDK_CACHING',
+                    'desc' => $l['sdkCachingSettings'],
+                    'values' => array(
+                        array(
+                            'id' => 'paysdkcaching_on',
+                            'value' => 1,
+                            'label' => $l['enabled']
+                        ),
+                        array(
+                            'id' => 'paysdkcaching_off',
+                            'value' => 0,
+                            'label' => $l['disabled']
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'switch',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['validationDelay'],
+                    'name' => 'PAYNL_VALIDATION_DELAY',
+                    'desc' => $l['validationDelaySettings'],
+                    'values' => array(
+                        array(
+                            'id' => 'validation_delay_on',
+                            'value' => 1,
+                            'label' => $l['enabled']
+                        ),
+                        array(
+                            'id' => 'validation_delay_off',
+                            'value' => 0,
+                            'label' => $l['disabled']
+                        )
+                    ),
+                ),
+                array(
+                    'type' => 'text',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['testIp'],
+                    'name' => 'PAYNL_TEST_IPADDRESS',
+                    'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
+                    'required' => false
+                ),
+
+
+
               array(
                 'type' => 'hidden',
                 'name' => 'PAYNL_PAYMENTMETHODS',
@@ -309,12 +342,13 @@ class FormHelper
         $paymentMethods = json_encode($module->avMethods);
         $showImage = Configuration::get('PAYNL_SHOW_IMAGE');
         $standardStyle = Configuration::get('PAYNL_STANDARD_STYLE');
-
         $followPaymentMethod = Configuration::get('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD');
+
         if ($followPaymentMethod === false) {
             $followPaymentMethod = 1;
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', $followPaymentMethod);
         }
+
 
         return array(
           'PAYNL_CORE' => Configuration::get('PAYNL_CORE'),
@@ -335,6 +369,7 @@ class FormHelper
           'PAYNL_TEST_IPADDRESS' => Tools::getValue('PAYNL_TEST_IPADDRESS', Configuration::get('PAYNL_TEST_IPADDRESS')),
           'PAYNL_AUTO_VOID' => Tools::getValue('PAYNL_AUTO_VOID', Configuration::get('PAYNL_AUTO_VOID')),
           'PAYNL_AUTO_FOLLOW_PAYMENT_METHOD' => $followPaymentMethod,
+          'PAYNL_SDK_CACHING' => Tools::getValue('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')),
         );
     }
 
