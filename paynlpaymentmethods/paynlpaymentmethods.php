@@ -1407,7 +1407,7 @@ class PaynlPaymentMethods extends PaymentModule
     private function renderFeatureRequest()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
-        $this->context->controller->addCss($this->_path . 'css/admin.css');
+        $this->context->controller->addCss($this->_path . 'css/admin501.css');
         $this->smarty->assign(array(
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
         ));
@@ -1499,7 +1499,7 @@ class PaynlPaymentMethods extends PaymentModule
     public function renderPaymentMethodsForm()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
-        $this->context->controller->addCss($this->_path . 'css/admin.css');
+        $this->context->controller->addCss($this->_path . 'css/admin501.css');
 
         # Setting vars that might not exist after updating an old version.
         foreach ($this->avMethods as &$v) {
