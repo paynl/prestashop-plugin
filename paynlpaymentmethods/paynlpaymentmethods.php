@@ -422,35 +422,18 @@ class PaynlPaymentMethods extends PaymentModule
     {
         if (parent::uninstall()) {
             // Delete configuration values
-            Configuration::deleteByName('PAYNL_FEE_PRODUCT_ID');
-            Configuration::deleteByName('PAYNL_API_TOKEN');
-            Configuration::deleteByName('PAYNL_SERVICE_ID');
-            Configuration::deleteByName('PAYNL_TOKEN_CODE');
-            Configuration::deleteByName('PAYNL_TEST_MODE');
-            Configuration::deleteByName('PAYNL_FAILOVER_GATEWAY');
-            Configuration::deleteByName('PAYNL_CUSTOM_FAILOVER_GATEWAY');
-            Configuration::deleteByName('PAYNL_VALIDATION_DELAY');
-            Configuration::deleteByName('PAYNL_PAYLOGGER');
-            Configuration::deleteByName('PAYNL_DESCRIPTION_PREFIX');
-            Configuration::deleteByName('PAYNL_CORE');
-            Configuration::deleteByName('PAYNL_PAYMENTMETHODS');
-            Configuration::deleteByName('PAYNL_LANGUAGE');
-            Configuration::deleteByName('PAYNL_SHOW_IMAGE');
-            Configuration::deleteByName('PAYNL_STANDARD_STYLE');
-            Configuration::deleteByName('PAYNL_AUTO_CAPTURE');
-            Configuration::deleteByName('PAYNL_TEST_IPADDRESS');
-            Configuration::deleteByName('PAYNL_AUTO_VOID');
-            Configuration::deleteByName('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD');
-            Configuration::deleteByName('PAYNL_SDK_CACHING');
-            Configuration::deleteByName('PAYNL_CORES');
-            Configuration::deleteByName('PAYNL_TERMINALS');
-            Configuration::deleteByName('PAYNL_EXCHANGE_URL');
+            $paynlKeys = [
+                'FEE_PRODUCT_ID', 'API_TOKEN', 'SERVICE_ID', 'TOKEN_CODE', 'TEST_MODE',
+                'FAILOVER_GATEWAY', 'CUSTOM_FAILOVER_GATEWAY', 'VALIDATION_DELAY',
+                'PAYLOGGER', 'DESCRIPTION_PREFIX', 'CORE', 'PAYMENTMETHODS', 'LANGUAGE',
+                'SHOW_IMAGE', 'STANDARD_STYLE', 'AUTO_CAPTURE', 'TEST_IPADDRESS',
+                'AUTO_VOID', 'AUTO_FOLLOW_PAYMENT_METHOD', 'SDK_CACHING', 'CORES',
+                'TERMINALS', 'EXCHANGE_URL'
+            ];
 
-            Configuration::deleteByName('CONF_PAYNLPAYMENTMETHODS_FIXED');
-            Configuration::deleteByName('CONF_PAYNLPAYMENTMETHODS_VAR');
-            Configuration::deleteByName('CONF_PAYNLPAYMENTMETHODS_FIXED_FOREIGN');
-            Configuration::deleteByName('CONF_PAYNLPAYMENTMETHODS_VAR_FOREIGN');
-
+            foreach ($paynlKeys as $key) {
+                Configuration::deleteByName('PAYNL_' . $key);
+            }
 
             Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_processing`');
             Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_transactions`');
