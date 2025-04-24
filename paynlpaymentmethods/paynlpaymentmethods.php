@@ -453,7 +453,8 @@ class PaynlPaymentMethods extends PaymentModule
 
 
             Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_processing`');
-            
+            Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_transactions`');
+
             return true;
         }
         return false;
