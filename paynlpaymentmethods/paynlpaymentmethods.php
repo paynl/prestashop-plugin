@@ -421,9 +421,26 @@ class PaynlPaymentMethods extends PaymentModule
     public function uninstall()
     {
         if (parent::uninstall()) {
-            Configuration::deleteByName('PAYNL_FEE_PRODUCT_ID');
+            // Delete configuration values
+            $paynlKeys = [
+                'FEE_PRODUCT_ID', 'API_TOKEN', 'SERVICE_ID', 'TOKEN_CODE', 'TEST_MODE',
+                'FAILOVER_GATEWAY', 'CUSTOM_FAILOVER_GATEWAY', 'VALIDATION_DELAY',
+                'PAYLOGGER', 'DESCRIPTION_PREFIX', 'CORE', 'PAYMENTMETHODS', 'LANGUAGE',
+                'SHOW_IMAGE', 'STANDARD_STYLE', 'AUTO_CAPTURE', 'TEST_IPADDRESS',
+                'AUTO_VOID', 'AUTO_FOLLOW_PAYMENT_METHOD', 'SDK_CACHING', 'CORES',
+                'TERMINALS', 'EXCHANGE_URL'
+            ];
+
+            foreach ($paynlKeys as $key) {
+                Configuration::deleteByName('PAYNL_' . $key);
+            }
+
+            Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_processing`');
+            Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_transactions`');
+
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
