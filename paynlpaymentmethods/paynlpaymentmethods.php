@@ -261,7 +261,7 @@ class PaynlPaymentMethods extends PaymentModule
             $terminals = null;
         }
 
-        $amountFormatted = number_format($order->total_paid, 2, ',', '.');
+        $amountFormatted = number_format(($order->total_paid - $alreadyRefunded), 2, ',', '.');
         $amountPayFormatted = number_format($payOrderAmount, 2, ',', '.');
 
         $this->context->smarty->assign(array(
