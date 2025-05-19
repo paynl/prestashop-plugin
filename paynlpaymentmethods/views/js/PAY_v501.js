@@ -18,7 +18,7 @@ jQuery(document).ready(function ()
         });
     });
 
-    jQuery("#pay-refund-button").click(function () {
+    jQuery("#pay-refund-button, #pay-pin-refund-button").click(function () {
         var amount = jQuery('#pay-refund-amount').val();
         var errorMessage = jQuery('#pay-lang-invalidamount').val();
 
@@ -44,6 +44,13 @@ jQuery(document).ready(function ()
         var lang_couldnotprocess = jQuery("#pay-lang-couldnotprocess").val();
         var errorMessage = 'Refund failed';
 
+        if (clickedButtonId === 'pay-refund-button') {
+            var callType = 'refund'
+        } else if (clickedButtonId === 'pay-pin-refund-button') {
+            var callType = 'retourpin'
+            var terminalCode = jQuery("#pay-terminalcode").val();
+        }
+
         presentationAmount = presentationAmount.replace('.', ',');
 
         if (confirm(lang_areyoursure + ': ' + currency + ' ' + presentationAmount + ' ?')) {
@@ -52,7 +59,13 @@ jQuery(document).ready(function ()
             jQuery.extend(data, {amount: amount});
             jQuery.extend(data, {orderid: transactionid});
             jQuery.extend(data, {prestaorderid: PrestaOrderId});
-            jQuery.extend(data, {calltype: 'refund'});
+            jQuery.extend(data, {calltype: callType});
+
+            if (clickedButtonId === 'pay-pin-refund-button') {
+                jQuery.extend(data, {returnurl: window.location.href});
+                jQuery.extend(data, {terminalcode: terminalCode});
+            }
+
 
             var actionButton = jQuery(this);
             var payOption = jQuery(this).parent();
@@ -182,6 +195,9 @@ jQuery(document).ready(function ()
                 dataType: 'json',
                 success: function (data) {
                     if (data.success) {
+                        if (data.url) {
+                            window.location.href = data.url
+                        }
                         jQuery('#pay-status').text(' - ');
                         jQuery(payOption).text(lang_succes);
                     } else {

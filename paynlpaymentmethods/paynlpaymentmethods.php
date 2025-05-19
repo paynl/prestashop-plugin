@@ -239,26 +239,30 @@ class PaynlPaymentMethods extends PaymentModule
             $showRefundButton = false;
             $showCaptureButton = false;
             $showCaptureRemainingButton = false;
+            $showPinRefundButton = false;
+            $terminals = null;
         }
 
-        $amountFormatted = number_format(($order->total_paid - $alreadyRefunded), 2, ',', '.');
+        $amountFormatted = number_format($order->total_paid, 2, ',', '.');
         $amountPayFormatted = number_format($payOrderAmount, 2, ',', '.');
 
         $this->context->smarty->assign(array(
           'lang' => $this->getMultiLang(),
           'this_version' => $this->version,
           'PrestaOrderId' => $orderId,
-          'amountCart' => number_format(($order->getOrdersTotalPaid() ?? 0), 2, ',', '.'),
           'amountFormatted' => $amountFormatted,
           'amountPayFormatted' => $amountPayFormatted,
+          'amount' => $order->total_paid,
           'currency' => $currency->iso_code,
           'pay_orderid' => $transactionId,
-          'status' => $status ?? 'unavailable',
-          'method' => $methodName ?? 'Pay.',
+          'status' => $status,
+          'method' => $methodName,
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
           'showRefundButton' => $showRefundButton,
+          'showPinRefundButton' => $showPinRefundButton,
           'showCaptureButton' => $showCaptureButton,
           'showCaptureRemainingButton' => $showCaptureRemainingButton,
+          'terminals' => $terminals,
         ));
         return $this->display(__FILE__, 'payorder.tpl');
     }
@@ -322,6 +326,8 @@ class PaynlPaymentMethods extends PaymentModule
         $lang['are_you_sure_capture'] = $this->l('Are you sure you want to capture this transaction for this amount');
         $lang['are_you_sure_capture_remaining'] = $this->l('Are you sure you want to capture the remaining amount of this transaction?');
         $lang['refund_button'] = $this->l('REFUND');
+        $lang['pin_refund_button'] = $this->l('RETOURPIN');
+        $lang['select_pin_refund'] = $this->l('Please select a pin-terminal to use the retourpin button');
         $lang['capture_button'] = $this->l('CAPTURE');
         $lang['capture_remaining_button'] = $this->l('CAPTURE REMAINING');
         $lang['my_text'] = $this->l('Are you sure?');
@@ -339,6 +345,7 @@ class PaynlPaymentMethods extends PaymentModule
         $lang['paymentmethod'] = $this->l('Paymentmethod');
         $lang['could_not_process_refund'] = $this->l('Could not process refund. Refund might be too fast or amount is invalid');
         $lang['could_not_process_capture'] = $this->l('Could not process this capture.');
+        $lang['could_not_process_retourpin'] = $this->l('Could not process the retourpin transaction.');
         $lang['info_refund_title'] = $this->l('Refund');
         $lang['info_refund_text'] = $this->l('The orderstatus will only change to `Refunded` when the full amount is refunded. Stock wont be updated.');
         $lang['info_log_title'] = $this->l('Logs');
@@ -695,6 +702,10 @@ class PaynlPaymentMethods extends PaymentModule
 
         $amountPaid = $this->determineAmount($payOrder, $cart);
 
+        if ($profileId == PaymentMethod::METHOD_RETOURPIN && $payOrder->isPaid()) {
+            $orderId = $payOrder->getReference();
+        }
+
         if ($orderId) {
             # Order exists
             $order = new Order($orderId);
@@ -712,7 +723,17 @@ class PaynlPaymentMethods extends PaymentModule
 
             # Check if the order is processed by Pay.
             if ($order->module !== 'paynlpaymentmethods') {
-                return new ExchangeResponse(true, 'Not a Pay. order. Customer seemed to used different provider. Not updating the order.');
+                return 'Not a Pay. order. Customer seemed to used different provider. Not updating the order.';
+            }
+
+            if ($profileId == PaymentMethod::METHOD_RETOURPIN && $payOrder->isPaid()) {
+                $transactionId = $payOrder->getOrderId();
+                $order = new Order($orderId);
+
+                $this->updateOrderHistory($order->id, $this->statusRefund);
+                $this->helper->payLog('processRetourpin', $transactionId . ' - Connected to prestashop order: ' . $orderId);
+
+                return 'Processing retourpin, order refunded' . $order->reference;
             }
 
             if ($payOrder->isRefundedPartial()) {
@@ -779,6 +800,8 @@ class PaynlPaymentMethods extends PaymentModule
             $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
             $message = "Updated order (" . $order->reference . ") to: " . $arrOrderState['name'];
         } else {
+
+            //$iState = !empty($arrPayData['paymentDetails']['state']) ? $arrPayData['paymentDetails']['state'] : null;
             $iState = $payOrder->getStatusCode();
 
             if ($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified()) {
