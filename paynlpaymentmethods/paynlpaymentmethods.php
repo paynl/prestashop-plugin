@@ -271,7 +271,6 @@ class PaynlPaymentMethods extends PaymentModule
           'amountCart' => number_format(($order->getOrdersTotalPaid() ?? 0), 2, ',', '.'),
           'amountFormatted' => $amountFormatted,
           'amountPayFormatted' => $amountPayFormatted,
-          'amount' => $order->total_paid,
           'currency' => $currency->iso_code,
           'pay_orderid' => $transactionId,
           'status' => $status ?? 'unavailable',
