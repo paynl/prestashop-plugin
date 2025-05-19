@@ -4,6 +4,7 @@ use PayNL\Sdk\Model\Request\TransactionRefundRequest;
 use PayNL\Sdk\Model\Request\OrderCaptureRequest;
 use PayNL\Sdk\Exception\PayException;
 use PaynlPaymentMethods\PrestaShop\PayHelper;
+use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use \PaynlPaymentMethods\PrestaShop\Transaction;
 
 /**
@@ -122,6 +123,48 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      * @param $transactionId
      * @param $strCurrency
      * @param $module
+     * @return void
+     */
+    public function processRetourpin($prestaOrderId, $amount, $cartId, $transactionId, $strCurrency, $module)
+    {
+        $returnUrl = Tools::getValue('returnurl');
+        $terminalCode = Tools::getValue('terminalcode');
+        $helper = new PayHelper();
+        $helper->payLog('Retourpin', 'Trying to make a retourpin ' . $amount . ' ' . $strCurrency . ' on prestashop-order id ' . $prestaOrderId, $cartId, $transactionId);
+
+        try {
+            $retourpin = new PayNL\Sdk\Model\Request\OrderCreateRequest();
+            $retourpin->setConfig($helper->getConfig());
+            $context = $module->getContext();
+
+            $retourpin->setServiceId(Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID')));
+            $retourpin->setPaymentMethodId(PaymentMethod::METHOD_RETOURPIN);
+            $retourpin->setAmount($amount);
+            $retourpin->setCurrency($strCurrency);
+            $retourpin->setReturnurl($returnUrl);
+            $retourpin->setExchangeUrl($context->link->getModuleLink($module->name, 'exchange', array(), true));
+            $retourpin->setTerminal($terminalCode);
+            $retourpin->setDescription($prestaOrderId);
+            $retourpin->setReference($prestaOrderId);
+            $retourpin->setStats((new PayNL\Sdk\Model\Stats)->setExtra1($prestaOrderId)->setObject(($helper->getObjectInfo($module))));
+
+            $payTransaction = $retourpin->start();
+            $this->returnResponse(true, null, null, $payTransaction->getPaymentUrl());
+
+            $helper->payLog('Retourpin', 'Retourpin started with succes', $cartId, $transactionId);
+        } catch (Exception $e) {
+            $helper->payLog('Retourpin', 'Retourpin failed: ' . $e->getMessage(), $cartId, $transactionId);
+            $this->returnResponse(false, null, 'could_not_process_retourpin');
+        }
+    }
+
+    /**
+     * @param $prestaOrderId
+     * @param $amount
+     * @param $cartId
+     * @param $transactionId
+     * @param $strCurrency
+     * @param $module
      */
     public function processCapture($prestaOrderId, $amount, $cartId, $transactionId, $strCurrency, $module)
     {
@@ -160,6 +203,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             'success' => $result,
             'amountrefunded' => $amountRefunded,
             'message' => $message,
+            'url' => $url
         );
 
         die(json_encode($returnarray));
