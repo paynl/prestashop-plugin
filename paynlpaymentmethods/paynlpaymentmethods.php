@@ -818,8 +818,6 @@ class PaynlPaymentMethods extends PaymentModule
             $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
             $message = "Updated order (" . $order->reference . ") to: " . $arrOrderState['name'];
         } else {
-
-            //$iState = !empty($arrPayData['paymentDetails']['state']) ? $arrPayData['paymentDetails']['state'] : null;
             $iState = $payOrder->getStatusCode();
 
             if ($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified()) {
