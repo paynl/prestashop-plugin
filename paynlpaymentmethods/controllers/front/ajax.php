@@ -203,7 +203,6 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             'success' => $result,
             'amountrefunded' => $amountRefunded,
             'message' => $message,
-            'url' => $url
         );
 
         die(json_encode($returnarray));
