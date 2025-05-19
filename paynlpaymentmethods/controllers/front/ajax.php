@@ -22,11 +22,15 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
+    /**
+     * @return bool
+     */
     private function isAdminSessionValid(): bool
     {
-        $cookie = new Cookie('psAdmin');
-        return isset($cookie->id_employee);
+        $context = Context::getContext();
+        return isset($context->employee) && $context->employee->id > 0;
     }
+
 
     /**
      * @return void
@@ -59,7 +63,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $currency = new Currency((int) $orderPayment->id_currency);
             $strCurrency = $currency->iso_code;
 
-            $cartId = $order->id_cart ?: null;
+            $cartId = (int)$order->id_cart ?: null;
             $method = 'process' . ucfirst($callType);
 
             if (!method_exists($this, $method)) {
@@ -74,6 +78,15 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
+    /**
+     * @param int $prestaOrderId
+     * @param float $amount
+     * @param int|null $cartId
+     * @param string $transactionId
+     * @param string $strCurrency
+     * @param $module
+     * @return void
+     */
     public function processRefund(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
     {
         $helper = new PayHelper();
@@ -92,6 +105,15 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
+    /**
+     * @param int $prestaOrderId
+     * @param float $amount
+     * @param int|null $cartId
+     * @param string $transactionId
+     * @param string $strCurrency
+     * @param $module
+     * @return void
+     */
     public function processCapture(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
     {
         $helper = new PayHelper();
@@ -110,6 +132,15 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
+    /**
+     * @param int $prestaOrderId
+     * @param float $amount
+     * @param int|null $cartId
+     * @param string $transactionId
+     * @param string $strCurrency
+     * @param $module
+     * @return void
+     */
     public function processRetourpin(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
     {
         $helper = new PayHelper();
@@ -142,6 +173,13 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
+    /**
+     * @param $result
+     * @param $amountRefunded
+     * @param string $message
+     * @param $url
+     * @return void
+     */
     private function returnResponse($result, $amountRefunded = '', string $message = '', $url = null): void
     {
         header('Content-Type: application/json;charset=UTF-8');
@@ -155,6 +193,12 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         exit();
     }
 
+    /**
+     * @param $module
+     * @param string $email
+     * @param string $message
+     * @return void
+     */
     public function processFeatureRequest($module, string $email = '', string $message = ''): void
     {
         $helper = new PayHelper();
