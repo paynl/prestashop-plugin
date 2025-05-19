@@ -19,6 +19,7 @@ jQuery(document).ready(function ()
     });
 
     jQuery("#pay-refund-button, #pay-pin-refund-button").click(function () {
+        var clickedButtonId = jQuery(this).attr("id");
         var amount = jQuery('#pay-refund-amount').val();
         var errorMessage = jQuery('#pay-lang-invalidamount').val();
 

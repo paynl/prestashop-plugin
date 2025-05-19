@@ -216,6 +216,7 @@ class PaynlPaymentMethods extends PaymentModule
         $transactionId = $orderPayment->transaction_id;
         $payOrderAmount = 0;
         $alreadyRefunded = 0;
+        $prestaOrderStatusId = $order->getCurrentState();
 
         try {
             $payOrder = $this->getPayOrder((string)$transactionId);
@@ -235,6 +236,23 @@ class PaynlPaymentMethods extends PaymentModule
             $showCaptureButton = $payOrder->isAuthorized();
             $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
             $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE); // phpcs:ignore
+            $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
+            $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
+
+            $terminals = null;
+            if ($showPinRefundButton) {
+                try {
+                    $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
+                    $allTerminals = $terminalsFromCache['terminals'] ?? [];
+
+                    foreach ($allTerminals as $terminal) {
+                        $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
+                    }
+                } catch (Exception $e) {
+                    $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
+                }
+            }
+
         } catch (Exception $exception) {
             $showRefundButton = false;
             $showCaptureButton = false;
@@ -250,13 +268,14 @@ class PaynlPaymentMethods extends PaymentModule
           'lang' => $this->getMultiLang(),
           'this_version' => $this->version,
           'PrestaOrderId' => $orderId,
+          'amountCart' => number_format(($order->getOrdersTotalPaid() ?? 0), 2, ',', '.'),
           'amountFormatted' => $amountFormatted,
           'amountPayFormatted' => $amountPayFormatted,
           'amount' => $order->total_paid,
           'currency' => $currency->iso_code,
           'pay_orderid' => $transactionId,
-          'status' => $status,
-          'method' => $methodName,
+          'status' => $status ?? 'unavailable',
+          'method' => $methodName ?? 'Pay.',
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
           'showRefundButton' => $showRefundButton,
           'showPinRefundButton' => $showPinRefundButton,
@@ -723,7 +742,7 @@ class PaynlPaymentMethods extends PaymentModule
 
             # Check if the order is processed by Pay.
             if ($order->module !== 'paynlpaymentmethods') {
-                return 'Not a Pay. order. Customer seemed to used different provider. Not updating the order.';
+                return new ExchangeResponse(true, 'Not a Pay. order. Customer seemed to used different provider. Not updating the order.');
             }
 
             if ($profileId == PaymentMethod::METHOD_RETOURPIN && $payOrder->isPaid()) {
@@ -733,7 +752,7 @@ class PaynlPaymentMethods extends PaymentModule
                 $this->updateOrderHistory($order->id, $this->statusRefund);
                 $this->helper->payLog('processRetourpin', $transactionId . ' - Connected to prestashop order: ' . $orderId);
 
-                return 'Processing retourpin, order refunded' . $order->reference;
+                return new ExchangeResponse(true, 'Processing retourpin, order refunded' . $order->reference);
             }
 
             if ($payOrder->isRefundedPartial()) {

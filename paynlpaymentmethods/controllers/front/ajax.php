@@ -193,9 +193,10 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      * @param $result
      * @param string $amountRefunded
      * @param string $message
+     * @param $url
      * @return void
      */
-    private function returnResponse($result, string $amountRefunded = '', string $message = '')
+    private function returnResponse($result, string $amountRefunded = '', string $message = '', $url = null)
     {
         header('Content-Type: application/json;charset=UTF-8');
 
@@ -203,6 +204,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             'success' => $result,
             'amountrefunded' => $amountRefunded,
             'message' => $message,
+            'url' => $url
         );
 
         die(json_encode($returnarray));
