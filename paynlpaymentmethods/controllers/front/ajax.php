@@ -22,12 +22,17 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
-    private function isAdminSessionValid(): bool
+    /**
+     * @return boolean
+     */
+    private function isAdminSessionValid()
     {
-        $context = Context::getContext();
-        return isset($context->employee) && $context->employee->id > 0;
+        $cookie = new Cookie('psAdmin');
+        if (isset($cookie->id_employee)) {
+            return true;
+        }
+        return false;
     }
-
 
     /**
      * @return void
