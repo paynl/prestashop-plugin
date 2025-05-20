@@ -22,9 +22,6 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         }
     }
 
-    /**
-     * @return bool
-     */
     private function isAdminSessionValid(): bool
     {
         $context = Context::getContext();
