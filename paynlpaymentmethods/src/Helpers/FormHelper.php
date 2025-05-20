@@ -315,6 +315,13 @@ class FormHelper
 
 
               array(
+                'type' => 'text',
+                'label' => $l['expireTime'],
+                'name' => 'PAYNL_EXPIRE_TIME',
+                'desc' => $l['expireTimeSettings'],
+                'required' => false
+              ),
+              array(
                 'type' => 'hidden',
                 'name' => 'PAYNL_PAYMENTMETHODS',
               )
@@ -367,6 +374,7 @@ class FormHelper
           'PAYNL_AUTO_CAPTURE' => Tools::getValue('PAYNL_AUTO_CAPTURE', Configuration::get('PAYNL_AUTO_CAPTURE')),
           'PAYNL_PAYMENTMETHODS' => $paymentMethods,
           'PAYNL_TEST_IPADDRESS' => Tools::getValue('PAYNL_TEST_IPADDRESS', Configuration::get('PAYNL_TEST_IPADDRESS')),
+          'PAYNL_EXPIRE_TIME' => Configuration::get('PAYNL_EXPIRE_TIME'),
           'PAYNL_AUTO_VOID' => Tools::getValue('PAYNL_AUTO_VOID', Configuration::get('PAYNL_AUTO_VOID')),
           'PAYNL_AUTO_FOLLOW_PAYMENT_METHOD' => $followPaymentMethod,
           'PAYNL_SDK_CACHING' => Tools::getValue('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')),

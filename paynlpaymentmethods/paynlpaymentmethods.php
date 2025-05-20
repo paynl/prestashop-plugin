@@ -617,7 +617,9 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['selectPin'] = $this->l('Please select a pin-terminal');
         $trans['pin'] = $this->l('Pay safely via pin');
         $trans['payConnected'] = $this->l('Pay. successfully connected');
-        $trans['custom'] = $this->l('Custom');
+        $trans['payNotConnected'] = $this->l('Pay. not connected');
+        $trans['expireTime'] = $this->l('Expire time');
+        $trans['expireTimeSettings'] = $this->l('The expiration time (in minutes) that determines when a transaction will expire. Once expired, the system will automatically trigger a cancel exchange process. This applies to all payment methods.');
 
         return $trans;
     }
@@ -986,6 +988,10 @@ class PaynlPaymentMethods extends PaymentModule
 
         if (!empty($parameters['terminalCode'])) {
             $request->setTerminal($parameters['terminalCode']);
+        }
+
+        if (Configuration::get('PAYNL_EXPIRE_TIME') && (int)Configuration::get('PAYNL_EXPIRE_TIME') > 0) {
+            $request->setExpire($this->setExpireTime(Configuration::get('PAYNL_EXPIRE_TIME')));
         }
 
         try {
@@ -1509,6 +1515,7 @@ class PaynlPaymentMethods extends PaymentModule
             Configuration::updateValue('PAYNL_STANDARD_STYLE', Tools::getValue('PAYNL_STANDARD_STYLE'));
             Configuration::updateValue('PAYNL_AUTO_CAPTURE', Tools::getValue('PAYNL_AUTO_CAPTURE'));
             Configuration::updateValue('PAYNL_TEST_IPADDRESS', Tools::getValue('PAYNL_TEST_IPADDRESS'));
+            Configuration::updateValue('PAYNL_EXPIRE_TIME', preg_replace('/\D/', '', Tools::getValue('PAYNL_EXPIRE_TIME')));
             Configuration::updateValue('PAYNL_AUTO_VOID', Tools::getValue('PAYNL_AUTO_VOID'));
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', Tools::getValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD'));
             Configuration::updateValue('PAYNL_SDK_CACHING', Tools::getValue('PAYNL_SDK_CACHING'));
@@ -1594,5 +1601,22 @@ class PaynlPaymentMethods extends PaymentModule
     public function getCountries()
     {
         return Country::getCountries($this->context->language->id, true);
+    }
+
+    /**
+     * @param int $time
+     * @return string
+     */
+    public function setExpireTime(int $time)
+    {
+        $expireTime = '';
+
+        if (!empty($time) && is_numeric($time)) {
+            $offsetTime = $time * 60;
+
+            $expireTime = date('c', time() + $offsetTime);
+        }
+
+        return $expireTime;
     }
 }
