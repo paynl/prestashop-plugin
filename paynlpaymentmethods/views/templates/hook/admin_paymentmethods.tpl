@@ -19,6 +19,7 @@
                         </span>
                         <span class="col-xs-1 clickable openPaymentDetails checkfew">
                             <img width="50" src="{$image_url}{$paymentmethod->image_path}">
+                            <input type="hidden" name="image_path" value="{$paymentmethod->image_path}"/>
                         </span>
                         <span class="col-xs-9 clickable openPaymentDetails">
                             <h4 class="list-group-item-heading">{$paymentmethod->name}</h4>
@@ -180,7 +181,7 @@
                                 </div>
                             </div>
 
-                            {if in_array($paymentmethod->id,$showExternalLogoList)}
+                            {if in_array($paymentmethod->id, $showExternalLogoList)}
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s='External logo' mod='paynlpaymentmethods'}</label>
                                     <div class="col-lg-9">
@@ -191,7 +192,7 @@
                                     </div>
                                 </div>
                             {/if}
-                            {if !in_array($paymentmethod->id,$showCreateOrderOnList)}
+                            {if isset($showCreateOrderOnList) && is_array($showCreateOrderOnList) && in_array($paymentmethod->id, $showCreateOrderOnList)}
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s='Order Create' mod='paynlpaymentmethods'}</label>
                                     <div class="col-lg-9">                                    

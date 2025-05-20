@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Laag_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 100 100">
+  <!-- Generator: Adobe Illustrator 29.4.0, SVG Export Plug-In . SVG Version: 2.1.0 Build 152)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#Naamloos_verloop_12);
+      }
+
+      .st1 {
+        clip-path: url(#clippath-1);
+        fill: url(#Naamloos_verloop_123);
+      }
+
+      .st2 {
+        fill: #ed6305;
+      }
+
+      .st3 {
+        clip-path: url(#clippath);
+        fill: url(#Naamloos_verloop_124);
+      }
+
+      .st4 {
+        clip-path: url(#clippath-2);
+      }
+
+      .st5 {
+        fill: #c10057;
+      }
+
+      .st6 {
+        fill: url(#Naamloos_verloop_125);
+      }
+
+      .st7 {
+        fill: url(#Naamloos_verloop_122);
+      }
+
+      .st8 {
+        fill: url(#Naamloos_verloop_121);
+      }
+
+      .st9 {
+        fill: url(#Naamloos_verloop_4);
+      }
+
+      .st10 {
+        font-family: Lufga-Bold, Lufga;
+        font-size: 26px;
+        font-weight: 700;
+      }
+
+      .st11 {
+        fill: #b8e1ec;
+      }
+    </style>
+    <linearGradient id="Naamloos_verloop_4" data-name="Naamloos verloop 4" x1="60.6" y1="47.6" x2="25.3" y2="9.8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ed6305"/>
+      <stop offset=".9" stop-color="#c10057"/>
+    </linearGradient>
+    <linearGradient id="Naamloos_verloop_12" data-name="Naamloos verloop 12" x1="25.5" y1="76.5" x2="39.9" y2="76.5" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#e61d0f"/>
+      <stop offset=".9" stop-color="#ea4909"/>
+    </linearGradient>
+    <linearGradient id="Naamloos_verloop_121" data-name="Naamloos verloop 12" x1="42" y1="74.1" x2="56.5" y2="74.1" xlink:href="#Naamloos_verloop_12"/>
+    <linearGradient id="Naamloos_verloop_122" data-name="Naamloos verloop 12" x1="59" y1="74.1" x2="72.2" y2="74.1" xlink:href="#Naamloos_verloop_12"/>
+    <linearGradient id="Naamloos_verloop_123" data-name="Naamloos verloop 12" x1="59" y1="74.1" x2="72.2" y2="74.1" xlink:href="#Naamloos_verloop_12"/>
+    <linearGradient id="Naamloos_verloop_124" data-name="Naamloos verloop 12" x1="42" y1="74.1" x2="56.5" y2="74.1" xlink:href="#Naamloos_verloop_12"/>
+    <clipPath id="clippath">
+      <path class="st0" d="M25.6,86.1v-18.5c.4-.8,4.9-1,4.5,1,2.4-2.8,7.7-2.1,9.1,1.5,2.1,5.4-.3,13.3-7.4,10.8l-1.5-1.2v6l-.4.4h-4.2ZM31.7,70.7c-2,.6-2,5.9-.4,6.7s3.2,0,3.5-1.5.2-6.1-3.1-5.2Z"/>
+    </clipPath>
+    <clipPath id="clippath-1">
+      <path class="st3" d="M51.9,81.2v-1.3c-.9.3-1.4,1-2.5,1.2-5.8,1-7.7-3.2-7.3-8.3.5-5.4,5.5-8,9.6-4.2.1-2.2,3.5-1.9,4.8-.9v13.1l-.4.4h-4.2ZM48.4,70.7c-2,.5-2,3.6-1.7,5.2s4.2,2.6,5,.2c.9-2.6.2-6.2-3.3-5.4Z"/>
+    </clipPath>
+    <clipPath id="clippath-2">
+      <path class="st1" d="M64.3,70.2c-.2.2-.4.8-.3,1,2.2,2.2,7.8.9,8.2,5.2.4,4.8-5.2,5.2-8.9,4.7-1.4-.2-4.8-2-4.2-3.7s3.1-.5,3.7-.4c.9.2,1.4,1.2,2.6,1.3,1.1,0,2.6-.5,1.8-1.8s-7.4-.4-7.8-4.8,8.8-6.2,11.6-2.9c2,2.4-.5,2.6-2.5,2.3s-2.9-2.2-4.2-.9Z"/>
+    </clipPath>
+    <linearGradient id="Naamloos_verloop_125" data-name="Naamloos verloop 12" x1="37" y1="51.4" x2="66.7" y2="102.9" xlink:href="#Naamloos_verloop_12"/>
+  </defs>
+  <rect class="st11" y="0" width="100" height="100" rx="15" ry="15"/>
+  <image width="143" height="200" transform="translate(269.9 -13.2) scale(.6)" xlink:href="../../../Marketing &amp; design - General/07. Overige/iStockphotos downloads/Upas-logo-websize.png"/>
+  <g>
+    <path class="st9" d="M75.8,59.9c-5.9,1.6-12.1.7-17.4-2.2-14.3,8-32.8-1-34-17.8-.3-5-.4-13.4,0-18.3s6.2-9,11.6-7.1c9.2,3.4,4,18.1,5.5,25.5s9.5,5.2,10.7,0c.6-5.9-.4-12.4.1-18.2.9-10.5,16.1-10.3,17-.5,1.1,11.4-2.8,25,3.9,35.1.3.5,2.8,3.2,2.5,3.5Z"/>
+    <g>
+      <path class="st0" d="M25.6,86.1v-18.5c.4-.8,4.9-1,4.5,1,2.4-2.8,7.7-2.1,9.1,1.5,2.1,5.4-.3,13.3-7.4,10.8l-1.5-1.2v6l-.4.4h-4.2ZM31.7,70.7c-2,.6-2,5.9-.4,6.7s3.2,0,3.5-1.5.2-6.1-3.1-5.2Z"/>
+      <path class="st8" d="M51.9,81.2v-1.3c-.9.3-1.4,1-2.5,1.2-5.8,1-7.7-3.2-7.3-8.3.5-5.4,5.5-8,9.6-4.2.1-2.2,3.5-1.9,4.8-.9v13.1l-.4.4h-4.2ZM48.4,70.7c-2,.5-2,3.6-1.7,5.2s4.2,2.6,5,.2c.9-2.6.2-6.2-3.3-5.4Z"/>
+      <path class="st7" d="M64.3,70.2c-.2.2-.4.8-.3,1,2.2,2.2,7.8.9,8.2,5.2.4,4.8-5.2,5.2-8.9,4.7-1.4-.2-4.8-2-4.2-3.7s3.1-.5,3.7-.4c.9.2,1.4,1.2,2.6,1.3,1.1,0,2.6-.5,1.8-1.8s-7.4-.4-7.8-4.8,8.8-6.2,11.6-2.9c2,2.4-.5,2.6-2.5,2.3s-2.9-2.2-4.2-.9Z"/>
+      <g class="st4">
+        <rect class="st6" x="16" y="64.5" width="70.8" height="24"/>
+      </g>
+    </g>
+  </g>
+  <rect class="st5" x="198.2" y="-203.8" width="85.7" height="85.7"/>
+  <rect class="st2" x="198.2" y="-107.7" width="85.7" height="85.7"/>
+  <text class="st10" transform="translate(137.1 115.7)"><tspan x="0" y="0">pas</tspan></text>
+</svg>

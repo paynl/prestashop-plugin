@@ -44,9 +44,26 @@
                         <input type="text" placeholder="0,00" value="{$amountFormatted}" id="pay-refund-amount" class="fixed-width-sm" style="display: inline;margin-right:10px"/>
                     </div>
                     <button type="button" id="pay-refund-button" class="btn btn-danger" style="display: inline">{$lang.refund_button}</button>
+
+                    {if $showPinRefundButton eq true}
+                        <button type="button" id="pay-pin-refund-button" class="btn btn-danger" style="display: inline">{$lang.pin_refund_button}</button>
+                    {/if}
                     <div class="tooltipPAY">
                         ? <span class="tooltipPAYtext"> {$lang.info_refund_text} </span>
                     </div>
+
+                    {if $showPinRefundButton eq true && !empty($terminals)}
+                        <div class="retourpinTerminals">
+                            <fieldset>
+                                <select id="pay-terminalcode" class="form-control form-control-select" name="terminalCode">
+                                    <option value="">{$lang.select_pin_refund}</option>
+                                    {foreach from=$terminals item=_option}
+                                        <option value="{$_option['id']}">{$_option['name']}</option>
+                                    {/foreach}
+                                </select>
+                            </fieldset>
+                        </div>
+                    {/if}
                 </div>
             {/if}
             {if $showCaptureButton eq true}

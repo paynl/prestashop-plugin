@@ -15,6 +15,7 @@ class PaymentMethod
     const METHOD_INSTORE_PROFILE_ID = 1633; // phpcs:ignore
     const METHOD_GIVACARD = 1657; // phpcs:ignore
     const METHOD_PAYPAL = 138;  // phpcs:ignore
+    const METHOD_RETOURPIN = 2351;  // phpcs:ignore
 
     /**
      * @param string $transactionId
