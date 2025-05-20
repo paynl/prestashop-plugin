@@ -311,20 +311,18 @@ class FormHelper
                     'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
                     'required' => false
                 ),
-
-
-
-              array(
-                'type' => 'text',
-                'label' => $l['expireTime'],
-                'name' => 'PAYNL_EXPIRE_TIME',
-                'desc' => $l['expireTimeSettings'],
-                'required' => false
-              ),
-              array(
-                'type' => 'hidden',
-                'name' => 'PAYNL_PAYMENTMETHODS',
-              )
+                array(
+                    'type' => 'text',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['expireTime'],
+                    'name' => 'PAYNL_EXPIRE_TIME',
+                    'desc' => $l['expireTimeSettings'],
+                    'required' => false
+                ),
+                array(
+                    'type' => 'hidden',
+                    'name' => 'PAYNL_PAYMENTMETHODS',
+                )
             ),
             'buttons' => array(
               array(
