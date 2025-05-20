@@ -8,6 +8,10 @@ use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 
 class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
 {
+
+    /**
+     * @return void
+     */
     public function init(): void
     {
         parent::init();
