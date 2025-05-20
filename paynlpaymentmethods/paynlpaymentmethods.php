@@ -54,7 +54,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.0.1';
+        $this->version = '5.1.0';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
@@ -186,8 +186,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCSS($this->_path . 'views/css/PAY_v501.css');
-        $this->context->controller->addJS($this->_path . 'views/js/PAY_v501.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/PAY_v510.css');
+        $this->context->controller->addJS($this->_path . 'views/js/PAY_v510.js');
     }
 
     /**
@@ -1463,7 +1463,7 @@ class PaynlPaymentMethods extends PaymentModule
     private function renderFeatureRequest()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
-        $this->context->controller->addCss($this->_path . 'css/admin501.css');
+        $this->context->controller->addCss($this->_path . 'css/admin510.css');
         $this->smarty->assign(array(
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
         ));
@@ -1555,7 +1555,7 @@ class PaynlPaymentMethods extends PaymentModule
     public function renderPaymentMethodsForm()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
-        $this->context->controller->addCss($this->_path . 'css/admin501.css');
+        $this->context->controller->addCss($this->_path . 'css/admin510.css');
 
         # Setting vars that might not exist after updating an old version.
         foreach ($this->avMethods as &$v) {
