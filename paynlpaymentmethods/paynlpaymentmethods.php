@@ -717,7 +717,7 @@ class PaynlPaymentMethods extends PaymentModule
         $profileId = $payOrder->getPaymentMethod();
         $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
         $cart = new Cart((int)$cartId);
-
+        $this->context->cart = $cart;
         $amountPaid = $this->determineAmount($payOrder, $cart);
 
         if ($profileId == PaymentMethod::METHOD_RETOURPIN && $payOrder->isPaid()) {
