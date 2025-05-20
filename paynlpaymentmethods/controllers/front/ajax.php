@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use PayNL\Sdk\Model\Request\TransactionRefundRequest;
 use PayNL\Sdk\Model\Request\OrderCaptureRequest;
 use PayNL\Sdk\Exception\PayException;
