@@ -145,6 +145,48 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      * @param $module
      * @return void
      */
+    public function processPintransaction(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
+    {
+        $returnUrl = Tools::getValue('returnurl');
+        $terminalCode = Tools::getValue('terminalcode');
+        $helper = new PayHelper();
+        $helper->payLog('Pintransaction', 'Trying to start a pin transaction from the admin ' . $amount . ' ' . $strCurrency . ' on prestashop-order id ' . $prestaOrderId, $cartId, $transactionId);
+
+        try {
+            $pinTransaction = new PayNL\Sdk\Model\Request\OrderCreateRequest();
+            $pinTransaction->setConfig($helper->getConfig());
+            $context = $module->getContext();
+
+            $pinTransaction->setServiceId(Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID')));
+            $pinTransaction->setPaymentMethodId(PaymentMethod::METHOD_PIN);
+            $pinTransaction->setAmount($amount);
+            $pinTransaction->setCurrency($strCurrency);
+            $pinTransaction->setReturnurl($returnUrl);
+            $pinTransaction->setExchangeUrl($context->link->getModuleLink($module->name, 'exchange', array(), true));
+            $pinTransaction->setTerminal($terminalCode);
+            $pinTransaction->setDescription($prestaOrderId);
+            $pinTransaction->setReference($prestaOrderId);
+            $pinTransaction->setStats((new PayNL\Sdk\Model\Stats)->setExtra1($prestaOrderId)->setObject(($helper->getObjectInfo($module))));
+
+            $payTransaction = $pinTransaction->start();
+            $this->returnResponse(true, null, null, $payTransaction->getPaymentUrl());
+
+            $helper->payLog('Pintransaction', 'Pin transaction in admin started with succes', $cartId, $transactionId);
+        } catch (Exception $e) {
+            $helper->payLog('Pintransaction', 'Pin transaction in admin failed: ' . $e->getMessage(), $cartId, $transactionId);
+            $this->returnResponse(false, null, 'could_not_process_pintransaction');
+        }
+    }
+
+    /**
+     * @param int $prestaOrderId
+     * @param float $amount
+     * @param int|null $cartId
+     * @param string $transactionId
+     * @param string $strCurrency
+     * @param $module
+     * @return void
+     */
     public function processRetourpin(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
     {
         $helper = new PayHelper();

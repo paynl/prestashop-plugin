@@ -186,6 +186,50 @@ jQuery(document).ready(function () {
         })
     }
 
+    jQuery("#pay-pin-button").click(function () {
+        var amount = jQuery('#pay-pin-amount').val();
+        var errorMessage = jQuery('#pay-lang-invalidamount').val();
+        var lang_areyoursure = jQuery('#pay-lang-areyoursurepin').val();
+        var terminalCode = jQuery("#pay-terminalcode").val();
+        var lang_succes = jQuery("#pay-lang-succesfullypin").val();
+        var lang_button = jQuery("#pay-lang-pinbutton").val();
+
+        if (!/^[0-9,]+$/.test(amount)) {
+            alert(errorMessage);
+            return;
+        }
+
+        if (amount.indexOf(',') === -1) {
+            amount = parseFloat(amount);
+        } else {
+            amount = parseFloat(amount.replace(',', '.').replace(' ', ''));
+        }
+
+        var PrestaOrderId = jQuery('#pay-prestaorderid').val();
+        var ajaxurl = jQuery('#pay-ajaxurl').val();
+        var presentationAmount = amount.toFixed(2);
+        var currency = jQuery('#pay-currency').val();
+        var lang_couldnotprocess = jQuery("#pay-lang-couldnotprocesspin").val();
+        var errorMessage = 'Pin transaction failed';
+
+        presentationAmount = presentationAmount.replace('.', ',');
+
+        if (confirm(lang_areyoursure + ': ' + currency + ' ' + presentationAmount + ' ?')) {
+
+            var data = {};
+            jQuery.extend(data, {amount: amount});
+            jQuery.extend(data, {prestaorderid: PrestaOrderId});
+            jQuery.extend(data, {calltype: 'pintransaction'});
+            jQuery.extend(data, {returnurl: window.location.href});
+            jQuery.extend(data, {terminalcode: terminalCode});
+
+            var actionButton = jQuery(this);
+            var payOption = jQuery(this).parent();
+
+            exchangeCall(ajaxurl, data, payOption, lang_succes, actionButton, lang_button, lang_couldnotprocess, errorMessage);
+        }
+    });
+
     function exchangeCall(ajaxurl, data, payOption, lang_succes, actionButton, lang_button, lang_couldnotprocess, errorMessage) {
         setTimeout(function () {
             jQuery.ajax({

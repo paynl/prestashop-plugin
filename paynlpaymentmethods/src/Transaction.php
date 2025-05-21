@@ -62,6 +62,12 @@ class Transaction
         return is_array($result) ? $result : array();
     }
 
+    public static function getFromPrestashopId($cart_id)
+    {
+        $result = Db::getInstance()->getRow("SELECT * FROM `" . _DB_PREFIX_ . "pay_transactions` WHERE `cart_id` = '" . Db::getInstance()->escape($cart_id) . "';");
+        return is_array($result) ? $result : array();
+    }
+
     /**
      * @param $payOrderId
      * @return array

@@ -430,7 +430,7 @@ class FormHelper
    * @param bool $logo
    * @return mixed
    */
-    public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true)
+    public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true, $paymentLocation = null)
     {
         $paymentOptions = [];
         $paymentOptionText = null;
@@ -438,7 +438,7 @@ class FormHelper
         $type = 'dropdown';
         $l = $module->payTranslations();
 
-        if (in_array($payment_option_id, [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN])) {
+        if (in_array($payment_option_id, [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN]) && PaymentMethod::getPaymentMethodSettings($payment_option_id)->payment_location !== 'backorder') {
             try {
                 $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
                 $allTerminals = $terminalsFromCache['terminals'] ?? [];
@@ -472,6 +472,7 @@ class FormHelper
             'description' => $description,
             'logoClass' => $logo ? '' : 'noLogo',
             'type' => $type,
+            'payment_location' => $paymentLocation,
         ]);
 
         return $context->smarty->fetch('module:paynlpaymentmethods/views/templates/front/Pay_payment_form.tpl');

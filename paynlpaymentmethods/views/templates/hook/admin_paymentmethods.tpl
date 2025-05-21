@@ -208,6 +208,38 @@
                                     </div>
                                 </div>
                             {/if}
+                            {if in_array($paymentmethod->id,$showPaymentLocationList)}
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s='Payment location' mod='paynlpaymentmethods'}</label>
+                                    <div class="col-lg-9">
+                                        <select name="payment_location">
+                                            <option value="direct"
+                                                    {if $paymentmethod->payment_location == 'direct'}selected{/if}>{l s='Direct checkout payment (default)' mod='paynlpaymentmethods'}</option>
+                                            <option value="backorder"
+                                                    {if $paymentmethod->payment_location == 'backorder'}selected{/if}>{l s='Payment takes place at the pickup location, only create a backorder' mod='paynlpaymentmethods'}</option>
+                                            <option value="checkout"
+                                                    {if $paymentmethod->payment_location == 'checkout'}selected{/if}>{l s='Provide this choice in the checkout' mod='paynlpaymentmethods'}</option>
+                                        </select>
+                                        <p class="help-block">
+                                            {l s='Setting for where the payment should take place: instant, or at pickup location. Or provide this choice in the checkout.' mod='paynlpaymentmethods'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s="Select pickup location carrier" mod='paynlpaymentmethods'}</label>
+                                    <div class="col-lg-9">
+                                        <select name="payment_location_method" multiple>
+                                            {foreach from=$available_carriers item=carrier}
+                                                <option value="{$carrier.id_carrier}"
+                                                        {if in_array($carrier.id_carrier, $paymentmethod->payment_location_method)}selected="selected"{/if}>{$carrier.name}</option>
+                                            {/foreach}
+                                        </select>
+                                        <p class="help-block">
+                                            {l s="Select pickup location carrier for the 'Pickup location' option to work properly, hold ctrl to select multiple carriers if needed" mod='paynlpaymentmethods'}
+                                        </p>
+                                    </div>
+                                </div>
+                            {/if}
                         </div>
                     </div>
                 </form>

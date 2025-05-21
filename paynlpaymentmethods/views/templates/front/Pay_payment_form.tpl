@@ -26,6 +26,15 @@
                         {/foreach}
                 </ul>
             {/if}
+            {if !empty($payment_location)}
+                <fieldset>
+                    <legend>Payment</legend>
+                    <select class="form-control form-control-select" name="pinMoment">
+                        <option value="direct">Pay by card</option>
+                        <option value="backorder">Pay later, at pickup</option>
+                    </select>
+                </fieldset>
+            {/if}
         </div>
     {/if}
     {if !empty($description)}

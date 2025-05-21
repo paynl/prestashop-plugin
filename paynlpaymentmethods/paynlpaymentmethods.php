@@ -196,7 +196,6 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookDisplayAdminOrder(array $params)
     {
-        
         try {
             $cartId = Cart::getCartIdByOrderId((int)$params['id_order']);
             $orderId = Order::getIdByCartId($cartId);
@@ -218,6 +217,13 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
+        if (!$transactionId) {
+            $payTransaction = Transaction::getFromPrestashopId($orderId);
+            if ($payTransaction) {
+                $transactionId = $payTransaction['transaction_id'];
+            }
+        }
+
         try {
             $payOrder = $this->getPayOrder((string)$transactionId);
             if ($payOrder->isPaid() || $payOrder->isAuthorized()) {
@@ -238,20 +244,7 @@ class PaynlPaymentMethods extends PaymentModule
             $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE); // phpcs:ignore
             $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
             $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
-
-            $terminals = null;
-            if ($showPinRefundButton) {
-                try {
-                    $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
-                    $allTerminals = $terminalsFromCache['terminals'] ?? [];
-
-                    foreach ($allTerminals as $terminal) {
-                        $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
-                    }
-                } catch (Exception $e) {
-                    $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
-                }
-            }
+            $showStartPinButton = false;
 
         } catch (Exception $exception) {
             $showRefundButton = false;
@@ -259,6 +252,21 @@ class PaynlPaymentMethods extends PaymentModule
             $showCaptureRemainingButton = false;
             $showPinRefundButton = false;
             $terminals = null;
+            $showStartPinButton = true;
+        }
+
+        $terminals = null;
+        if ($showPinRefundButton || $showStartPinButton) {
+            try {
+                $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
+                $allTerminals = $terminalsFromCache['terminals'] ?? [];
+
+                foreach ($allTerminals as $terminal) {
+                    $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
+                }
+            } catch (Exception $e) {
+                $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
+            }
         }
 
         $amountFormatted = number_format(($order->total_paid - $alreadyRefunded), 2, ',', '.');
@@ -280,6 +288,7 @@ class PaynlPaymentMethods extends PaymentModule
           'showPinRefundButton' => $showPinRefundButton,
           'showCaptureButton' => $showCaptureButton,
           'showCaptureRemainingButton' => $showCaptureRemainingButton,
+          'showStartPinButton' => $showStartPinButton,
           'terminals' => $terminals,
         ));
         return $this->display(__FILE__, 'payorder.tpl');
@@ -341,10 +350,14 @@ class PaynlPaymentMethods extends PaymentModule
     {
         $lang['title'] = $this->l('Pay.');
         $lang['are_you_sure'] = $this->l('Are you sure want to refund this amount');
+        $lang['are_you_sure_pin'] = $this->l('Are you sure want to start a pin transaction for this amount');
         $lang['are_you_sure_capture'] = $this->l('Are you sure you want to capture this transaction for this amount');
         $lang['are_you_sure_capture_remaining'] = $this->l('Are you sure you want to capture the remaining amount of this transaction?');
         $lang['refund_button'] = $this->l('REFUND');
         $lang['pin_refund_button'] = $this->l('RETOURPIN');
+        $lang['pin_button'] = $this->l('START PIN');
+        $lang['pin_button_text'] = $this->l('Start a pin transaction to complete this order');
+        $lang['select_pin'] = $this->l('Please select a pin-terminal to use the pin button');
         $lang['select_pin_refund'] = $this->l('Please select a pin-terminal to use the retourpin button');
         $lang['capture_button'] = $this->l('CAPTURE');
         $lang['capture_remaining_button'] = $this->l('CAPTURE REMAINING');
@@ -358,10 +371,12 @@ class PaynlPaymentMethods extends PaymentModule
         $lang['amount'] = $this->l('Amount');
         $lang['invalidamount'] = $this->l('Invalid amount');
         $lang['successfully_refunded'] = $this->l('Succesfully refunded');
+        $lang['successfully_pin'] = $this->l('Succesfully paid via pin');
         $lang['successfully_captured'] = $this->l('Succesfully captured');
         $lang['successfully_captured_remaining'] = $this->l('Succesfully captured the remaining amount.');
         $lang['paymentmethod'] = $this->l('Paymentmethod');
         $lang['could_not_process_refund'] = $this->l('Could not process refund. Refund might be too fast or amount is invalid');
+        $lang['could_not_process_pintransaction'] = $this->l('Could not process pin transaction.');
         $lang['could_not_process_capture'] = $this->l('Could not process this capture.');
         $lang['could_not_process_retourpin'] = $this->l('Could not process the retourpin transaction.');
         $lang['info_refund_title'] = $this->l('Refund');
@@ -821,8 +836,22 @@ class PaynlPaymentMethods extends PaymentModule
             $message = "Updated order (" . $order->reference . ") to: " . $arrOrderState['name'];
         } else {
             $iState = $payOrder->getStatusCode();
+            $paymentLocation = false;
 
-            if ($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified()) {
+            if ($profileId == PaymentMethod::METHOD_PIN && $payOrder->isPaid()) {
+                $orderId = $cart->id;
+                $order = new Order($orderId);
+
+                Transaction::addTransaction($transactionId, $orderId, $cart->id_customer, $profileId, $cart->getOrderTotal());
+
+                $this->updateOrderHistory($order->id, $this->statusPaid);
+                $this->helper->payLog('processPinFromAdmin', $transactionId . ' - Connected to prestashop order: ' . $orderId);
+
+                $message = 'Processing pin from admin, order paid';
+                $paymentLocation = true;
+            }
+
+            if (($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified()) && !$paymentLocation) {
                 try {
                     $currency_order = new Currency($cart->id_currency);
 
@@ -951,6 +980,17 @@ class PaynlPaymentMethods extends PaymentModule
         $iPaymentFee = $this->paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
         $iPaymentFee = empty($iPaymentFee) ? 0 : $iPaymentFee;
         $cartId = $cart->id;
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings($payment_option_id);
+
+        if ($parameters['pinMoment'] == 'backorder' || $paymentMethodSettings->payment_location == 'backorder') {
+            $this->createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings);
+            $orderId = Order::getIdByCartId($cartId);
+            $customer = new Customer($cart->id_customer);
+            $module = Module::getInstanceByName('paynlpaymentmethods');
+
+            Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cartId . '&id_module=' . $module->id . '&id_order=' . $orderId . '&key=' . $customer->secure_key);
+            Tools::redirect($this->context->link->getModuleLink($this->name, 'finish', array(), true));
+        }
 
         try {
             $this->addPaymentFee($cart, $iPaymentFee);
@@ -1044,6 +1084,28 @@ class PaynlPaymentMethods extends PaymentModule
         return $payTransaction->getPaymentUrl();
     }
 
+    public function createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings, $payTransactionId = null)
+    {
+        $this->helper->payLog('startPayment', 'Pre-Creating order for pp : ' . $payment_option_id, $cartId, $payTransactionId);
+
+        # Flush the package list, so the fee is added to it.
+        $this->context->cart->getPackageList(true);
+
+        $paymentMethodName = empty($paymentMethodSettings->name) ? 'PAY. Overboeking' : $paymentMethodSettings->name;
+
+        $this->validateOrder($cart->id, $this->statusPending, 0, $paymentMethodName, null, array(), null, false, $cart->secure_key);
+
+        $orderId = Order::getIdByCartId($cartId);
+        $order = new Order($orderId);
+
+        $orderPayment = new OrderPayment();
+        $orderPayment->order_reference = $order->reference;
+        $orderPayment->payment_method = $paymentMethodName;
+        $orderPayment->amount = $cart->getOrderTotal();
+        $orderPayment->transaction_id = $payTransactionId;
+        $orderPayment->id_currency = $cart->id_currency;
+        $orderPayment->save();
+    }
 
     /**
      * @return array|false
@@ -1152,7 +1214,9 @@ class PaynlPaymentMethods extends PaymentModule
           'bank_selection' => 'dropdown',
           'limit_carriers' => false,
           'allowed_carriers' => [],
-          'create_order_on' => 'success'
+          'create_order_on' => 'success',
+          'payment_location' => 'direct',
+          'payment_location_method' => []
         ];
 
         foreach ($arr as $fieldName => $methodValue) {
@@ -1581,7 +1645,8 @@ class PaynlPaymentMethods extends PaymentModule
           'languages' => Language::getLanguages(true),
           'paymentmethods' => $this->avMethods,
           'showExternalLogoList' => [PaymentMethod::METHOD_GIVACARD],
-          'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL]
+          'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL],
+          'showPaymentLocationList' => [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN]
         ));
 
         return $this->display(__FILE__, 'admin_paymentmethods.tpl');
