@@ -217,16 +217,10 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
+        $showPinRefundButton = false;
         $showStartPinButton = false;
-        if (!$transactionId && in_array($order->payment, ['PIN', 'InStore payment', 'Terminal Payments'])) {
+        if (!$transactionId && in_array($order->payment, ['PIN', 'InStore payment'])) {
             $showStartPinButton = true;
-        }
-
-        if (!$transactionId) {
-            $payTransaction = Transaction::getFromPrestashopId($orderId);
-            if ($payTransaction) {
-                $transactionId = $payTransaction['transaction_id'];
-            }
         }
 
         if (!$showStartPinButton) {
@@ -254,7 +248,6 @@ class PaynlPaymentMethods extends PaymentModule
                 $showRefundButton = false;
                 $showCaptureButton = false;
                 $showCaptureRemainingButton = false;
-                $showPinRefundButton = false;
             }
         }
 
