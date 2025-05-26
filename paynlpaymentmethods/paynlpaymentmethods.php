@@ -229,7 +229,7 @@ class PaynlPaymentMethods extends PaymentModule
             }
         }
 
-        if ($showStartPinButton){
+        if (!$showStartPinButton) {
             try {
                 $payOrder = $this->getPayOrder((string)$transactionId);
                 if ($payOrder->isPaid() || $payOrder->isAuthorized()) {
