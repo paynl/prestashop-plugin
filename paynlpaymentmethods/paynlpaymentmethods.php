@@ -217,6 +217,11 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
+        $showStartPinButton = false;
+        if (!$transactionId && in_array($order->payment, ['PIN', 'InStore payment', 'Terminal Payments'])) {
+            $showStartPinButton = true;
+        }
+
         if (!$transactionId) {
             $payTransaction = Transaction::getFromPrestashopId($orderId);
             if ($payTransaction) {
@@ -224,35 +229,33 @@ class PaynlPaymentMethods extends PaymentModule
             }
         }
 
-        try {
-            $payOrder = $this->getPayOrder((string)$transactionId);
-            if ($payOrder->isPaid() || $payOrder->isAuthorized()) {
-                $payGmsOrder = $this->getPayRefundOrder($transactionId);
-                $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
-                if ($payGmsOrder->isRefunded()) {
-                    $payOrder = $payGmsOrder;
+        if ($showStartPinButton){
+            try {
+                $payOrder = $this->getPayOrder((string)$transactionId);
+                if ($payOrder->isPaid() || $payOrder->isAuthorized()) {
+                    $payGmsOrder = $this->getPayRefundOrder($transactionId);
+                    $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
+                    if ($payGmsOrder->isRefunded()) {
+                        $payOrder = $payGmsOrder;
+                    }
+                    $alreadyRefunded = $payGmsOrder->getAmountRefunded();
                 }
-                $alreadyRefunded = $payGmsOrder->getAmountRefunded();
+
+                $payOrderAmount = $payOrder->getAmount();
+                $status = $payOrder->getStatusName();
+                $profileId = $payOrder->getPaymentMethod();
+                $methodName = PaymentMethod::getName($transactionId, $profileId);
+                $showCaptureButton = $payOrder->isAuthorized();
+                $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
+                $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
+                $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
+
+            } catch (Exception $exception) {
+                $showRefundButton = false;
+                $showCaptureButton = false;
+                $showCaptureRemainingButton = false;
+                $showPinRefundButton = false;
             }
-
-            $payOrderAmount = $payOrder->getAmount();
-            $status = $payOrder->getStatusName();
-            $profileId = $payOrder->getPaymentMethod();
-            $methodName = PaymentMethod::getName($transactionId, $profileId);
-            $showCaptureButton = $payOrder->isAuthorized();
-            $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
-            $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE); // phpcs:ignore
-            $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
-            $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
-            $showStartPinButton = false;
-
-        } catch (Exception $exception) {
-            $showRefundButton = false;
-            $showCaptureButton = false;
-            $showCaptureRemainingButton = false;
-            $showPinRefundButton = false;
-            $terminals = null;
-            $showStartPinButton = true;
         }
 
         $terminals = null;
