@@ -169,7 +169,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $pinTransaction->setStats((new PayNL\Sdk\Model\Stats)->setExtra1($prestaOrderId)->setObject(($helper->getObjectInfo($module))));
 
             $payTransaction = $pinTransaction->start();
-            $this->returnResponse(true, null, null, $payTransaction->getPaymentUrl());
+            $this->returnResponse(true, null, 'successfully_pin', $payTransaction->getPaymentUrl());
 
             $helper->payLog('Pintransaction', 'Pin transaction in admin started with succes', $cartId, $transactionId);
         } catch (Exception $e) {
