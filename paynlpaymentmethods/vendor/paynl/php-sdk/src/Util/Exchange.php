@@ -25,6 +25,26 @@ class Exchange
     private PayLoad $payload;
     private ?array $custom_payload;
     private mixed $headers;
+    private string $gmsReferenceKey = 'extra1';
+
+    /**
+     * @return string
+     */
+    public function getGmsReferenceKey(): string
+    {
+        return $this->gmsReferenceKey;
+    }
+
+    /**
+     * Specifies the field to use for order retrieval when older exchange types, such as refunds, provide the order ID in a non-standard field(extra1).
+     * @param $key
+     * @return $this
+     */
+    public function setGmsReferenceKey($key): self
+    {
+        $this->gmsReferenceKey = $key;
+        return $this;
+    }
 
     /**
      * @param array|null $payload
@@ -116,7 +136,7 @@ class Exchange
         try {
             $payload = $this->getPayload();
         } catch (\Throwable $e) {
-            throw new PayException('Could not retrieve action: ' . $e->getMessage());
+            throw new PayException('Could not retrieve action: ' . $e->getMessage(), 0, 0);
         }
         return $payload->getAction();
     }
@@ -130,7 +150,7 @@ class Exchange
         try {
             $payload = $this->getPayload();
         } catch (\Throwable $e) {
-            throw new PayException('Could not retrieve reference: ' . $e->getMessage());
+            throw new PayException('Could not retrieve reference: ' . $e->getMessage(), 0, 0);
         }
         return $payload->getReference();
     }
@@ -144,7 +164,7 @@ class Exchange
         try {
             $payload = $this->getPayload();
         } catch (\Throwable $e) {
-            throw new Exception('Could not retrieve payOrderId: ' . $e->getMessage());
+            throw new PayException('Could not retrieve payOrderId: ' . $e->getMessage(), 0, 0);
         }
         return $payload->getPayOrderId();
     }
@@ -178,7 +198,7 @@ class Exchange
             $paymentProfile = $request['payment_profile_id'] ?? null;
             $payOrderId = $request['order_id'] ?? '';
             $orderId = $request['extra1'] ?? null;
-            $reference = $request['extra1'] ?? null;
+            $reference = $request[$this->getGmsReferenceKey()] ?? null;
         } else {
             # TGU
             if (isset($request['object'])) {
@@ -188,7 +208,6 @@ class Exchange
                 if (empty(trim($rawBody))) {
                     throw new Exception('Empty or incomplete payload', 8002);
                 }
-
                 $tguData = json_decode($rawBody, true, 512, JSON_BIGINT_AS_STRING);
             }
 
@@ -285,7 +304,7 @@ class Exchange
                     }
 
                     $action = $this->getAction();
-                    if (stripos($action, 'refund') !== false) {
+                    if (stripos($action, 'refund') !== false || !$payload->isTguTransaction()) {
                         dbg('TransactionStatusRequest');
                         $request = new TransactionStatusRequest($payload->getPayOrderId());
                     } else {
