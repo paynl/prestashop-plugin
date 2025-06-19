@@ -175,7 +175,8 @@ class PaynlPaymentMethods extends PaymentModule
                 `created_at` datetime NOT NULL DEFAULT current_timestamp(),
                 `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
 				PRIMARY KEY (`id`),
-                INDEX (`transaction_id`)
+                INDEX (`transaction_id`),
+                INDEX `idx_cart_id` (`cart_id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8 ;'
         );
         Db::getInstance()->execute(
