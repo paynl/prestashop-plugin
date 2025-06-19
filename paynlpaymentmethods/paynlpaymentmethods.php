@@ -113,6 +113,15 @@ class PaynlPaymentMethods extends PaymentModule
     }
 
     /**
+     * Mandetory for prestashop9
+     * @param string|null $version
+     * @return void
+     */
+    public function onUpgrade(?string $version): void {
+        // Leave empty
+    }
+
+    /**
      * @param array $params
      * @return void
      */
@@ -413,15 +422,21 @@ class PaynlPaymentMethods extends PaymentModule
             $objProduct->visibility = 'none';
             foreach (Language::getLanguages() as $language) {
                 $objProduct->name[$language['id_lang']] = $this->l('Payment fee');
-                $objProduct->link_rewrite[$language['id_lang']] = Tools::link_rewrite($objProduct->name[$language['id_lang']]);
+                $objProduct->link_rewrite[$language['id_lang']] = Tools::str2url($objProduct->name[$language['id_lang']]);
             }
 
             if ($objProduct->add()) {
-                //allow buy product out of stock
-                StockAvailable::setProductDependsOnStock($objProduct->id, false);
+                # Allow buy product out of stock
+                if (method_exists(StockAvailable::class, 'setProductDependsOnStock')) {
+                    StockAvailable::setProductDependsOnStock($objProduct->id, false);
+                } else {
+                    $objProduct->depends_on_stock = false;
+                    $objProduct->save();
+                }
+
                 StockAvailable::setQuantity($objProduct->id, $objProduct->getDefaultIdProductAttribute(), 9999999);
                 StockAvailable::setProductOutOfStock($objProduct->id, true);
-                //update product id
+                # Update product id
                 $id_product = $objProduct->id;
                 Configuration::updateValue('PAYNL_FEE_PRODUCT_ID', $id_product);
             }
