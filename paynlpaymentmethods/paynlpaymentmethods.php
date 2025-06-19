@@ -574,10 +574,7 @@ class PaynlPaymentMethods extends PaymentModule
     public function payTranslations(): array
     {
         $trans['renewCartOnDuplicate'] = $this->l('Use unique cartId per payment');
-        $trans['renewCartOnDuplicateDesc'] = $this->l(
-            'Indien ingeschakeld krijgt elke betaling een unieke cart-ID om dubbele of frauduleuze transacties te voorkomen. '
-            . 'Let op: Dit kan invloed hebben op modules die de oorspronkelijke cart gebruiken, of in zeldzame gevallen op voorraadbeheer.'
-        );
+        $trans['renewCartOnDuplicateDesc'] = $this->l('If enabled, each payment will use a unique cart ID to prevent duplicate or fraudulent transactions. Note: This may affect modules that rely on the original cart, and in rare cases, it could impact stock management.');
         $trans['register'] = $this->l('register');
         $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
