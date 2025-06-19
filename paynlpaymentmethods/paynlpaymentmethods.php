@@ -54,7 +54,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.2.0';
+        $this->version = '5.2.1';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
@@ -113,6 +113,15 @@ class PaynlPaymentMethods extends PaymentModule
     }
 
     /**
+     * Mandetory for prestashop9
+     * @param string|null $version
+     * @return void
+     */
+    public function onUpgrade(?string $version): void {
+        // Leave empty
+    }
+
+    /**
      * @param array $params
      * @return void
      */
@@ -166,7 +175,8 @@ class PaynlPaymentMethods extends PaymentModule
                 `created_at` datetime NOT NULL DEFAULT current_timestamp(),
                 `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
 				PRIMARY KEY (`id`),
-                INDEX (`transaction_id`)
+                INDEX (`transaction_id`),
+                INDEX `idx_cart_id` (`cart_id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8 ;'
         );
         Db::getInstance()->execute(
@@ -413,15 +423,21 @@ class PaynlPaymentMethods extends PaymentModule
             $objProduct->visibility = 'none';
             foreach (Language::getLanguages() as $language) {
                 $objProduct->name[$language['id_lang']] = $this->l('Payment fee');
-                $objProduct->link_rewrite[$language['id_lang']] = Tools::link_rewrite($objProduct->name[$language['id_lang']]);
+                $objProduct->link_rewrite[$language['id_lang']] = Tools::str2url($objProduct->name[$language['id_lang']]);
             }
 
             if ($objProduct->add()) {
-                //allow buy product out of stock
-                StockAvailable::setProductDependsOnStock($objProduct->id, false);
+                # Allow buy product out of stock
+                if (method_exists(StockAvailable::class, 'setProductDependsOnStock')) {
+                    StockAvailable::setProductDependsOnStock($objProduct->id, false);
+                } else {
+                    $objProduct->depends_on_stock = false;
+                    $objProduct->save();
+                }
+
                 StockAvailable::setQuantity($objProduct->id, $objProduct->getDefaultIdProductAttribute(), 9999999);
                 StockAvailable::setProductOutOfStock($objProduct->id, true);
-                //update product id
+                # Update product id
                 $id_product = $objProduct->id;
                 Configuration::updateValue('PAYNL_FEE_PRODUCT_ID', $id_product);
             }
@@ -558,6 +574,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function payTranslations(): array
     {
+        $trans['renewCartOnDuplicate'] = $this->l('Use unique cartId per payment');
+        $trans['renewCartOnDuplicateDesc'] = $this->l('If enabled, each payment will use a unique cart ID to prevent duplicate or fraudulent transactions. Note: This may affect modules that rely on the original cart, and in rare cases, it could impact stock management.');
         $trans['register'] = $this->l('register');
         $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
@@ -928,6 +946,28 @@ class PaynlPaymentMethods extends PaymentModule
 
     /**
      * @param Cart $cart
+     * @return Cart
+     */
+    private function initCart(Cart $cart)
+    {
+        if (Configuration::get('PAYNL_RENEWCART') == 1) {
+            if (Transaction::hasExistingTransaction($cart->id)) {
+                $duplicate = $cart->duplicate();
+                if (!$duplicate || !isset($duplicate['cart'])) {
+                    $this->helper->payLog('startPayment', 'Cart duplication failed');
+                } else {
+                    # Use new cart
+                    $cart = $duplicate['cart'];
+                    $this->context->cart = $cart;
+                    $this->context->cookie->id_cart = $cart->id;
+                }
+            }
+        }
+        return $cart;
+    }
+
+    /**
+     * @param Cart $cart
      * @param $payment_option_id
      * @param array $parameters
      * @return string Result message
@@ -937,6 +977,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
+        $cart = $this->initCart($cart);
+
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
 
@@ -1007,12 +1049,8 @@ class PaynlPaymentMethods extends PaymentModule
 
         $payTransactionId = $payTransaction->getOrderId();
 
-        $this->helper->payLog(
-          'startPayment',
-          'Starting new payment with cart-total: ' . $cartTotal . '. Fee: ' . $iPaymentFee . ' Currency (cart): ' . $currency->iso_code,
-          $cartId,
-          $payTransactionId
-        );
+        $this->helper->payLog('startPayment', 'Starting new payment with cart-total: ' . $cartTotal . '. Fee: ' . $iPaymentFee . ' Currency (cart): ' .
+            $currency->iso_code, $cartId, $payTransactionId);
 
         Transaction::addTransaction($payTransactionId, $cart->id, $cart->id_customer, $payment_option_id, $cart->getOrderTotal());
 
@@ -1519,6 +1557,7 @@ class PaynlPaymentMethods extends PaymentModule
             Configuration::updateValue('PAYNL_AUTO_VOID', Tools::getValue('PAYNL_AUTO_VOID'));
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', Tools::getValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD'));
             Configuration::updateValue('PAYNL_SDK_CACHING', Tools::getValue('PAYNL_SDK_CACHING'));
+            Configuration::updateValue('PAYNL_RENEWCART', Tools::getValue('PAYNL_RENEWCART'));
         }
         return $this->displayConfirmation($this->l('Settings updated'));
     }

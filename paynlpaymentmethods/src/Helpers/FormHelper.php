@@ -320,6 +320,25 @@ class FormHelper
                     'required' => false
                 ),
                 array(
+                    'type' => 'switch',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['renewCartOnDuplicate'],
+                    'name' => 'PAYNL_RENEWCART',
+                    'desc' => $l['renewCartOnDuplicateDesc'],
+                    'values' => array(
+                        array(
+                            'id' => 'renew_cart_on',
+                            'value' => 1,
+                            'label' => $l['enabled']
+                        ),
+                        array(
+                            'id' => 'renew_cart_off',
+                            'value' => 0,
+                            'label' => $l['disabled']
+                        )
+                    ),
+                ),
+                array(
                     'type' => 'hidden',
                     'name' => 'PAYNL_PAYMENTMETHODS',
                 )
@@ -373,6 +392,7 @@ class FormHelper
           'PAYNL_PAYMENTMETHODS' => $paymentMethods,
           'PAYNL_TEST_IPADDRESS' => Tools::getValue('PAYNL_TEST_IPADDRESS', Configuration::get('PAYNL_TEST_IPADDRESS')),
           'PAYNL_EXPIRE_TIME' => Configuration::get('PAYNL_EXPIRE_TIME'),
+          'PAYNL_RENEWCART' => Configuration::get('PAYNL_RENEWCART'),
           'PAYNL_AUTO_VOID' => Tools::getValue('PAYNL_AUTO_VOID', Configuration::get('PAYNL_AUTO_VOID')),
           'PAYNL_AUTO_FOLLOW_PAYMENT_METHOD' => $followPaymentMethod,
           'PAYNL_SDK_CACHING' => Tools::getValue('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')),

@@ -9,6 +9,7 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f7aae2a74abc8a53f
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_e09b81c7c938cb269911e75de9162ca6'] = 'Weet u zeker dat u dit bedrag wilt capturen';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_0445e1ce42f11c52e5f41858909a36db'] = 'Weet u zeker dat u het overgebleven bedrag wilt capturen?';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_1f7d859f8eacd7176e673032482543ee'] = 'Terugbetalen';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_94ee5e510f8c48634eca5396a8c36b8d'] = 'Selecteer een pinterminal om de retourpin-knop te gebruiken';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_b72f08e0732365cac9599b5c42157bf9'] = 'Capture';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_aa4e4a1062a58f5f24e4eb297dddea98'] = 'Capture het overgebleven bedrag';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_729a51874fe901b092899e9e8b31c97a'] = 'Weet u het zeker?';
@@ -36,6 +37,8 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_020c2091aec3019d0
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a06edbeae74c06123799e7f0a6efb2b0'] = 'Pay. succesvol terugbetaald';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_5f14b7d5ab542d6b7247465c0b56862c'] = '(Terugbetalingen kunnen niet snel achter elkaar worden gedaan)';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f51ea2cb1b551cd5a0d1cb60250cfed5'] = 'Pay. kon de gedeeltelijke terugbetaling niet verwerken. Controleer de status van uw bestelling in de Pay. admin.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_d3bc546d6efd6afd7b0f4d0322c968ff'] = 'Gebruik een uniek cart-ID per betaling.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_36f8dd1cc075e4df5f7c0cfe685d1c92'] = 'Indien ingeschakeld krijgt elke betaling een unieke cart-ID om dubbele of frauduleuze transacties te voorkomen. Let op: Dit kan invloed hebben op modules die de oorspronkelijke cart gebruiken, of in zeldzame gevallen op voorraadbeheer.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_9de4a97425678c5b1288aa70c1669a64'] = 'registreren';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_fe4c6a5e7bd6793b37370e4e46daf998'] = 'Geavanceerde instellingen';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_34b6cd75171affba6957e308dcbd92be'] = 'Versie';
@@ -94,7 +97,9 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_1be25759cbc758a4c
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_cf633a48ceceb64b509b34070ff248e7'] = 'Selecteer een pin-terminal';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_6f3200bb05fa20d5e433e94beae39360'] = 'Veilig betalen via pin';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_c2d83c99669053df24d7839d313e5983'] = 'Pay. succesvol verbonden';
-$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_90589c47f06eb971d548591f23c285af'] = 'Handmatig';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a2d07836b692b9f4153f7f399307f629'] = 'Pay. connectie niet geslaagd';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f2a7d8990b29e46bbbde9bd7f92374b0'] = 'Geldigheidsduur';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a7335e9c3bf0c68eed114f305d3e90c2'] = 'De geldigheidsduur (in minuten) die bepaalt wanneer een transactie verloopt. Zodra deze is verlopen, zal het systeem automatisch het annuleringsproces starten. Dit geldt voor alle betaalmethoden.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_9f06b28a40790c4c4df5739bce3c1eb0'] = 'Verzendkosten';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_86f0d68c262471b3190ba32483af87ab'] = 'Kan de Pay. SDK niet vinden.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f3916e085e8b806982b86304df416d45'] = 'API token is een verplicht veld.';

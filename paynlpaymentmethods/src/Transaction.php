@@ -12,6 +12,19 @@ class Transaction
 {
 
     /**
+     * @param $cartId
+     * @return bool
+     * @throws \PrestaShopException
+     */
+    public static function hasExistingTransaction($cartId): bool
+    {
+        $sql = "SELECT 1 FROM `" . _DB_PREFIX_ . "pay_transactions`
+        WHERE `cart_id` = " . (int) $cartId ;
+
+        return (bool) Db::getInstance()->getValue($sql);
+    }
+
+    /**
      * Adds the transaction to the pay_transactions table
      *
      * @param int $transaction_id

@@ -49,7 +49,7 @@ class Exchange
     /**
      * @param array|null $payload
      */
-    public function __construct(array $payload = null)
+    public function __construct(?array $payload = null)
     {
         $this->custom_payload = $payload;
     }
@@ -139,7 +139,7 @@ class Exchange
         try {
             return $this->getPayload();
         } catch (\Throwable $e) {
-            throw new PayException('Could not retrieve payload: ' . $e->getMessage(), 0, $e);
+            throw new PayException('Could not retrieve payload: ' . $e->getMessage(), 0);
         }
     }
     /**
