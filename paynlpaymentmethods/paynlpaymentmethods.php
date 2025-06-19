@@ -573,6 +573,11 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function payTranslations(): array
     {
+        $trans['renewCartOnDuplicate'] = $this->l('Use unique cartId per payment');
+        $trans['renewCartOnDuplicateDesc'] = $this->l(
+            'Indien ingeschakeld krijgt elke betaling een unieke cart-ID om dubbele of frauduleuze transacties te voorkomen. '
+            . 'Let op: Dit kan invloed hebben op modules die de oorspronkelijke cart gebruiken, of in zeldzame gevallen op voorraadbeheer.'
+        );
         $trans['register'] = $this->l('register');
         $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
@@ -943,6 +948,28 @@ class PaynlPaymentMethods extends PaymentModule
 
     /**
      * @param Cart $cart
+     * @return Cart
+     */
+    private function initCart(Cart $cart)
+    {
+        if (Configuration::get('PAYNL_RENEWCART') == 1) {
+            if (Transaction::hasExistingTransaction($cart->id)) {
+                $duplicate = $cart->duplicate();
+                if (!$duplicate || !isset($duplicate['cart'])) {
+                    $this->helper->payLog('startPayment', 'Cart duplication failed');
+                } else {
+                    # Use new cart
+                    $cart = $duplicate['cart'];
+                    $this->context->cart = $cart;
+                    $this->context->cookie->id_cart = $cart->id;
+                }
+            }
+        }
+        return $cart;
+    }
+
+    /**
+     * @param Cart $cart
      * @param $payment_option_id
      * @param array $parameters
      * @return string Result message
@@ -952,6 +979,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
+        $cart = $this->initCart($cart);
+
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
 
@@ -1022,12 +1051,8 @@ class PaynlPaymentMethods extends PaymentModule
 
         $payTransactionId = $payTransaction->getOrderId();
 
-        $this->helper->payLog(
-          'startPayment',
-          'Starting new payment with cart-total: ' . $cartTotal . '. Fee: ' . $iPaymentFee . ' Currency (cart): ' . $currency->iso_code,
-          $cartId,
-          $payTransactionId
-        );
+        $this->helper->payLog('startPayment', 'Starting new payment with cart-total: ' . $cartTotal . '. Fee: ' . $iPaymentFee . ' Currency (cart): ' .
+            $currency->iso_code, $cartId, $payTransactionId);
 
         Transaction::addTransaction($payTransactionId, $cart->id, $cart->id_customer, $payment_option_id, $cart->getOrderTotal());
 
@@ -1534,6 +1559,7 @@ class PaynlPaymentMethods extends PaymentModule
             Configuration::updateValue('PAYNL_AUTO_VOID', Tools::getValue('PAYNL_AUTO_VOID'));
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', Tools::getValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD'));
             Configuration::updateValue('PAYNL_SDK_CACHING', Tools::getValue('PAYNL_SDK_CACHING'));
+            Configuration::updateValue('PAYNL_RENEWCART', Tools::getValue('PAYNL_RENEWCART'));
         }
         return $this->displayConfirmation($this->l('Settings updated'));
     }
