@@ -978,6 +978,7 @@ class PaynlPaymentMethods extends PaymentModule
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
         $cart = $this->initCart($cart);
+        $cart->getProducts(true);
 
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
