@@ -73,8 +73,8 @@ class Product implements ModelInterface, JsonSerializable
      * @param $currency
      * @param $type
      * @param $quantity
-     * @param string $vatCode
-     * @param float $vatPercentage
+     * @param string|null $vatCode
+     * @param float|null $vatPercentage
      */
     public function __construct(
         $id = null,
@@ -83,8 +83,8 @@ class Product implements ModelInterface, JsonSerializable
         $currency = null,
         $type = null,
         $quantity = null,
-        string $vatCode = null,
-        float $vatPercentage = null
+        ?string $vatCode = null,
+        ?float $vatPercentage = null
     )
     {
         if (!is_null($id)) {

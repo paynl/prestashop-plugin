@@ -17,6 +17,10 @@
     border-color: #00A4E7 !important;
 }
 
+.advancedSetting {
+    display: none;
+}
+
 .bootstrap input[type="number"] {
     display: block;
     width: 100%;

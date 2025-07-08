@@ -54,7 +54,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.0.0.0';
+        $this->version = '5.2.1';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
@@ -113,6 +113,15 @@ class PaynlPaymentMethods extends PaymentModule
     }
 
     /**
+     * Mandetory for prestashop9
+     * @param string|null $version
+     * @return void
+     */
+    public function onUpgrade(?string $version): void {
+        // Leave empty
+    }
+
+    /**
      * @param array $params
      * @return void
      */
@@ -166,7 +175,8 @@ class PaynlPaymentMethods extends PaymentModule
                 `created_at` datetime NOT NULL DEFAULT current_timestamp(),
                 `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
 				PRIMARY KEY (`id`),
-                INDEX (`transaction_id`)
+                INDEX (`transaction_id`),
+                INDEX `idx_cart_id` (`cart_id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8 ;'
         );
         Db::getInstance()->execute(
@@ -186,8 +196,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookActionAdminControllerSetMedia()
     {
-        $this->context->controller->addCSS($this->_path . 'views/css/PAY.css');
-        $this->context->controller->addJS($this->_path . 'views/js/PAY.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/PAY_v510.css');
+        $this->context->controller->addJS($this->_path . 'views/js/PAY_v510.js');
     }
 
     /**
@@ -216,6 +226,7 @@ class PaynlPaymentMethods extends PaymentModule
         $transactionId = $orderPayment->transaction_id;
         $payOrderAmount = 0;
         $alreadyRefunded = 0;
+        $prestaOrderStatusId = $order->getCurrentState();
 
         try {
             $payOrder = $this->getPayOrder((string)$transactionId);
@@ -235,10 +246,29 @@ class PaynlPaymentMethods extends PaymentModule
             $showCaptureButton = $payOrder->isAuthorized();
             $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
             $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE); // phpcs:ignore
+            $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
+            $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
+
+            $terminals = null;
+            if ($showPinRefundButton) {
+                try {
+                    $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
+                    $allTerminals = $terminalsFromCache['terminals'] ?? [];
+
+                    foreach ($allTerminals as $terminal) {
+                        $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
+                    }
+                } catch (Exception $e) {
+                    $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
+                }
+            }
+
         } catch (Exception $exception) {
             $showRefundButton = false;
             $showCaptureButton = false;
             $showCaptureRemainingButton = false;
+            $showPinRefundButton = false;
+            $terminals = null;
         }
 
         $amountFormatted = number_format(($order->total_paid - $alreadyRefunded), 2, ',', '.');
@@ -257,8 +287,10 @@ class PaynlPaymentMethods extends PaymentModule
           'method' => $methodName ?? 'Pay.',
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
           'showRefundButton' => $showRefundButton,
+          'showPinRefundButton' => $showPinRefundButton,
           'showCaptureButton' => $showCaptureButton,
           'showCaptureRemainingButton' => $showCaptureRemainingButton,
+          'terminals' => $terminals,
         ));
         return $this->display(__FILE__, 'payorder.tpl');
     }
@@ -322,6 +354,8 @@ class PaynlPaymentMethods extends PaymentModule
         $lang['are_you_sure_capture'] = $this->l('Are you sure you want to capture this transaction for this amount');
         $lang['are_you_sure_capture_remaining'] = $this->l('Are you sure you want to capture the remaining amount of this transaction?');
         $lang['refund_button'] = $this->l('REFUND');
+        $lang['pin_refund_button'] = $this->l('RETOURPIN');
+        $lang['select_pin_refund'] = $this->l('Please select a pin-terminal to use the retourpin button');
         $lang['capture_button'] = $this->l('CAPTURE');
         $lang['capture_remaining_button'] = $this->l('CAPTURE REMAINING');
         $lang['my_text'] = $this->l('Are you sure?');
@@ -339,6 +373,7 @@ class PaynlPaymentMethods extends PaymentModule
         $lang['paymentmethod'] = $this->l('Paymentmethod');
         $lang['could_not_process_refund'] = $this->l('Could not process refund. Refund might be too fast or amount is invalid');
         $lang['could_not_process_capture'] = $this->l('Could not process this capture.');
+        $lang['could_not_process_retourpin'] = $this->l('Could not process the retourpin transaction.');
         $lang['info_refund_title'] = $this->l('Refund');
         $lang['info_refund_text'] = $this->l('The orderstatus will only change to `Refunded` when the full amount is refunded. Stock wont be updated.');
         $lang['info_log_title'] = $this->l('Logs');
@@ -388,15 +423,21 @@ class PaynlPaymentMethods extends PaymentModule
             $objProduct->visibility = 'none';
             foreach (Language::getLanguages() as $language) {
                 $objProduct->name[$language['id_lang']] = $this->l('Payment fee');
-                $objProduct->link_rewrite[$language['id_lang']] = Tools::link_rewrite($objProduct->name[$language['id_lang']]);
+                $objProduct->link_rewrite[$language['id_lang']] = Tools::str2url($objProduct->name[$language['id_lang']]);
             }
 
             if ($objProduct->add()) {
-                //allow buy product out of stock
-                StockAvailable::setProductDependsOnStock($objProduct->id, false);
+                # Allow buy product out of stock
+                if (method_exists(StockAvailable::class, 'setProductDependsOnStock')) {
+                    StockAvailable::setProductDependsOnStock($objProduct->id, false);
+                } else {
+                    $objProduct->depends_on_stock = false;
+                    $objProduct->save();
+                }
+
                 StockAvailable::setQuantity($objProduct->id, $objProduct->getDefaultIdProductAttribute(), 9999999);
                 StockAvailable::setProductOutOfStock($objProduct->id, true);
-                //update product id
+                # Update product id
                 $id_product = $objProduct->id;
                 Configuration::updateValue('PAYNL_FEE_PRODUCT_ID', $id_product);
             }
@@ -421,9 +462,26 @@ class PaynlPaymentMethods extends PaymentModule
     public function uninstall()
     {
         if (parent::uninstall()) {
-            Configuration::deleteByName('PAYNL_FEE_PRODUCT_ID');
+            // Delete configuration values
+            $paynlKeys = [
+                'FEE_PRODUCT_ID', 'API_TOKEN', 'SERVICE_ID', 'TOKEN_CODE', 'TEST_MODE',
+                'FAILOVER_GATEWAY', 'CUSTOM_FAILOVER_GATEWAY', 'VALIDATION_DELAY',
+                'PAYLOGGER', 'DESCRIPTION_PREFIX', 'CORE', 'PAYMENTMETHODS', 'LANGUAGE',
+                'SHOW_IMAGE', 'STANDARD_STYLE', 'AUTO_CAPTURE', 'TEST_IPADDRESS',
+                'AUTO_VOID', 'AUTO_FOLLOW_PAYMENT_METHOD', 'SDK_CACHING', 'CORES',
+                'TERMINALS', 'EXCHANGE_URL'
+            ];
+
+            foreach ($paynlKeys as $key) {
+                Configuration::deleteByName('PAYNL_' . $key);
+            }
+
+            Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_processing`');
+            Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'pay_transactions`');
+
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -516,8 +574,12 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function payTranslations(): array
     {
+        $trans['renewCartOnDuplicate'] = $this->l('Use unique cartId per payment');
+        $trans['renewCartOnDuplicateDesc'] = $this->l('If enabled, each payment will use a unique cart ID to prevent duplicate or fraudulent transactions. Note: This may affect modules that rely on the original cart, and in rare cases, it could impact stock management.');
+        $trans['register'] = $this->l('register');
+        $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
-        $trans['accSettings'] = $this->l('Pay. Account Settings. Plugin version %s');
+        $trans['accSettings'] = $this->l('Pay.');
         $trans['versionButton'] = $this->l('Check version');
         $trans['Status'] = $this->l('Status');
         $trans['tokenCode'] = $this->l('Token code');
@@ -530,6 +592,7 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['findSalesLocation'] = $this->l('You can find the SL-code of your Sales location ');
         $trans['multicore'] = $this->l('Multicore');
         $trans['multicoreSettings'] = $this->l('Select the core to be used for processing payments');
+        $trans['multicoreTooltip'] = $this->l('This setting allows you to adjust the connection used to initiate payments. We recommend changing it only if advised, or in the event of a service outage.');
         $trans['customMulticore'] = $this->l('Custom multicore');
         $trans['customMulticoreWarning'] = $this->l('Leave this empty unless Pay. advised otherwise');
         $trans['prefix'] = $this->l('Transaction description prefix');
@@ -539,6 +602,8 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['enabled'] = $this->l('Enabled');
         $trans['disabled'] = $this->l('Disabled');
         $trans['logging'] = $this->l('Pay. logging');
+        $trans['sdkCaching'] = $this->l('SDK Caching');
+        $trans['sdkCachingSettings'] = $this->l('Caches connection data to reduce API calls.');
         $trans['loggingSettings'] = $this->l('Log internal Pay. processing information.');
         $trans['testMode'] = $this->l('Test mode');
         $trans['testModeSettings'] = $this->l('Start transactions in sandbox mode for testing.');
@@ -570,7 +635,9 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['selectPin'] = $this->l('Please select a pin-terminal');
         $trans['pin'] = $this->l('Pay safely via pin');
         $trans['payConnected'] = $this->l('Pay. successfully connected');
-        $trans['custom'] = $this->l('Custom');
+        $trans['payNotConnected'] = $this->l('Pay. not connected');
+        $trans['expireTime'] = $this->l('Expire time');
+        $trans['expireTimeSettings'] = $this->l('The expiration time (in minutes) that determines when a transaction will expire. Once expired, the system will automatically trigger a cancel exchange process. This applies to all payment methods.');
 
         return $trans;
     }
@@ -670,9 +737,13 @@ class PaynlPaymentMethods extends PaymentModule
         $profileId = $payOrder->getPaymentMethod();
         $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
         $cart = new Cart((int)$cartId);
-
+        $this->context->cart = $cart;
         $amountPaid = $this->determineAmount($payOrder, $cart);
         $payPayments = $payOrder->getPayments() ?? [];
+
+        if ($profileId == PaymentMethod::METHOD_RETOURPIN && $payOrder->isPaid()) {
+            $orderId = $payOrder->getReference();
+        }
 
         if ($orderId) {
             # Order exists
@@ -692,6 +763,16 @@ class PaynlPaymentMethods extends PaymentModule
             # Check if the order is processed by Pay.
             if ($order->module !== 'paynlpaymentmethods') {
                 return new ExchangeResponse(true, 'Not a Pay. order. Customer seemed to used different provider. Not updating the order.');
+            }
+
+            if ($profileId == PaymentMethod::METHOD_RETOURPIN && $payOrder->isPaid()) {
+                $transactionId = $payOrder->getOrderId();
+                $order = new Order($orderId);
+
+                $this->updateOrderHistory($order->id, $this->statusRefund);
+                $this->helper->payLog('processRetourpin', $transactionId . ' - Connected to prestashop order: ' . $orderId);
+
+                return new ExchangeResponse(true, 'Processing retourpin, order refunded' . $order->reference);
             }
 
             if ($payOrder->isRefundedPartial()) {
@@ -829,6 +910,28 @@ class PaynlPaymentMethods extends PaymentModule
 
     /**
      * @param Cart $cart
+     * @return Cart
+     */
+    private function initCart(Cart $cart)
+    {
+        if (Configuration::get('PAYNL_RENEWCART') == 1) {
+            if (Transaction::hasExistingTransaction($cart->id)) {
+                $duplicate = $cart->duplicate();
+                if (!$duplicate || !isset($duplicate['cart'])) {
+                    $this->helper->payLog('startPayment', 'Cart duplication failed');
+                } else {
+                    # Use new cart
+                    $cart = $duplicate['cart'];
+                    $this->context->cart = $cart;
+                    $this->context->cookie->id_cart = $cart->id;
+                }
+            }
+        }
+        return $cart;
+    }
+
+    /**
+     * @param Cart $cart
      * @param $payment_option_id
      * @param array $parameters
      * @return string Result message
@@ -838,6 +941,8 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
+        $cart = $this->initCart($cart);
+
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
 
@@ -891,6 +996,10 @@ class PaynlPaymentMethods extends PaymentModule
             $request->setTerminal($parameters['terminalCode']);
         }
 
+        if (Configuration::get('PAYNL_EXPIRE_TIME') && (int)Configuration::get('PAYNL_EXPIRE_TIME') > 0) {
+            $request->setExpire($this->setExpireTime(Configuration::get('PAYNL_EXPIRE_TIME')));
+        }
+
         try {
             $payTransaction = $request->start();
         } catch (Exception $e) {
@@ -904,12 +1013,8 @@ class PaynlPaymentMethods extends PaymentModule
 
         $payTransactionId = $payTransaction->getOrderId();
 
-        $this->helper->payLog(
-          'startPayment',
-          'Starting new payment with cart-total: ' . $cartTotal . '. Fee: ' . $iPaymentFee . ' Currency (cart): ' . $currency->iso_code,
-          $cartId,
-          $payTransactionId
-        );
+        $this->helper->payLog('startPayment', 'Starting new payment with cart-total: ' . $cartTotal . '. Fee: ' . $iPaymentFee . ' Currency (cart): ' .
+            $currency->iso_code, $cartId, $payTransactionId);
 
         Transaction::addTransaction($payTransactionId, $cart->id, $cart->id_customer, $payment_option_id, $cart->getOrderTotal());
 
@@ -1366,7 +1471,7 @@ class PaynlPaymentMethods extends PaymentModule
     private function renderFeatureRequest()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
-        $this->context->controller->addCss($this->_path . 'css/admin.css');
+        $this->context->controller->addCss($this->_path . 'css/admin510.css');
         $this->smarty->assign(array(
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
         ));
@@ -1412,8 +1517,11 @@ class PaynlPaymentMethods extends PaymentModule
             Configuration::updateValue('PAYNL_STANDARD_STYLE', Tools::getValue('PAYNL_STANDARD_STYLE'));
             Configuration::updateValue('PAYNL_AUTO_CAPTURE', Tools::getValue('PAYNL_AUTO_CAPTURE'));
             Configuration::updateValue('PAYNL_TEST_IPADDRESS', Tools::getValue('PAYNL_TEST_IPADDRESS'));
+            Configuration::updateValue('PAYNL_EXPIRE_TIME', preg_replace('/\D/', '', Tools::getValue('PAYNL_EXPIRE_TIME')));
             Configuration::updateValue('PAYNL_AUTO_VOID', Tools::getValue('PAYNL_AUTO_VOID'));
             Configuration::updateValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD', Tools::getValue('PAYNL_AUTO_FOLLOW_PAYMENT_METHOD'));
+            Configuration::updateValue('PAYNL_SDK_CACHING', Tools::getValue('PAYNL_SDK_CACHING'));
+            Configuration::updateValue('PAYNL_RENEWCART', Tools::getValue('PAYNL_RENEWCART'));
         }
         return $this->displayConfirmation($this->l('Settings updated'));
     }
@@ -1457,7 +1565,7 @@ class PaynlPaymentMethods extends PaymentModule
     public function renderPaymentMethodsForm()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
-        $this->context->controller->addCss($this->_path . 'css/admin.css');
+        $this->context->controller->addCss($this->_path . 'css/admin510.css');
 
         # Setting vars that might not exist after updating an old version.
         foreach ($this->avMethods as &$v) {
@@ -1496,5 +1604,22 @@ class PaynlPaymentMethods extends PaymentModule
     public function getCountries()
     {
         return Country::getCountries($this->context->language->id, true);
+    }
+
+    /**
+     * @param int $time
+     * @return string
+     */
+    public function setExpireTime(int $time)
+    {
+        $expireTime = '';
+
+        if (!empty($time) && is_numeric($time)) {
+            $offsetTime = $time * 60;
+
+            $expireTime = date('c', time() + $offsetTime);
+        }
+
+        return $expireTime;
     }
 }

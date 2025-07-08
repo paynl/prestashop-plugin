@@ -12,6 +12,15 @@
     top: 0px;
 }
 
+.tooltipPAYsettings {
+    top: -60px;
+    float: right;
+}
+
+.tooltipPAYdropdown {
+    left: -200px;
+}
+
 .tooltipPAY .tooltipPAYtext {
     font-family: Verdana;
     visibility: hidden;
@@ -222,4 +231,8 @@
     background-repeat: no-repeat;
     background-size: 30px 35px;
     background-position: center center;
+}
+
+.retourpinTerminals {
+    margin-top: 10px;
 }

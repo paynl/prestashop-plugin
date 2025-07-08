@@ -1,3 +1,10 @@
-/paynlpaymentmethods/config_nl.xml
-.idea/
+/*
 
+!/.github/
+!/.github/**
+
+!/paynlpaymentmethods/
+!/paynlpaymentmethods/**
+/paynlpaymentmethods/config_nl.xml
+
+!/README.md

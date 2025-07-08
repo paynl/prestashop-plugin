@@ -20,26 +20,57 @@ class PayLoad
     protected string $internalStateName;
     protected array $checkoutData;
     protected array $fullPayLoad = [];
+    protected string $extra1;
+    protected string $extra2;
+    protected string $extra3;
 
     /**
      * @param array $payload
      */
     public function __construct(array $payload)
     {
-        $this->type = (string)$payload['type'];
-        $this->amount = (int)$payload['amount'];
-        $this->currency = (string)$payload['currency'];
-        $this->amountCap = (float)$payload['amount_cap'];
-        $this->amountAuth = (float)$payload['amount_auth'];
-        $this->reference = (string)$payload['reference'];
-        $this->action = (string)$payload['action'];
-        $this->paymentProfile = (int)$payload['payment_profile'];
-        $this->payOrderId = (string)$payload['pay_order_id'];
-        $this->orderId = (string)$payload['order_id'];
-        $this->internalStateId = (int)$payload['internal_state_id'];
-        $this->internalStateName = (string)$payload['internal_state_name'];
-        $this->checkoutData = (array)$payload['checkout_data'];
-        $this->fullPayLoad = (array)$payload['full_payload'];
+        $this->type = (string)($payload['type'] ?? '');
+        $this->amount = (int)($payload['amount'] ?? 0);
+        $this->currency = (string)($payload['currency'] ?? '');
+        $this->amountCap = (float)($payload['amount_cap'] ?? 0);
+        $this->amountAuth = (float)($payload['amount_auth'] ?? 0);
+        $this->reference = (string)($payload['reference'] ?? '');
+        $this->action = (string)($payload['action'] ?? '');
+        $this->paymentProfile = (int)($payload['payment_profile'] ?? 0);
+        $this->payOrderId = (string)($payload['pay_order_id'] ?? '');
+        $this->orderId = (string)($payload['order_id'] ?? '');
+        $this->internalStateId = (int)($payload['internal_state_id'] ?? 0);
+        $this->internalStateName = (string)($payload['internal_state_name'] ?? '');
+        $this->checkoutData = is_array($payload['checkout_data'] ?? null) ? $payload['checkout_data'] : [];
+        $this->fullPayLoad = is_array($payload['full_payload'] ?? null) ? $payload['full_payload'] : [];
+
+        $this->extra1 = (string)($this->fullPayLoad['extra1'] ?? '');
+        $this->extra2 = (string)($this->fullPayLoad['extra2'] ?? '');
+        $this->extra3 = (string)($this->fullPayLoad['extra3'] ?? '');
+    }
+
+    /**
+     * @return string
+     */
+    public function getExtra1(): string
+    {
+        return $this->extra1;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExtra2(): string
+    {
+        return $this->extra2;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExtra3(): string
+    {
+        return $this->extra3;
     }
 
     /**
@@ -98,14 +129,6 @@ class PayLoad
     }
 
     /**
-     * @return string
-     */
-    public function nce(): string
-    {
-        return $this->reference;
-    }
-
-    /**
      * @return integer
      */
     public function getAmount(): int
@@ -152,4 +175,23 @@ class PayLoad
     {
         return $this->checkoutData;
     }
+
+    /**
+     * @return boolean
+     */
+    public function isFastCheckout(): bool
+    {
+        return strtolower($this->getType()) === 'payment_based_checkout';
+    }
+
+    
+    /**
+     * @return bool
+     */
+    function isTguTransaction(): bool
+    {
+        $id = $this->getPayOrderId()[0] ?? null;
+        return ctype_digit($id) && (int)$id > 3;
+    }
+
 }
