@@ -977,8 +977,7 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
-        $cart = $this->initCart($cart);
-        $cart->getProducts(true);
+        $cart = $this->initCart($cart);        
 
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
@@ -990,6 +989,8 @@ class PaynlPaymentMethods extends PaymentModule
 
         # Make sure no fee is in the cart
         $cart->deleteProduct(Configuration::get('PAYNL_FEE_PRODUCT_ID'), 0);
+
+        $productData = $this->_getProductData($cart);
         $cartTotal = $cart->getOrderTotal(true, Cart::BOTH, null, null, false);
         $iPaymentFee = $this->paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
         $iPaymentFee = empty($iPaymentFee) ? 0 : $iPaymentFee;
@@ -997,6 +998,7 @@ class PaynlPaymentMethods extends PaymentModule
 
         try {
             $this->addPaymentFee($cart, $iPaymentFee);
+            $productData = $this->_getProductData($cart);
         } catch (Exception $e) {
             $this->helper->payLog('startPayment', 'Could not add payment fee: ' . $e->getMessage(), $cartId);
         }
@@ -1022,7 +1024,7 @@ class PaynlPaymentMethods extends PaymentModule
 
         $request->setCustomer($this->addressHelper->getCustomer($cart));
 
-        $requestOrderData->setProducts($this->_getProductData($cart));
+        $requestOrderData->setProducts($productData);
 
         $requestOrderData->setInvoiceAddress($this->addressHelper->getInvoiceAddress($cart));
         $requestOrderData->setDeliveryAddress($this->addressHelper->getDeliveryAddress($cart));
