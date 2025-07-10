@@ -990,6 +990,7 @@ class PaynlPaymentMethods extends PaymentModule
         # Make sure no fee is in the cart
         $cart->deleteProduct(Configuration::get('PAYNL_FEE_PRODUCT_ID'), 0);
 
+        # Retrieve the product data at this point to ensure the cart total is correct.
         $productData = $this->_getProductData($cart);
         $cartTotal = $cart->getOrderTotal(true, Cart::BOTH, null, null, false);
         $iPaymentFee = $this->paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
