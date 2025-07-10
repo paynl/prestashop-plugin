@@ -811,9 +811,11 @@ class PaynlPaymentMethods extends PaymentModule
                       $transactionId
                     );
 
+                    $orderStatus = count($payPayments) > 1 ? $this->statusPending : $arrOrderState['id'];
+
                     $this->validateOrder(
                         (int) $cartId,
-                        $this->statusPending,
+                        $orderStatus,
                         $amountPaid,
                         $paymentMethodName,
                         null,
@@ -826,7 +828,10 @@ class PaynlPaymentMethods extends PaymentModule
                     $orderId = Order::getIdByCartId($cartId);
                     $order = new Order($orderId);
                     
-                    $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
+                    if (count($payPayments) > 1) {
+                        $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
+                    }
+                    
                     $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
                 
                     $message = "Validated order (" . $order->reference . ") with status: " . $arrOrderState['name'];
