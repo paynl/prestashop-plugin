@@ -977,7 +977,7 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
-        $cart = $this->initCart($cart);
+        $cart = $this->initCart($cart);        
 
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
@@ -989,6 +989,9 @@ class PaynlPaymentMethods extends PaymentModule
 
         # Make sure no fee is in the cart
         $cart->deleteProduct(Configuration::get('PAYNL_FEE_PRODUCT_ID'), 0);
+
+        # Retrieve the product data at this point to ensure the cart total is correct.
+        $cart->getProducts(true);
         $cartTotal = $cart->getOrderTotal(true, Cart::BOTH, null, null, false);
         $iPaymentFee = $this->paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
         $iPaymentFee = empty($iPaymentFee) ? 0 : $iPaymentFee;
