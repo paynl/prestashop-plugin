@@ -115,13 +115,13 @@
                             <div class="form-group limit_countries_required {if !$paymentmethod->limit_countries}hidden{/if}">
                                 <label class="control-label col-lg-3 align-right">{l s="Allowed countries" mod='paynlpaymentmethods'}</label>
                                 <div class="col-lg-9">
-                                    <select name="allowed_countries" multiple>                                
+                                    <select class="select-multiple" name="allowed_countries" multiple style="width: 100%">
                                         {foreach from=$available_countries item=country}
                                             <option value="{$country.id_country}" {if in_array($country.id_country, $paymentmethod->allowed_countries)}selected="selected"{/if}>{$country.name}</option>                        
                                         {/foreach}
                                     </select>
                                     <p class="help-block">
-                                        {l s="Select all countries where this paymentmethod may be used, hold ctrl to select multiple countries" mod='paynlpaymentmethods'}
+                                        {l s="Select all countries where this paymentmethod may be used" mod='paynlpaymentmethods'}
                                     </p>
                                 </div>
                             </div>
@@ -137,13 +137,13 @@
                             <div class="form-group limit_carriers_required {if !$paymentmethod->limit_carriers}hidden{/if}">
                                 <label class="control-label col-lg-3 align-right">{l s="Allowed carriers" mod='paynlpaymentmethods'}</label>
                                 <div class="col-lg-9">
-                                    <select name="allowed_carriers" multiple>
+                                    <select class="select-multiple" name="allowed_carriers" multiple style="width: 100%">
                                         {foreach from=$available_carriers item=carrier}
                                             <option value="{$carrier.id_carrier}" {if in_array($carrier.id_carrier, $paymentmethod->allowed_carriers)}selected="selected"{/if}>{$carrier.name}</option>                        
                                         {/foreach}
                                     </select>
                                     <p class="help-block">
-                                        {l s="Select all carriers where this paymentmethod may be used, hold ctrl to select multiple carriers" mod='paynlpaymentmethods'}
+                                        {l s="Select all carriers where this paymentmethod may be used" mod='paynlpaymentmethods'}
                                     </p>
                                 </div>
                             </div>
@@ -233,7 +233,8 @@
         }
         return $returnArray;
     }
-    
+
+    $('.select-multiple').select2();
 
     function paynlFormData(){       
         var $paymentmethods = [];

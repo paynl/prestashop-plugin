@@ -1572,6 +1572,8 @@ class PaynlPaymentMethods extends PaymentModule
     public function renderPaymentMethodsForm()
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
+        $this->context->controller->addJs($this->_path . 'views/js/select2.min.js');
+        $this->context->controller->addCss($this->_path . 'views/css/select2.min.css');
         $this->context->controller->addCss($this->_path . 'css/admin510.css');
 
         # Setting vars that might not exist after updating an old version.
