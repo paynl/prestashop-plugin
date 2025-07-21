@@ -1086,7 +1086,7 @@ class PaynlPaymentMethods extends PaymentModule
     /**
      * @return array|false
      */
-    public function syncPaymentMethods($paymentMethodsFromPay)     
+    public function syncPaymentMethods($paymentMethodsFromPay)
     {
         # First retrieve local saved payment methods
         $localMethods = [];
