@@ -233,14 +233,14 @@ class PaynlPaymentMethods extends PaymentModule
                 $payOrder = $this->getPayOrder((string)$transactionId);
             } catch (Exception $e) {
                 $payOrder = false;
-                $useGNS = true;
+                $useGMS = true;
             }
 
-            if (isset($useGNS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
+            if (isset($useGMS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
                 $payGmsOrder = $this->getPayRefundOrder($transactionId);
                 $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
 
-                if ($payGmsOrder->isRefunded() || isset($useGNS)) {
+                if ($payGmsOrder->isRefunded() || isset($useGMS)) {
                     $payOrder = $payGmsOrder;
                 }
                 $alreadyRefunded = $payGmsOrder->getAmountRefunded();
