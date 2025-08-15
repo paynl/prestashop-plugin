@@ -243,7 +243,10 @@ class PaynlPaymentMethods extends PaymentModule
                 if ($payGmsOrder->isRefunded() || isset($useGMS)) {
                     $payOrder = $payGmsOrder;
                 }
-                $alreadyRefunded = $payGmsOrder->getAmountRefunded();
+                
+                if($currency->iso_code == 'EUR'){
+                    $alreadyRefunded = $payGmsOrder->getAmountRefunded();
+                }
             }
 
             $payOrderAmount = $payOrder->getAmount();
