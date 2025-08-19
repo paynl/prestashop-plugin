@@ -57,7 +57,7 @@ class PaymentMethodsHelper
             $name = $paymentMethod->name;
 
             # If a translation is found, then use that name field:
-            if (!empty($paymentMethod->{'name_' . $iso_code}) && count(Language::getLanguages(true)) > 1) {
+            if (!empty($paymentMethod->{'name_' . $iso_code})) {
                 $name = $paymentMethod->{'name_' . $iso_code};
             }
             if ($paymentMethod->fee > 0) {
@@ -83,7 +83,7 @@ class PaymentMethodsHelper
             }
 
             $strDescription = empty($paymentMethod->description) ? null : $paymentMethod->description;
-            if (!empty($paymentMethod->{'description_' . $iso_code}) && count(Language::getLanguages(true)) > 1) {
+            if (!empty($paymentMethod->{'description_' . $iso_code})) {
                 $strDescription = $paymentMethod->{'description_' . $iso_code};
             }
 
