@@ -244,7 +244,7 @@ class PaynlPaymentMethods extends PaymentModule
                     $payOrder = $payGmsOrder;
                 }
                 
-                if($currency->iso_code == 'EUR'){
+                if ($currency->iso_code == 'EUR') {
                     $alreadyRefunded = $payGmsOrder->getAmountRefunded();
                 }
             }
