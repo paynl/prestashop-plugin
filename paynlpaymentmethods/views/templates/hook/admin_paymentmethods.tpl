@@ -38,7 +38,6 @@
                                     <p class="help-block">
                                         {l s='The name of the payment method' mod='paynlpaymentmethods'}
                                     </p>
-                                    {if count($languages) > 1}  
                                     <div class="translations">
                                         <div class="show_translations">{l s='Translations' mod='paynlpaymentmethods'} &nbsp; <i class="icon-chevron-down"></i></div>                            
                                             <br/>
@@ -54,7 +53,6 @@
                                             <br/>
                                         </div>
                                     </div>
-                                    {/if}
                                 </div>                    
                                 
                             </div>
@@ -65,8 +63,7 @@
                                     <input type="text" value="{$paymentmethod->description}" name="description">                             
                                     <p class="help-block">
                                         {l s='Short description for the paymentmethod, Will be shown on selection of the payment method' mod='paynlpaymentmethods'}
-                                    </p>
-                                    {if count($languages) > 1}  
+                                    </p> 
                                     <div class="translations">
                                         <div class="show_translations">{l s='Translations' mod='paynlpaymentmethods'} &nbsp; <i class="icon-chevron-down"></i></div>
                                             <br/>
@@ -82,7 +79,6 @@
                                             <br/>
                                         </div>
                                     </div>
-                                    {/if}
                                 </div>
                             </div>
                             <div class="form-group">
