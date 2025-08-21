@@ -38,8 +38,8 @@
                                     <p class="help-block">
                                         {l s='The name of the payment method' mod='paynlpaymentmethods'}
                                     </p>
-                                    {if isset($languages) && $languages|@is_array && $languages|@count > 0}
-                                    <div class="translations">
+                                    {if isset($languages) && count($languages) > 0}
+                                        <div class="translations">
                                         <div class="show_translations">{l s='Translations' mod='paynlpaymentmethods'} &nbsp; <i class="icon-chevron-down"></i></div>                            
                                             <br/>
                                             <div class="language-options hidden">                                                          
@@ -65,8 +65,8 @@
                                     <p class="help-block">
                                         {l s='Short description for the paymentmethod, Will be shown on selection of the payment method' mod='paynlpaymentmethods'}
                                     </p>
-                                    {if isset($languages) && $languages|@is_array && $languages|@count > 0}
-                                    <div class="translations">
+                                    {if isset($languages) && count($languages) > 0}
+                                        <div class="translations">
                                         <div class="show_translations">{l s='Translations' mod='paynlpaymentmethods'} &nbsp; <i class="icon-chevron-down"></i></div>
                                             <br/>
                                             <div class="language-options hidden">                            
