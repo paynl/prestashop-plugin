@@ -23,7 +23,7 @@ class PayOrder implements ModelInterface
     /**
      * @var string
      */
-    protected string $type;
+    private ?string $type = null;
 
     /**
      * @var string
@@ -98,7 +98,7 @@ class PayOrder implements ModelInterface
     /**
      * @var array
      */
-    protected $payments;
+    private ?array $payments = null;
 
     /**
      * @var string
@@ -473,6 +473,21 @@ class PayOrder implements ModelInterface
         return $this->payments[0]['paymentMethod']['id'] ?? null;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getCustomerId(): ?string
+    {
+        return $this->payments[0]['customerId'] ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCustomerName(): ?string
+    {
+        return $this->payments[0]['customerName'] ?? null;
+    }
 
     /**
      * @param Amount $amount
@@ -543,7 +558,7 @@ class PayOrder implements ModelInterface
      */
     public function getPayments(): array
     {
-        return $this->payments ?? [];
+        return (array)$this->payments;
     }
 
     /**
@@ -741,6 +756,15 @@ class PayOrder implements ModelInterface
     public function isAuthorized(): bool
     {
         return (new PayStatus())->get($this->getStatusCode()) === PayStatus::AUTHORIZE;
+    }
+
+    /**
+     * @return boolean
+     * @throws Exception
+     */
+    public function isDenied(): bool
+    {
+        return (new PayStatus())->get($this->getStatusCode()) === PayStatus::DENIED;
     }
 
     /**

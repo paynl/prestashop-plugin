@@ -47,6 +47,7 @@ class CheckoutOption implements ModelInterface
      */
     protected $requiredFields;
 
+
     /**
      * @return int
      */
