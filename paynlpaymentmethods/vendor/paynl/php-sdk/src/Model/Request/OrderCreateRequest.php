@@ -386,6 +386,7 @@ class OrderCreateRequest extends RequestData
             $this->_add($custParameters, 'language', $this->customer->getLanguage());
             $this->_add($custParameters, 'trust', $this->customer->getTrust());
             $this->_add($custParameters, 'reference', $this->customer->getReference());
+            $this->_add($custParameters, 'locale', $this->customer->getLocale());
 
             $compParameters = [];
             $this->_add($compParameters, 'name', $this->customer->getCompany()->getName());
@@ -432,7 +433,7 @@ class OrderCreateRequest extends RequestData
             $stats = [];
             $this->_add($stats, 'info', $this->stats->getInfo());
             $this->_add($stats, 'tool', $this->stats->getTool());
-            $this->_add($stats, 'object', $this->stats->getObject());
+            $this->_add($stats, 'object', $this->getSdkObject($this->stats));
             $this->_add($stats, 'extra1', $this->stats->getExtra1());
             $this->_add($stats, 'extra2', $this->stats->getExtra2());
             $this->_add($stats, 'extra3', $this->stats->getExtra3());
@@ -450,6 +451,30 @@ class OrderCreateRequest extends RequestData
         $this->_add($parameters, 'transferData', $this->transferData);
 
         return $parameters;
+    }
+
+    /**
+     * @param Stats $stats
+     * @return string
+     */
+    private function getSdkObject(Stats $stats)
+    {
+        $__object = $this->stats->getObject();
+
+        if (empty($__object)) {
+            $composerFilePath = sprintf('%s/%s', rtrim(__DIR__, '/'), '../../../composer.json');
+
+            if (file_exists($composerFilePath)) {
+                $composer = json_decode(file_get_contents($composerFilePath), true);
+
+                if (isset($composer['version'])) {
+                    $composerVersion = $composer['version'];
+                }
+            }
+
+            $__object = 'PHP-SDK ' . ($composerVersion ?? 'unknown');
+        }
+        return $__object;
     }
 
     /**
