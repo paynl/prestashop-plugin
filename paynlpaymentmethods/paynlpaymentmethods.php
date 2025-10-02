@@ -1275,7 +1275,7 @@ class PaynlPaymentMethods extends PaymentModule
         $cartDetails = $cart->GetSummaryDetails();
         $discounts = (isset($cartDetails['discounts'])) ? $cartDetails['discounts'] : array();
 
-        foreach ($discounts as $discount) {
+        foreach ($discounts as $dId => $discount) {
             if ((!empty($discount['reduction_amount']) && $discount['reduction_amount'] > 0) || (!empty($discount['reduction_percent']) && $discount['reduction_percent'] > 0) || (!empty($discount['free_shipping']) && $discount['free_shipping'] === 1 && $free_shipping_coupon_applied === false)) {
                 $discountValue = !empty($discount['value_real']) ? $discount['value_real'] : 0;
                 $discountTax = !empty($discount['value_tax_exc']) ? $discount['value_tax_exc'] : 0;
@@ -1287,7 +1287,7 @@ class PaynlPaymentMethods extends PaymentModule
                     $vatClass = paynl_determine_vat_class($discountValue, $discountTax);
                     $desc = !empty($discount['description']) ? $discount['description'] : 'DISCOUNT';
                     $collectionProducts->addProduct(
-                      new PayProduct(substr($discount['code'], 0, 25), $desc, -$discountValue, 'EUR', PayProduct::TYPE_DISCOUNT, 1, $vatClass)
+                        new PayProduct(trim(substr('D' . ($dId + 1) .  $discount['code'], 0, 25)), $desc, -$discountValue, 'EUR', PayProduct::TYPE_DISCOUNT, 1, $vatClass)
                     );
                     if ($discount['free_shipping'] === 1) {
                         $free_shipping_coupon_applied = true;
