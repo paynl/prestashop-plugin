@@ -8,6 +8,8 @@ use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Tools;
 use Configuration;
 use Address;
+use Context;
+use Currency;
 
 /**
  * Class PaymentMethodsHelper
@@ -61,7 +63,8 @@ class PaymentMethodsHelper
                 $name = $paymentMethod->{'name_' . $iso_code};
             }
             if ($paymentMethod->fee > 0) {
-                $name .= " (+ " . Tools::displayPrice($paymentMethod->fee, (int)$cart->id_currency, true) . ")";
+                $currency = new Currency((int)$cart->id_currency);
+                $name .= " (+ " . Context::getContext()->getCurrentLocale()->formatPrice($paymentMethod->fee, $currency->iso_code) . ")";
             }
 
             $objPaymentMethod->setCallToActionText($name)
