@@ -69,7 +69,11 @@ class PaynlPaymentMethodsFinishModuleFrontController extends ModuleFrontControll
             }
 
             $customer = new Customer($cart->id_customer);
-            $this->order = $orderId;
+            if (empty($customer)) {
+                $customer = $this->context->customer;
+            }
+            $this->order = $orderId;    
+
             Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cartId . '&id_module=' . $this->module->id . '&id_order=' . $orderId . '&key=' . $customer->secure_key);
         } else {
             # Delete old payment fee

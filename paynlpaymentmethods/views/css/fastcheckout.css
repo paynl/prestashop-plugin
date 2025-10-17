@@ -1,0 +1,37 @@
+.pay-fastcheckout-button {
+    background-color: #c90066 !important;
+    border-color: #c90066 !important;
+    background-image: url(../images/fastCheckoutIdeal.png) !important;
+    background-repeat: no-repeat;
+    background-size: 51px;
+        background-position: 15px center;
+    cursor: pointer;
+    padding-left: 75px;
+    color: white !important;
+    display: inline-block;
+    float: none;
+    margin-bottom: 0.5rem;
+}
+
+.pay-fastcheckout-button.checkout {
+   margin-top: 0.5rem;
+   background-position: 45px center;
+}
+
+.pay-fastcheckout-button.fs-product {
+   position: absolute;
+    left: 0;
+    bottom: -50px;
+    height: 2.75rem;
+    padding-top: .625rem;
+    line-height: inherit;
+}
+
+.break {
+    width: 5px;
+}
+
+.block-social ul, .product-quantity{
+    position: relative;
+    margin-bottom: 65px;
+}
