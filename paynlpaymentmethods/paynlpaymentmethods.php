@@ -143,6 +143,15 @@ class PaynlPaymentMethods extends PaymentModule
         $this->context->controller->addCSS($this->_path . 'views/css/PAY_checkout.css');
         $this->context->controller->addJs($this->_path . 'views/js/fastcheckout.js');
         $this->context->controller->addCSS($this->_path . 'views/css/fastcheckout.css');
+
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);      
+        if (isset($paymentMethodSettings->fastcheckout_modal) && $paymentMethodSettings->fastcheckout_modal == 1) {
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),   
+                'checkoutUrl' => $this->context->link->getPageLink('order'),
+            ]);       
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/modal.tpl');
+        }        
     }
 
     /**
@@ -214,11 +223,20 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookDisplayExpressCheckout(array $params)
     {        
-        $this->smarty->assign([       
-            'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
-        ]);       
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
 
-        return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/checkout.tpl');
+        $customer = $this->context->customer;
+        if (Validate::isLoadedObject($customer) && $customer->id > 0 && !$customer->is_guest && isset($paymentMethodSettings->fastcheckout_guest_only) && $paymentMethodSettings->fastcheckout_guest_only == 1) {
+            return false;
+        }
+
+        if (isset($paymentMethodSettings->fastcheckout_cart_page) && $paymentMethodSettings->fastcheckout_cart_page == 1) {
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
+                'show_modal' => isset($paymentMethodSettings->fastcheckout_modal) ? $paymentMethodSettings->fastcheckout_modal : 0,
+            ]);            
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/checkout.tpl');
+        }        
     }
 
     /**
@@ -230,11 +248,20 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookDisplayCartModalContent(array $params)
     {        
-        $this->smarty->assign([       
-            'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
-        ]);       
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
 
-        return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/minicart.tpl');
+        $customer = $this->context->customer;
+        if (Validate::isLoadedObject($customer) && $customer->id > 0 && !$customer->is_guest && isset($paymentMethodSettings->fastcheckout_guest_only) && $paymentMethodSettings->fastcheckout_guest_only == 1) {
+            return false;
+        }
+
+        if (isset($paymentMethodSettings->fastcheckout_minicart) && $paymentMethodSettings->fastcheckout_minicart == 1) {
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
+                'show_modal' => isset($paymentMethodSettings->fastcheckout_modal) ? $paymentMethodSettings->fastcheckout_modal : 0,
+            ]);       
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/minicart.tpl');
+        }
     }
 
     /**
@@ -245,12 +272,20 @@ class PaynlPaymentMethods extends PaymentModule
      * @return string
      */
     public function hookDisplayProductActions(array $params)
-    {        
-        $this->smarty->assign([       
-            'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
-        ]);       
+    {       
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
 
-        return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/product.tpl');
+        $customer = $this->context->customer;
+        if (Validate::isLoadedObject($customer) && $customer->id > 0 && !$customer->is_guest && isset($paymentMethodSettings->fastcheckout_guest_only) && $paymentMethodSettings->fastcheckout_guest_only == 1) {
+            return false;
+        }
+
+        if (isset($paymentMethodSettings->fastcheckout_product_page) && $paymentMethodSettings->fastcheckout_product_page == 1) { 
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction'])
+            ]);
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/product.tpl');
+        }
     }
 
     /**
@@ -934,25 +969,23 @@ class PaynlPaymentMethods extends PaymentModule
 
     private function setCustomerAddress(\PayNL\Sdk\Model\Pay\PayOrder $payOrder, Cart $cart)
     {
-
         $data = $payOrder->getFastCheckoutData();
 
-        // Check if email already has a customer account assigned to it.
         $id_customer = Customer::customerExists($data['customer']['email'], true);
         if ($id_customer) {
             $customer = new Customer($id_customer);          
-        } else {
-            $customer = new Customer($cart->id_customer);  
-        }
+        } 
 
-        if (!Validate::isLoadedObject($customer)) {
-            throw new Exception('Could not validate customer.');
-        }
+        if (empty($customer) || !Validate::isLoadedObject($customer)) {
+            $customer = new Customer();
+            $customer->is_guest = 1;
+        }        
 
         $customer->firstname = $data['customer']['firstName'];
         $customer->lastname = $data['customer']['lastName'];
         if (!$id_customer) {
             $customer->email = $data['customer']['email'];
+            $customer->passwd = md5(time());
         }
         $customer->save();
 
@@ -1168,12 +1201,14 @@ class PaynlPaymentMethods extends PaymentModule
 
         $requestOrderData = new PayNL\Sdk\Model\Order();
 
-        $request->setCustomer($this->addressHelper->getCustomer($cart));
+        if (empty($parameters['fastcheckout']) || $parameters['fastcheckout'] !== true) {
+            $request->setCustomer($this->addressHelper->getCustomer($cart));
 
-        $requestOrderData->setProducts($this->_getProductData($cart));
-
-        $requestOrderData->setInvoiceAddress($this->addressHelper->getInvoiceAddress($cart));
-        $requestOrderData->setDeliveryAddress($this->addressHelper->getDeliveryAddress($cart));
+            $requestOrderData->setInvoiceAddress($this->addressHelper->getInvoiceAddress($cart));
+            $requestOrderData->setDeliveryAddress($this->addressHelper->getDeliveryAddress($cart));
+        }
+        
+        $requestOrderData->setProducts($this->_getProductData($cart));        
 
         $request->setOrder($requestOrderData);
 
