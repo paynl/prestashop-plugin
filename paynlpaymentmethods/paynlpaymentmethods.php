@@ -223,7 +223,7 @@ class PaynlPaymentMethods extends PaymentModule
         $orderPayments = $order->getOrderPayments();
         $orderPayment = reset($orderPayments);
         $currency = new Currency($orderPayment->id_currency);
-        $transactionId = $orderPayment->transaction_id;
+        $transactionId = (string)$orderPayment->transaction_id;
         $payOrderAmount = 0;
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
@@ -236,14 +236,14 @@ class PaynlPaymentMethods extends PaymentModule
 
         try {
             try {
-                $payOrder = $this->getPayOrder((string)$transactionId);
+                $payOrder = $this->getPayOrder($transactionId);
             } catch (Exception $e) {
                 $payOrder = false;
                 $useGMS = true;
             }
 
             if (isset($useGMS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
-                $payGmsOrder = $this->getPayRefundOrder((string)$transactionId);
+                $payGmsOrder = $this->getPayRefundOrder($transactionId);
                 $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
 
                 if ($payGmsOrder->isRefunded() || isset($useGMS)) {
@@ -337,7 +337,7 @@ class PaynlPaymentMethods extends PaymentModule
             $action = $bShouldCapture ? 'capture' : 'void';
             $orderPayments = $order->getOrderPayments();
             $orderPayment = reset($orderPayments);
-            $transactionId = $orderPayment->transaction_id;
+            $transactionId = (string)$orderPayment->transaction_id;
 
             # Check if transaction ID is valid
             if (empty($transactionId)) {
@@ -345,16 +345,16 @@ class PaynlPaymentMethods extends PaymentModule
                 return;
             }
 
-            $transaction = $this->getPayOrder((string)$transactionId);
+            $transaction = $this->getPayOrder($transactionId);
 
             # Check if status is Authorized
             if ($transaction->isAuthorized()) {
                 $this->helper->payLog('Auto-' . $action, 'Starting auto-' . $action, $cartId, $transactionId);
                 try {
                     if ($action == 'capture') {
-                        $request = new OrderCaptureRequest((string)$transactionId);
+                        $request = new OrderCaptureRequest($transactionId);
                     } else {
-                        $request = new \PayNL\Sdk\Model\Request\OrderVoidRequest((string)$transactionId);
+                        $request = new \PayNL\Sdk\Model\Request\OrderVoidRequest($transactionId);
                     }
                     $request->setConfig($this->helper->getConfig())->start();
 
