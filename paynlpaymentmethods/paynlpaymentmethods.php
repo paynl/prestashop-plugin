@@ -228,7 +228,7 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
-        // Check if transaction ID is valid
+        # Check if transaction ID is valid
         if (empty($transactionId)) {
             $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
             return '';
@@ -339,7 +339,7 @@ class PaynlPaymentMethods extends PaymentModule
             $orderPayment = reset($orderPayments);
             $transactionId = $orderPayment->transaction_id;
 
-            // Check if transaction ID is valid
+            # Check if transaction ID is valid
             if (empty($transactionId)) {
                 $this->helper->payLog('Auto-' . $action, 'Transaction ID is empty or null for order: ' . $orderId . '. Skipping auto-' . $action, $cartId);
                 return;
@@ -779,8 +779,6 @@ class PaynlPaymentMethods extends PaymentModule
                 $cartId,
                 $transactionId
             );
-
-            $saveOrder = false;
 
             # Check if the order is processed by Pay.
             if ($order->module !== 'paynlpaymentmethods') {
