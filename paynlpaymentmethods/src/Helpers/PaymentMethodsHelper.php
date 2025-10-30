@@ -10,6 +10,7 @@ use Configuration;
 use Address;
 use Context;
 use Currency;
+use Cart;
 
 /**
  * Class PaymentMethodsHelper
