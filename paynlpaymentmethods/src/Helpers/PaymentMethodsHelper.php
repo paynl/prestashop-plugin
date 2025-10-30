@@ -5,7 +5,6 @@ namespace PaynlPaymentMethods\PrestaShop\Helpers;
 use Language;
 use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use Tools;
 use Configuration;
 use Address;
 use Context;
