@@ -223,14 +223,20 @@ class PaynlPaymentMethods extends PaymentModule
         $orderPayments = $order->getOrderPayments();
         $orderPayment = reset($orderPayments);
         $currency = new Currency($orderPayment->id_currency);
-        $transactionId = $orderPayment->transaction_id;
+        $transactionId = (string)$orderPayment->transaction_id;
         $payOrderAmount = 0;
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
+        # Check if transaction ID is valid
+        if (empty($transactionId)) {
+            $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
+            return '';
+        }
+
         try {
             try {
-                $payOrder = $this->getPayOrder((string)$transactionId);
+                $payOrder = $this->getPayOrder($transactionId);
             } catch (Exception $e) {
                 $payOrder = false;
                 $useGMS = true;
@@ -331,7 +337,14 @@ class PaynlPaymentMethods extends PaymentModule
             $action = $bShouldCapture ? 'capture' : 'void';
             $orderPayments = $order->getOrderPayments();
             $orderPayment = reset($orderPayments);
-            $transactionId = $orderPayment->transaction_id;
+            $transactionId = (string)$orderPayment->transaction_id;
+
+            # Check if transaction ID is valid
+            if (empty($transactionId)) {
+                $this->helper->payLog('Auto-' . $action, 'Transaction ID is empty or null for order: ' . $orderId . '. Skipping auto-' . $action, $cartId);
+                return;
+            }
+
             $transaction = $this->getPayOrder($transactionId);
 
             # Check if status is Authorized
@@ -766,8 +779,6 @@ class PaynlPaymentMethods extends PaymentModule
                 $cartId,
                 $transactionId
             );
-
-            $saveOrder = false;
 
             # Check if the order is processed by Pay.
             if ($order->module !== 'paynlpaymentmethods') {

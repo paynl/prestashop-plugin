@@ -8,6 +8,7 @@ use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Tools;
 use Configuration;
 use Address;
+use Cart;
 
 /**
  * Class PaymentMethodsHelper
