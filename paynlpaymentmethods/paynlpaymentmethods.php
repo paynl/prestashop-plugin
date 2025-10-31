@@ -215,6 +215,10 @@ class PaynlPaymentMethods extends PaymentModule
             return;
         }
 
+        if (!Validate::isLoadedObject($order)) {
+            return;
+        }
+
         # Check if the order is processed by Pay.
         if ($order->module !== 'paynlpaymentmethods') {
             return;
@@ -222,6 +226,11 @@ class PaynlPaymentMethods extends PaymentModule
 
         $orderPayments = $order->getOrderPayments();
         $orderPayment = reset($orderPayments);
+
+        if (!$orderPayment || empty($orderPayment->id_currency)) {
+            return;
+        }
+
         $currency = new Currency($orderPayment->id_currency);
         $transactionId = (string)$orderPayment->transaction_id;
         $payOrderAmount = 0;
@@ -811,7 +820,7 @@ class PaynlPaymentMethods extends PaymentModule
                     $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
                     $this->helper->payLog('processPayment (follow payment method)', $transactionId . ' - When processing order: ' . $orderId . ' the original payment method id: ' . $dbTransactionId . ' was changed to: ' . $profileId); // phpcs:ignore
                 }
-                $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);                      
+                $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
             }
 
             $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
