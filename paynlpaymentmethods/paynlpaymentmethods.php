@@ -867,7 +867,8 @@ class PaynlPaymentMethods extends PaymentModule
         $cart = new Cart((int)$cartId);
         $this->context->cart = $cart;
 
-        if ($payOrder->isFastCheckout()) {
+        $customer = new Customer($cart->id_customer);
+        if ($payOrder->isFastCheckout() && !empty($payOrder->getFastCheckoutData()) && (empty($customer) || !Validate::isLoadedObject($customer))) {
             $cart = $this->setCustomerAddress($payOrder, $cart);
         }
 
