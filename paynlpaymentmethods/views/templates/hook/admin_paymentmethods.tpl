@@ -182,7 +182,7 @@
 
                             {if in_array($paymentmethod->id, $showFastcheckoutOptionsIdeal)}                                
                                 <div class="form-group">
-                                    <label class="control-label col-lg-3 align-right" style="font-size: 25px; margin-top: 25px;">{l s='Fastcheckout' mod='paynlpaymentmethods'}</label>
+                                    <label class="control-label col-lg-3 align-right" style="font-size: 25px; margin-top: 25px;">{l s='Fast checkout' mod='paynlpaymentmethods'}</label>
                                     <div class="col-lg-9" style="height:80px;">                                       
                                     </div>
                                 </div>
