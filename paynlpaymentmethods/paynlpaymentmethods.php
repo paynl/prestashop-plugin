@@ -54,7 +54,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.2.7';
+        $this->version = '5.2.8';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
@@ -312,6 +312,10 @@ class PaynlPaymentMethods extends PaymentModule
             return;
         }
 
+        if (!Validate::isLoadedObject($order)) {
+            return;
+        }
+
         # Check if the order is processed by Pay.
         if ($order->module !== 'paynlpaymentmethods') {
             return;
@@ -319,15 +323,26 @@ class PaynlPaymentMethods extends PaymentModule
 
         $orderPayments = $order->getOrderPayments();
         $orderPayment = reset($orderPayments);
+
+        if (!$orderPayment || empty($orderPayment->id_currency)) {
+            return;
+        }
+
         $currency = new Currency($orderPayment->id_currency);
-        $transactionId = $orderPayment->transaction_id;
+        $transactionId = (string)$orderPayment->transaction_id;
         $payOrderAmount = 0;
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
+        # Check if transaction ID is valid
+        if (empty($transactionId)) {
+            $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
+            return '';
+        }
+
         try {
             try {
-                $payOrder = $this->getPayOrder((string)$transactionId);
+                $payOrder = $this->getPayOrder($transactionId);
             } catch (Exception $e) {
                 $payOrder = false;
                 $useGMS = true;
@@ -428,7 +443,14 @@ class PaynlPaymentMethods extends PaymentModule
             $action = $bShouldCapture ? 'capture' : 'void';
             $orderPayments = $order->getOrderPayments();
             $orderPayment = reset($orderPayments);
-            $transactionId = $orderPayment->transaction_id;
+            $transactionId = (string)$orderPayment->transaction_id;
+
+            # Check if transaction ID is valid
+            if (empty($transactionId)) {
+                $this->helper->payLog('Auto-' . $action, 'Transaction ID is empty or null for order: ' . $orderId . '. Skipping auto-' . $action, $cartId);
+                return;
+            }
+
             $transaction = $this->getPayOrder($transactionId);
 
             # Check if status is Authorized
@@ -869,8 +891,6 @@ class PaynlPaymentMethods extends PaymentModule
                 $transactionId
             );
 
-            $saveOrder = false;
-
             # Check if the order is processed by Pay.
             if ($order->module !== 'paynlpaymentmethods') {
                 return new ExchangeResponse(true, 'Not a Pay. order. Customer seemed to used different provider. Not updating the order.');
@@ -902,7 +922,7 @@ class PaynlPaymentMethods extends PaymentModule
                     $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
                     $this->helper->payLog('processPayment (follow payment method)', $transactionId . ' - When processing order: ' . $orderId . ' the original payment method id: ' . $dbTransactionId . ' was changed to: ' . $profileId); // phpcs:ignore
                 }
-                $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);                      
+                $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
             }
 
             $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);

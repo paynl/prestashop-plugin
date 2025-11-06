@@ -7,6 +7,7 @@ use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use Currency;
 use OrderHistory;
 use OrderPayment;
+use PrestaShopException;
 
 /**
  * Class ProcessingHelper
@@ -61,24 +62,22 @@ class ProcessingHelper
 
     /**
      * @param $order
-     * @param $transactionId 
+     * @param $transactionId
      * @param $payPayments
      * @param $paymentMethodName
+     * @param $totalAmount
      * @return void
      * @throws PrestaShopException
-     * @throws Exception
      */
-    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount)
+    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
     {
+        (new PayHelper())->payLog('registerPayments', 'Update '.$transactionId);
+
         $totalPaid = 0;
 
-        if (!empty($payPayments)) {
-            $payPayments[] = null;
-        }
-
         foreach ($payPayments as $key => $payPayment) {
-            if (!empty($payPayments)) {
-                $payAmount = $payPayment['amount']['value'] / 100;
+            if (!empty($payPayment)) {
+                $payAmount = ($payPayment['amount']['value'] ?? 0) / 100;
             } else {
                 $payAmount = $totalAmount;
             }
@@ -93,7 +92,7 @@ class ProcessingHelper
             $suffix = '';
             if ($key > 0) {
                 $suffix = '_' . $key;
-                $paymentMethodName = PaymentMethod::getName($transactionId, $payPayment['paymentMethod']['id']);
+                $paymentMethodName = PaymentMethod::getName($transactionId, ($payPayment['paymentMethod']['id'] ?? null));
             }
 
             foreach ($arrOrderPayment as $objOrderPayment) {
