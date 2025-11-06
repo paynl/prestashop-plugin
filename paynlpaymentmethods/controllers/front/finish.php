@@ -69,8 +69,12 @@ class PaynlPaymentMethodsFinishModuleFrontController extends ModuleFrontControll
             }
 
             $customer = new Customer($cart->id_customer);
-            if (empty($customer)) {
-                $customer = $this->context->customer;
+            if (empty($customer) || !Validate::isLoadedObject($customer)) {
+                $order = new Order($orderId);
+                if (Validate::isLoadedObject($order)) {
+                    $id_customer = (int) $order->id_customer;
+                    $customer = new Customer($id_customer);
+                }
             }
             $this->order = $orderId;    
 
