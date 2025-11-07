@@ -20,11 +20,7 @@ class PaynlPaymentMethodsFastcheckoutModuleFrontController extends ModuleFrontCo
             Tools::redirect($transaction);
 
         } catch (Throwable $th) {
-
-            $link = Context::getContext()->link;
-            $refererUrl = $link->getRefererURL();
-            Tools::redirect($refererUrl);
-
+            Tools::redirect($this->context->link->getPageLink('index'));
         }
     }
 }
