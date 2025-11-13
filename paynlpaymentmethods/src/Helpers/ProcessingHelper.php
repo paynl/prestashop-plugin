@@ -74,8 +74,7 @@ class ProcessingHelper
      * @return void
      * @throws PrestaShopException
      */
-    public
-    function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
+    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
     {
         (new PayHelper())->payLog('registerPayments', 'Update ' . $transactionId);
 
