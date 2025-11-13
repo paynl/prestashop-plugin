@@ -6,7 +6,6 @@ use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use Currency;
 use OrderHistory;
-use OrderPayment;
 use PrestaShopException;
 
 /**
@@ -88,7 +87,7 @@ class ProcessingHelper
 
             $totalPaid += $payAmount;
             $orderPayment = null;
-            $arrOrderPayment = OrderPayment::getByOrderReference($order->reference);
+            $arrOrderPayment = \OrderPayment::getByOrderReference($order->reference);
             $suffix = '';
             if ($key > 0) {
                 $suffix = '_' . $key;
@@ -102,7 +101,7 @@ class ProcessingHelper
             }
 
             if (empty($orderPayment)) {
-                $orderPayment = new OrderPayment();
+                $orderPayment = new \OrderPayment();
                 $orderPayment->order_reference = $order->reference;
             }
             if (empty($orderPayment->payment_method)) {
