@@ -17,6 +17,12 @@ class ProcessingHelper
 {
     public function __construct()
     {
+        static $patched = false;
+        if (!$patched && isset(\OrderPayment::$definition['fields']['order_reference'])) {
+            \OrderPayment::$definition['fields']['order_reference']['size'] = 50;
+            $patched = true;
+        }
+
         return $this;
     }
 
@@ -68,9 +74,10 @@ class ProcessingHelper
      * @return void
      * @throws PrestaShopException
      */
-    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
+    public
+    function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
     {
-        (new PayHelper())->payLog('registerPayments', 'Update '.$transactionId);
+        (new PayHelper())->payLog('registerPayments', 'Update ' . $transactionId);
 
         $totalPaid = 0;
 
