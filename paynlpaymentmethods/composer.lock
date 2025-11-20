@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "79b83b4f9b82af057b12ef92a497a3cc",
+    "content-hash": "379a043b7fa5e64b1dc350cff3c6bb5f",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -333,16 +333,16 @@
         },
         {
             "name": "paynl/php-sdk",
-            "version": "1.0.6",
+            "version": "1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paynl/php-sdk.git",
-                "reference": "112eb26c4740c487b1dc3c86243f211d6fe56be2"
+                "reference": "9a132cc3780e5f20f085b4df92735bad53cf365f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paynl/php-sdk/zipball/112eb26c4740c487b1dc3c86243f211d6fe56be2",
-                "reference": "112eb26c4740c487b1dc3c86243f211d6fe56be2",
+                "url": "https://api.github.com/repos/paynl/php-sdk/zipball/9a132cc3780e5f20f085b4df92735bad53cf365f",
+                "reference": "9a132cc3780e5f20f085b4df92735bad53cf365f",
                 "shasum": ""
             },
             "require": {
@@ -387,9 +387,9 @@
             "support": {
                 "email": "webshop@pay.nl",
                 "issues": "https://github.com/paynl/php-sdk/issues",
-                "source": "https://github.com/paynl/php-sdk/tree/v1.0.6"
+                "source": "https://github.com/paynl/php-sdk/tree/v1.0.8"
             },
-            "time": "2025-09-21T15:52:36+00:00"
+            "time": "2025-11-10T13:29:44+00:00"
         },
         {
             "name": "psr/container",
