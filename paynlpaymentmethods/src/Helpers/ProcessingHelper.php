@@ -6,7 +6,6 @@ use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use Currency;
 use OrderHistory;
-use OrderPayment;
 use PrestaShopException;
 
 /**
@@ -18,6 +17,12 @@ class ProcessingHelper
 {
     public function __construct()
     {
+        static $patched = false;
+        if (!$patched && isset(\OrderPayment::$definition['fields']['order_reference'])) {
+            \OrderPayment::$definition['fields']['order_reference']['size'] = 50;
+            $patched = true;
+        }
+
         return $this;
     }
 
@@ -71,7 +76,7 @@ class ProcessingHelper
      */
     public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
     {
-        (new PayHelper())->payLog('registerPayments', 'Update '.$transactionId);
+        (new PayHelper())->payLog('registerPayments', 'Update ' . $transactionId);
 
         $totalPaid = 0;
 
@@ -88,7 +93,7 @@ class ProcessingHelper
 
             $totalPaid += $payAmount;
             $orderPayment = null;
-            $arrOrderPayment = OrderPayment::getByOrderReference($order->reference);
+            $arrOrderPayment = \OrderPayment::getByOrderReference($order->reference);
             $suffix = '';
             if ($key > 0) {
                 $suffix = '_' . $key;
@@ -102,7 +107,7 @@ class ProcessingHelper
             }
 
             if (empty($orderPayment)) {
-                $orderPayment = new OrderPayment();
+                $orderPayment = new \OrderPayment();
                 $orderPayment->order_reference = $order->reference;
             }
             if (empty($orderPayment->payment_method)) {
