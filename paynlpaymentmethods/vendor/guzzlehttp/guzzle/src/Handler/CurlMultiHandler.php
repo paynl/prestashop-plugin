@@ -2,7 +2,6 @@
 
 namespace GuzzleHttp\Handler;
 
-use Closure;
 use GuzzleHttp\Promise as P;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -160,9 +159,6 @@ class CurlMultiHandler
             }
         }
 
-        // Run curl_multi_exec in the queue to enable other async tasks to run
-        P\Utils::queue()->add(Closure::fromCallable([$this, 'tickInQueue']));
-
         // Step through the task queue which may add additional requests.
         P\Utils::queue()->run();
 
@@ -173,22 +169,9 @@ class CurlMultiHandler
         }
 
         while (\curl_multi_exec($this->_mh, $this->active) === \CURLM_CALL_MULTI_PERFORM) {
-            // Prevent busy looping for slow HTTP requests.
-            \curl_multi_select($this->_mh, $this->selectTimeout);
         }
 
         $this->processMessages();
-    }
-
-    /**
-     * Runs \curl_multi_exec() inside the event loop, to prevent busy looping
-     */
-    private function tickInQueue(): void
-    {
-        if (\curl_multi_exec($this->_mh, $this->active) === \CURLM_CALL_MULTI_PERFORM) {
-            \curl_multi_select($this->_mh, 0);
-            P\Utils::queue()->add(Closure::fromCallable([$this, 'tickInQueue']));
-        }
     }
 
     /**
@@ -240,10 +223,7 @@ class CurlMultiHandler
         $handle = $this->handles[$id]['easy']->handle;
         unset($this->delays[$id], $this->handles[$id]);
         \curl_multi_remove_handle($this->_mh, $handle);
-
-        if (PHP_VERSION_ID < 80000) {
-            \curl_close($handle);
-        }
+        \curl_close($handle);
 
         return true;
     }
