@@ -1,0 +1,293 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.pay-fastcheckout-button {
+    background-color: #c90066 !important;
+    border-color: #c90066 !important;
+    background-image: url(../images/fastCheckoutIdeal.png) !important;
+    background-repeat: no-repeat;
+    background-size: 51px;
+    background-position: 15px center;
+    cursor: pointer;
+    padding-left: 75px;
+    color: white !important;
+    display: inline-block;
+    float: none;
+    margin-bottom: 0.5rem;
+}
+
+.pay-fastcheckout-button.checkout {
+    margin-top: 0.5rem;
+    background-position: 45px center;
+}
+
+.pay-fastcheckout-button.fs-product {
+    position: absolute;
+    left: 0;
+    bottom: -50px;
+    height: 2.75rem;
+    padding-top: .625rem;
+    line-height: inherit;
+}
+
+.break {
+    width: 5px;
+}
+
+.block-social ul, .product-quantity {
+    position: relative;
+    margin-bottom: 65px;
+}
+
+
+.fc-modal-trigger-button-wrapper {
+    width: 250px;
+}
+
+.fc-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    z-index: 9000;
+}
+
+.fc-modal-backdrop.visible {
+    visibility: visible;
+    opacity: 1;
+    transition: all 0.2s ease;
+}
+
+.fc-modal-backdrop.invisible {
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.fc-modal {
+    width: 100%;
+    max-width: 700px;
+    padding: 30px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    visibility: hidden;
+    opacity: 0;
+    z-index: 10000;
+    box-sizing: border-box;
+    font-family: Roboto, Arial, sans-serif;
+    display: block;
+    bottom: auto;
+    right: auto;
+}
+
+.fc-modal.visible {
+    display: block;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    transition: all 0.2s ease, transform 0.2s ease;
+    visibility: visible;
+}
+
+.fc-modal.invisible {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+    transition: all 0.2s ease, transform 0.2s ease;
+    visibility: hidden;
+}
+
+.fc-modal-header {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+    color: #000;
+    line-height: 1.2;
+    padding: 0;
+    border: none;
+}
+
+.fc-modal-header span {
+    color: #CC0066;
+}
+
+.fc-modal-body-wrapper {
+    display: flex;
+    gap: 50px;
+    align-items: flex-start;
+}
+
+.eye-catcher {
+    width: 250px;
+    height: 250px;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url(../images/ideal-visual.webp) !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.fc-modal-content {
+    flex: 1;
+    border: none;
+}
+
+.fc-modal-text {
+    padding: 0px 0px 10px 0px;
+}
+
+.fc-modal-description {
+    font-size: 16px;
+    margin-top: 10px;
+    color: black;
+    opacity: 0.5;
+    margin-bottom: 0;
+}
+
+.fc-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.fc-modal-button {
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 60px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 50px;
+    transition: all 0.2s;
+}
+
+.button-primary {
+    background-color: #CC0066;
+    color: #fff;
+    border: none;
+    background-image: url(../../assets/images/fastCheckoutIdeal.png) !important;
+    background-repeat: no-repeat;
+    background-size: 51px;
+    background-position: 45px center;
+    font-size: 18px;
+}
+
+.button-primary:hover {
+    transform: scale(1.02);
+    color: #fff;
+    background-color: #CC0066;
+    border-color: transparent;
+}
+
+.ideal-order-image {
+    width: 160px;
+    max-width: 100%;
+    height: auto;
+}
+
+.button-secondary {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #666;
+}
+
+.button-secondary:hover {
+    transform: scale(1.02);
+    color: #000;
+    background-color: transparent;
+    border-color: rgb(102, 102, 102);
+}
+
+.trigger-button {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    .fc-modal {
+        padding: 24px;
+        max-height: 90vh;
+        overflow-y: auto;
+        width: calc(100% - 32px);
+    }
+
+    .fc-modal-body-wrapper {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .eye-catcher {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+    }
+
+    .fc-modal-content {
+        width: 100%;
+    }
+
+    .fc-modal-header {
+        font-size: 24px;
+        text-align: center;
+        border: none;
+    }
+
+    .fc-modal-description {
+        text-align: center;
+    }
+
+    .fc-modal-button {
+        height: auto;
+        min-height: 50px;
+        padding: 12px;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .fc-modal {
+        padding: 20px;
+        width: calc(100% - 24px);
+    }
+
+    .eye-catcher {
+        width: 150px;
+        height: 150px;
+    }
+
+    .fc-modal-header {
+        font-size: 20px;
+    }
+
+    .fc-modal-description {
+        font-size: 14px;
+    }
+
+    .ideal-order-image {
+        width: 140px;
+    }
+
+    .fc-modal-button {
+        font-size: 13px;
+    }
+}

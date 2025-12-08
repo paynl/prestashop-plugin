@@ -1,0 +1,2 @@
+<br/>
+<a {if $show_modal != 1}href="{$fastcheckout_url}"{/if} onclick="toggleFCModal()"><div class="btn btn-primary pay-fastcheckout-button checkout" data-url="{$fastcheckout_url}">Fast Checkout</div></a>
