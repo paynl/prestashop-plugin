@@ -110,6 +110,18 @@ class PaynlPaymentMethods extends PaymentModule
         if (!$this->isRegisteredInHook('actionOrderSlipAdd')) {
             $this->registerHook('actionOrderSlipAdd');
         }
+
+        if (!$this->isRegisteredInHook('displayProductActions')) {
+            $this->registerHook('displayProductActions');
+        }
+
+        if (!$this->isRegisteredInHook('displayCartModalContent')) {
+            $this->registerHook('displayCartModalContent');
+        }
+
+        if (!$this->isRegisteredInHook('displayExpressCheckout')) {
+            $this->registerHook('displayExpressCheckout');
+        }
     }
 
     /**
@@ -129,6 +141,17 @@ class PaynlPaymentMethods extends PaymentModule
     {
         $this->context->controller->addJs($this->_path . 'views/js/PAY_checkout.js');
         $this->context->controller->addCSS($this->_path . 'views/css/PAY_checkout.css');
+        $this->context->controller->addJs($this->_path . 'views/js/fastcheckout.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/fastcheckout.css');
+
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);      
+        if (isset($paymentMethodSettings->fastcheckout_modal) && $paymentMethodSettings->fastcheckout_modal == 1) {
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),   
+                'checkoutUrl' => $this->context->link->getPageLink('order'),
+            ]);       
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/modal.tpl');
+        }        
     }
 
     /**
@@ -189,6 +212,80 @@ class PaynlPaymentMethods extends PaymentModule
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8 ;'
         );
         return true;
+    }
+
+    /**
+     * This hook allow additional action button, near the add to cart button on the product page
+     *
+     * @param array $params
+     *
+     * @return string
+     */
+    public function hookDisplayExpressCheckout(array $params)
+    {        
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
+
+        $customer = $this->context->customer;
+        if (Validate::isLoadedObject($customer) && $customer->id > 0 && !$customer->is_guest && isset($paymentMethodSettings->fastcheckout_guest_only) && $paymentMethodSettings->fastcheckout_guest_only == 1) {
+            return false;
+        }
+
+        if (isset($paymentMethodSettings->fastcheckout_cart_page) && $paymentMethodSettings->fastcheckout_cart_page == 1) {
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
+                'show_modal' => isset($paymentMethodSettings->fastcheckout_modal) ? $paymentMethodSettings->fastcheckout_modal : 0,
+            ]);            
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/checkout.tpl');
+        }        
+    }
+
+    /**
+     * This hook allow additional action button, near the add to cart button on the product page
+     *
+     * @param array $params
+     *
+     * @return string
+     */
+    public function hookDisplayCartModalContent(array $params)
+    {        
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
+
+        $customer = $this->context->customer;
+        if (Validate::isLoadedObject($customer) && $customer->id > 0 && !$customer->is_guest && isset($paymentMethodSettings->fastcheckout_guest_only) && $paymentMethodSettings->fastcheckout_guest_only == 1) {
+            return false;
+        }
+
+        if (isset($paymentMethodSettings->fastcheckout_minicart) && $paymentMethodSettings->fastcheckout_minicart == 1) {
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
+                'show_modal' => isset($paymentMethodSettings->fastcheckout_modal) ? $paymentMethodSettings->fastcheckout_modal : 0,
+            ]);       
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/minicart.tpl');
+        }
+    }
+
+    /**
+     * This hook allow additional action button, near the add to cart button on the product page
+     *
+     * @param array $params
+     *
+     * @return string
+     */
+    public function hookDisplayProductActions(array $params)
+    {       
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
+
+        $customer = $this->context->customer;
+        if (Validate::isLoadedObject($customer) && $customer->id > 0 && !$customer->is_guest && isset($paymentMethodSettings->fastcheckout_guest_only) && $paymentMethodSettings->fastcheckout_guest_only == 1) {
+            return false;
+        }
+
+        if (isset($paymentMethodSettings->fastcheckout_product_page) && $paymentMethodSettings->fastcheckout_product_page == 1) { 
+            $this->smarty->assign([       
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction'])
+            ]);
+            return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/product.tpl');
+        }
     }
 
     /**
@@ -774,6 +871,12 @@ class PaynlPaymentMethods extends PaymentModule
         $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
         $cart = new Cart((int)$cartId);
         $this->context->cart = $cart;
+
+        $customer = new Customer($cart->id_customer);
+        if ($payOrder->isFastCheckout() && !empty($payOrder->getFastCheckoutData()) && (empty($customer) || !Validate::isLoadedObject($customer))) {
+            $cart = $this->setCustomerAddress($payOrder, $cart);
+        }
+
         $amountPaid = $this->determineAmount($payOrder, $cart);
         $payPayments = $payOrder->getPayments() ?? [];
 
@@ -888,6 +991,102 @@ class PaynlPaymentMethods extends PaymentModule
         }
 
         return new ExchangeResponse(true, $message);
+    }
+
+    private function setCustomerAddress(\PayNL\Sdk\Model\Pay\PayOrder $payOrder, Cart $cart)
+    {
+        $data = $payOrder->getFastCheckoutData();
+
+        $id_customer = Customer::customerExists($data['customer']['email'], true);
+        if ($id_customer) {
+            $customer = new Customer($id_customer);          
+        } 
+
+        if (empty($customer) || !Validate::isLoadedObject($customer)) {
+            $customer = new Customer();
+            $customer->is_guest = 1;
+        }        
+
+        $customer->firstname = $data['customer']['firstName'];
+        $customer->lastname = $data['customer']['lastName'];
+        if (!$id_customer) {
+            $customer->email = $data['customer']['email'];
+            $customer->passwd = md5(time());
+        }
+        $customer->save();
+
+        $cart->id_customer = (int)$customer->id;
+        $cart->update();  
+
+        if (method_exists($this->context, 'updateCustomer')) {
+            $this->context->updateCustomer($customer);
+        } else {
+            CustomerUpdater::updateContextCustomer($this->context, $customer);
+        }
+
+        $addressDataShipping = [
+            'firstname' => (!empty($data['shippingAddress']['firstName'])) ? $data['shippingAddress']['firstName'] : $data['customer']['firstName'],
+            'lastname' => (!empty($data['shippingAddress']['lastName'])) ? $data['shippingAddress']['lastName'] : $data['customer']['lastName'],
+            'company' => $data['customer']['company'] ?? '',
+            'address1' => $data['shippingAddress']['streetName'] . ' ' . $data['shippingAddress']['streetNumber'],
+            'address2' => '',
+            'postcode' => $data['shippingAddress']['zipCode'],
+            'city' => $data['shippingAddress']['city'],
+            'id_country' => (int)Country::getByIso($data['shippingAddress']['countryCode']), // Get ID from ISO code
+            'phone' => $data['customer']['phone'],
+            'alias' => 'Fastcheckout Shipping Address', // Alias is required
+        ];
+
+        $addressShipping = new Address();
+        $addressShipping->id_customer = (int)$customer->id; 
+        $addressShipping->id_manufacturer = 0;
+        $addressShipping->id_supplier = 0;
+
+        foreach ($addressDataShipping as $key => $value) {
+            $addressShipping->{$key} = $value;
+        }
+
+        $addressShipping->save();
+
+        $cart->updateDeliveryAddressId($cart->id_address_delivery, $addressShipping->id);
+        $cart->id_address_delivery = $addressShipping->id;
+
+        $products = $cart->getProducts();
+        foreach ($products as $product) {
+            $cart->setProductAddressDelivery($product['id_product'], $product['id_product_attribute'], $product['id_address_delivery'], $addressShipping->id);
+        }
+
+        $addressDataInvoice = [
+            'firstname' => (!empty($data['billingAddress']['firstName'])) ? $data['billingAddress']['firstName'] : $data['customer']['firstName'],
+            'lastname' => (!empty($data['billingAddress']['lastName'])) ? $data['billingAddress']['lastName'] : $data['customer']['lastName'],
+            'company' => $data['customer']['company'] ?? '',
+            'address1' => $data['billingAddress']['streetName'] . ' ' . $data['billingAddress']['streetNumber'],
+            'address2' => '',
+            'postcode' => $data['billingAddress']['zipCode'],
+            'city' => $data['billingAddress']['city'],
+            'id_country' => (int)Country::getByIso($data['billingAddress']['countryCode']), // Get ID from ISO code
+            'phone' => $data['customer']['phone'],
+            'alias' => 'Fastcheckout Billing Address', // Alias is required
+        ];   
+        
+        $addressInvoice = new Address();
+        $addressInvoice->id_customer = (int)$customer->id;
+        $addressInvoice->id_manufacturer = 0;
+        $addressInvoice->id_supplier = 0;
+
+        foreach ($addressDataInvoice as $key => $value) {
+            $addressInvoice->{$key} = $value;
+        }     
+
+        $addressInvoice->save();
+
+        $cart->updateAddressId($cart->id_address_invoice, $addressInvoice->id);
+        $cart->id_address_invoice = $addressInvoice->id;
+
+        $cart->update();
+        $cart->save();     
+
+        return $cart;
     }
 
     /**
@@ -1011,6 +1210,10 @@ class PaynlPaymentMethods extends PaymentModule
             $description = Configuration::get('PAYNL_DESCRIPTION_PREFIX') . $description;
         }
 
+        if (!empty($parameters['fastcheckout']) && $parameters['fastcheckout'] === true) {
+            $request->enableFastCheckout();
+        }
+
         $request->setServiceId(Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID')));
         $request->setAmount($cart->getOrderTotal())->setCurrency($currency->iso_code);
         $request->setReturnurl($this->context->link->getModuleLink($this->name, 'finish', array(), true));
@@ -1024,12 +1227,14 @@ class PaynlPaymentMethods extends PaymentModule
 
         $requestOrderData = new PayNL\Sdk\Model\Order();
 
-        $request->setCustomer($this->addressHelper->getCustomer($cart));
+        if (empty($parameters['fastcheckout']) || $parameters['fastcheckout'] !== true) {
+            $request->setCustomer($this->addressHelper->getCustomer($cart));
 
-        $requestOrderData->setProducts($this->_getProductData($cart));
-
-        $requestOrderData->setInvoiceAddress($this->addressHelper->getInvoiceAddress($cart));
-        $requestOrderData->setDeliveryAddress($this->addressHelper->getDeliveryAddress($cart));
+            $requestOrderData->setInvoiceAddress($this->addressHelper->getInvoiceAddress($cart));
+            $requestOrderData->setDeliveryAddress($this->addressHelper->getDeliveryAddress($cart));
+        }
+        
+        $requestOrderData->setProducts($this->_getProductData($cart));        
 
         $request->setOrder($requestOrderData);
 
@@ -1627,7 +1832,8 @@ class PaynlPaymentMethods extends PaymentModule
           'languages' => Language::getLanguages(true),
           'paymentmethods' => $this->avMethods,
           'showExternalLogoList' => [PaymentMethod::METHOD_GIVACARD],
-          'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL]
+          'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL],
+          'showFastcheckoutOptionsIdeal' => [PaymentMethod::METHOD_IDEAL]
         ));
 
         return $this->display(__FILE__, 'admin_paymentmethods.tpl');
