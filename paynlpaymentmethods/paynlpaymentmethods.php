@@ -606,7 +606,8 @@ class PaynlPaymentMethods extends PaymentModule
     public function payTranslations(): array
     {
         $trans['renewCartOnDuplicate'] = $this->l('Use unique cartId per payment');
-        $trans['renewCartOnDuplicateDesc'] = $this->l('If enabled, each payment will use a unique cart ID to prevent duplicate or fraudulent transactions. Note: This may affect modules that rely on the original cart, and in rare cases, it could impact stock management.');
+        $trans['renewCartOnDuplicateDesc'] = $this->l('If enabled, each payment will use a unique cart ID to prevent duplicate or fraudulent transactions.');
+        $trans['renewCartOnDuplicateTooltip'] = $this->l('Enabling this option assigns a unique cart ID to every payment attempt in order to prevent duplicate or seemingly fraudulent transactions. Note: This may affect modules that rely on the original cart, and in rare cases, it could impact stock management.');
         $trans['register'] = $this->l('register');
         $trans['advancedSettings'] = $this->l('Advanced settings');
         $trans['Version'] = $this->l('Version');
@@ -630,11 +631,13 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['prefixSettings'] = $this->l('A prefix added to the transaction description');
         $trans['validationDelay'] = $this->l('Validation delay');
         $trans['validationDelaySettings'] = $this->l('When payment is done, wait for Pay.nl to validate payment before redirecting to success page');
+        $trans['validationDelayTooltip'] = $this->l('When a transaction is completed the customer is normally redirected to a finish page, with validation delay enabled they are instead redirected to an intermediate screen where the transaction is being validated. Only when Pay. confirms the transaction is complete will the end customer see the finish page.');
         $trans['enabled'] = $this->l('Enabled');
         $trans['disabled'] = $this->l('Disabled');
         $trans['logging'] = $this->l('Pay. logging');
         $trans['sdkCaching'] = $this->l('SDK Caching');
         $trans['sdkCachingSettings'] = $this->l('Caches connection data to reduce API calls.');
+        $trans['sdkCachingTooltip'] = $this->l('Caches the connection information (API token, AT token, and SL code) for a short time so that every call made already has this information. This reduces the number of API calls and speeds up the checkout process.');
         $trans['loggingSettings'] = $this->l('Log internal Pay. processing information.');
         $trans['testMode'] = $this->l('Test mode');
         $trans['testModeSettings'] = $this->l('Start transactions in sandbox mode for testing.');
@@ -652,6 +655,7 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['languageSettings'] = $this->l('Select the language to show the payment screen in, automatic uses the browser preference');
         $trans['testIp'] = $this->l('Test IP address');
         $trans['testIpSettings'] = $this->l('Forces test-mode on these IP addresses. Separate IP\'s by comma\'s for multiple IP\'s. ');
+        $trans['testIpTooltip'] = $this->l('This option forces every transaction from specific IP addresses to start in test mode. This can be useful in case test mode has to be enabled for development purposes, while keeping the store live for customers. Make sure to enter valid IP addresses, separated by commas if there are multiple.');
         $trans['currentIp'] = $this->l('Current user IP address: ');
         $trans['suggestions'] = $this->l('Suggestions?');
         $trans['save'] = $this->l('Save');
@@ -668,7 +672,8 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['payConnected'] = $this->l('Pay. successfully connected');
         $trans['payNotConnected'] = $this->l('Pay. not connected');
         $trans['expireTime'] = $this->l('Expire time');
-        $trans['expireTimeSettings'] = $this->l('The expiration time (in minutes) that determines when a transaction will expire. Once expired, the system will automatically trigger a cancel exchange process. This applies to all payment methods.');
+        $trans['expireTimeSettings'] = $this->l('The expiration time (in minutes) that determines when a transaction will expire after being created.');
+        $trans['expireTimeTooltip'] = $this->l('Specify how long a transaction remains valid until the pending transaction is canceled. Pay. normally automatically cancels the transaction after 4 hours. By specifying a time (in minutes) this can be customized and once expired, the system will automatically trigger a cancel exchange process. This applies to all payment methods.');
 
         return $trans;
     }
