@@ -488,7 +488,7 @@ class PayOrder implements ModelInterface
     {
         return $this->payments[0]['customerName'] ?? null;
     }
-
+    
     /**
      * @param Amount $amount
      * @return $this
@@ -766,7 +766,7 @@ class PayOrder implements ModelInterface
     {
         return (new PayStatus())->get($this->getStatusCode()) === PayStatus::DENIED;
     }
-
+    
     /**
      * @return boolean
      * @throws Exception

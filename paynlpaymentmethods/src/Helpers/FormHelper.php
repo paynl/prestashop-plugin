@@ -268,7 +268,7 @@ class FormHelper
                 array(
                     'type' => 'switch',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['sdkCaching'],
+                    'label' => $l['sdkCaching']  . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['sdkCachingTooltip'] . '</span></div>',
                     'name' => 'PAYNL_SDK_CACHING',
                     'desc' => $l['sdkCachingSettings'],
                     'values' => array(
@@ -287,7 +287,7 @@ class FormHelper
                 array(
                     'type' => 'switch',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['validationDelay'],
+                    'label' => $l['validationDelay'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['validationDelayTooltip'] . '</span></div>',
                     'name' => 'PAYNL_VALIDATION_DELAY',
                     'desc' => $l['validationDelaySettings'],
                     'values' => array(
@@ -306,7 +306,7 @@ class FormHelper
                 array(
                     'type' => 'text',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['testIp'],
+                    'label' => $l['testIp']   . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['testIpTooltip'] . '</span></div>',
                     'name' => 'PAYNL_TEST_IPADDRESS',
                     'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
                     'required' => false
@@ -314,7 +314,7 @@ class FormHelper
                 array(
                     'type' => 'text',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['expireTime'],
+                    'label' => $l['expireTime']   . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['expireTimeTooltip'] . '</span></div>',
                     'name' => 'PAYNL_EXPIRE_TIME',
                     'desc' => $l['expireTimeSettings'],
                     'required' => false
@@ -322,7 +322,7 @@ class FormHelper
                 array(
                     'type' => 'switch',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['renewCartOnDuplicate'],
+                    'label' => $l['renewCartOnDuplicate'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['renewCartOnDuplicateTooltip'] . '</span></div>',
                     'name' => 'PAYNL_RENEWCART',
                     'desc' => $l['renewCartOnDuplicateDesc'],
                     'values' => array(

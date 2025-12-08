@@ -38,7 +38,8 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a06edbeae74c06123
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_5f14b7d5ab542d6b7247465c0b56862c'] = '(Terugbetalingen kunnen niet snel achter elkaar worden gedaan)';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f51ea2cb1b551cd5a0d1cb60250cfed5'] = 'Pay. kon de gedeeltelijke terugbetaling niet verwerken. Controleer de status van uw bestelling in de Pay. admin.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_d3bc546d6efd6afd7b0f4d0322c968ff'] = 'Gebruik een uniek cart-ID per betaling.';
-$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_36f8dd1cc075e4df5f7c0cfe685d1c92'] = 'Indien ingeschakeld krijgt elke betaling een unieke cart-ID om dubbele of frauduleuze transacties te voorkomen. Let op: Dit kan invloed hebben op modules die de oorspronkelijke cart gebruiken, of in zeldzame gevallen op voorraadbeheer.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_6ea8795be8b2913d2d23652e9342d1bd'] = 'Als deze optie is ingeschakeld, wordt bij elke betaling een unieke winkelwagen-ID gebruikt om dubbele of frauduleuze transacties te voorkomen.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a05f5c0f3e0e09050748b2097b01cbef'] = 'Als u deze optie inschakelt, wordt aan elke betaalpoging een unieke winkelwagen-ID toegewezen om dubbele of schijnbaar frauduleuze transacties te voorkomen. Let op: dit kan van invloed zijn op modules die afhankelijk zijn van de oorspronkelijke winkelwagen en in zeldzame gevallen kan het gevolgen hebben voor het voorraadbeheer.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_9de4a97425678c5b1288aa70c1669a64'] = 'registreren';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_fe4c6a5e7bd6793b37370e4e46daf998'] = 'Geavanceerde instellingen';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_34b6cd75171affba6957e308dcbd92be'] = 'Versie';
@@ -61,11 +62,13 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_adc1e83ea8057c3b1
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_2ab45b27dbaf728ece860448598238ae'] = 'Een voorvoegsel toegevoegd aan de transactiebeschrijving';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_b989ff7da93d9c8344a4c4e765cab502'] = 'Validatievertraging';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_71268b7a2a120a7b132e7e3833567700'] = 'Wanneer de betaling is voltooid, wacht u tot Pay.nl de betaling heeft gevalideerd voordat u wordt doorgestuurd naar de succespagina';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_7675e1afbb85ba4f9e3165bc6294caee'] = 'Wanneer een transactie is voltooid, wordt de klant normaal gesproken doorgestuurd naar een eindpagina. Met validatievertraging ingeschakeld, wordt de klant in plaats daarvan doorgestuurd naar een tussenscherm waar de transactie wordt gevalideerd. Pas wanneer Pay. bevestigt dat de transactie is voltooid, ziet de eindklant de eindpagina.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_00d23a76e43b46dae9ec7aa9dcbebb32'] = 'Ingeschakeld';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_b9f5c797ebbf55adccdd8539a65a0241'] = 'Uitgeschakeld';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_eb6e3ac378f09d57bb5b104bfadeac40'] = 'Pay. loggen';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f9853d3d0ab3fcbed5a8f3aadcd28b29'] = 'SDK Caching';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_2bd3adc69bd54509b74bc0d09a7ec491'] = 'Slaat verbindingsgegevens in de cache op om het aantal API-aanroepen te verminderen.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_809961a79c9827c2e5c69f5d010bfc03'] = 'Cacheert de verbindingsinformatie (API-token, AT-token en SL-code) voor een korte tijd, zodat elke aanroep deze informatie al bevat. Dit vermindert het aantal API-aanroepen en versnelt het afrekenproces.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_0adb20ee13173988ef9225e588d6de65'] = 'Interne verwerkingsinformatie van Pay. loggen.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_4245499695408b974322be6f01b0d17a'] = 'Testmodus';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_61142607f22ea506073bcb1c1c74133e'] = 'Start transacties in de sandbox-modus om te testen.';
@@ -83,6 +86,7 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f9415bb2149a4ef74
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_1efea134dc382b9d18ef9ed8a21e178f'] = 'Selecteer de taal waarin het betalingsscherm moet worden weergegeven, automatisch wordt de browservoorkeur gebruikt';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_3d9f72fe9f1d81b6b0481b40e9529099'] = 'Test IP-adres';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_7856e6082b0d9a88240186019ffc86dd'] = 'Forceert testmodus op deze IP-adressen. Scheid IP\'s met komma\'s voor meerdere IP\'s.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_507e33451ef9411214eb7a8151083044'] = 'Deze optie zorgt ervoor dat elke transactie vanaf specifieke IP-adressen in de testmodus start. Dit kan handig zijn als de testmodus moet worden ingeschakeld voor ontwikkelingsdoeleinden, terwijl de winkel toch live blijft voor klanten. Zorg ervoor dat u geldige IP-adressen invoert, gescheiden door komma\'s als er meerdere zijn.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_4e06922a827c15b0bb077e45abe65055'] = 'Huidig ​​IP-adres van de gebruiker:';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_aa5ab15592c73adecca1b6255521b528'] = 'Suggesties?';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_c9cc8cce247e49bae79f15173ce97354'] = 'Opslaan';
@@ -99,7 +103,8 @@ $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_6f3200bb05fa20d5e
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_c2d83c99669053df24d7839d313e5983'] = 'Pay. succesvol verbonden';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a2d07836b692b9f4153f7f399307f629'] = 'Pay. connectie niet geslaagd';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f2a7d8990b29e46bbbde9bd7f92374b0'] = 'Geldigheidsduur';
-$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_a7335e9c3bf0c68eed114f305d3e90c2'] = 'De geldigheidsduur (in minuten) die bepaalt wanneer een transactie verloopt. Zodra deze is verlopen, zal het systeem automatisch het annuleringsproces starten. Dit geldt voor alle betaalmethoden.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_fc1919549b89e4f33237c36a69159e1e'] = 'De geldigheidsduur (in minuten) die bepaalt wanneer een transactie verloopt nadat deze is aangemaakt.';
+$_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_72ee1d3c8f1fa0abc1e15eb3a9043bd5'] = 'Geef aan hoe lang een transactie geldig blijft totdat de in behandeling zijnde transactie wordt geannuleerd. Pay. annuleert de transactie normaal gesproken automatisch na 4 uur. Door een tijd (in minuten) op te geven, kan dit worden aangepast. Zodra de tijd is verstreken, activeert het systeem automatisch een annuleringsproces. Dit geldt voor alle betaalmethoden.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_9f06b28a40790c4c4df5739bce3c1eb0'] = 'Verzendkosten';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_86f0d68c262471b3190ba32483af87ab'] = 'Kan de Pay. SDK niet vinden.';
 $_MODULE['<{paynlpaymentmethods}prestashop>paynlpaymentmethods_f3916e085e8b806982b86304df416d45'] = 'API token is een verplicht veld.';
