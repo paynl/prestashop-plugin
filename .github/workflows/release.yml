@@ -1,0 +1,46 @@
+name: Build and Release PrestaShop ZIP
+
+on:
+  push:
+    tags:
+      - "*"  # triggers on any tag (v1.0.0, release-xyz, etc.)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          TAG_STRIPPED="${TAG#v}"
+          echo "Tag: $TAG"
+          echo "Tag stripped: $TAG_STRIPPED"
+          echo "TAG_STRIPPED=$TAG_STRIPPED" >> $GITHUB_ENV
+
+      - name: Make ZIP
+        run: |
+          echo "Creating ZIP paynlpaymentmethods_${TAG_STRIPPED}.zip"
+
+          zip -r paynlpaymentmethods_${TAG_STRIPPED}.zip paynlpaymentmethods \
+            -x "*.DS_Store" \
+               "*/.gitignore" \
+               "*/.git*" \
+               "*/.github" \
+               "*/composer.json" \
+               "*/composer.lock"
+
+      - name: Upload ZIP to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: paynlpaymentmethods_*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
