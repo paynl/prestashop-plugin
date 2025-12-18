@@ -22,6 +22,7 @@ use PaynlPaymentMethods\PrestaShop\Helpers\PaymentMethodsHelper;
 use PaynlPaymentMethods\PrestaShop\Helpers\ProcessingHelper;
 use PaynlPaymentMethods\PrestaShop\Helpers\AddressHelper;
 use PaynlPaymentMethods\PrestaShop\Helpers\InstallHelper;
+use PaynlPaymentMethods\PrestaShop\Helpers\LogoHelper;
 use PaynlPaymentMethods\PrestaShop\Transaction;
 use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 
@@ -41,7 +42,8 @@ class PaynlPaymentMethods extends PaymentModule
     private ProcessingHelper $processingHelper;
     private AddressHelper $addressHelper;
     private InstallHelper $installHelper;
-    private PaymentMethodsHelper $paymentMethodsHelper;
+    private PaymentMethodsHelper $paymentMethodsHelper;    
+    private LogoHelper $logoHelper;
 
     public array $avMethods = [];
     public PayConnection $payConnection;
@@ -71,6 +73,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->addressHelper = new AddressHelper();
         $this->installHelper = new InstallHelper();
         $this->paymentMethodsHelper = new PaymentMethodsHelper();
+        $this->logoHelper = new LogoHelper();
 
         parent::__construct();
         $this->statusPending = Configuration::get('PS_OS_CHEQUE');
@@ -1822,13 +1825,15 @@ class PaynlPaymentMethods extends PaymentModule
             }
             if (!isset($v->image_path)) {
                 $v->image_path = '';
-            }
+            }        
+
+            $this->logoHelper->saveLogo($v->image_path);
+            $v->logo = $this->logoHelper->getLogo($v->image_path);
         }
 
         $this->smarty->assign(array(
           'available_countries' => $this->getCountries(),
           'available_carriers' => $this->getCarriers(),
-          'image_url' => $this->_path . 'views/images/',
           'languages' => Language::getLanguages(true),
           'paymentmethods' => $this->avMethods,
           'showExternalLogoList' => [PaymentMethod::METHOD_GIVACARD],
