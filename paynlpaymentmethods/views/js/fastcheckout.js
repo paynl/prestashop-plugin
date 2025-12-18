@@ -3,7 +3,7 @@ $(document).ready(function () {
         e.preventDefault();
         e.stopPropagation();
         const url = $(this).data('url');
-        const $addToCartBtn = $('.add-to-cart');
+        const $addToCartBtn = $('#add-to-cart-or-refresh .add-to-cart');
         $addToCartBtn.trigger('click');
 
         $(document).one('ajaxSuccess', function handleAjaxSuccess(event, xhr, settings) {
