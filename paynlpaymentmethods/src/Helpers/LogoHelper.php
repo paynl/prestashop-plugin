@@ -6,7 +6,7 @@ use PaynlPaymentMethods\PrestaShop\PayHelper;
 use Tools;
 
 /**
- * Class PaymentMethodsHelper
+ * Class LogoHelper
  *
  * @package PaynlPaymentMethods\PrestaShop\Helpers
  */
