@@ -3,10 +3,7 @@
 namespace PaynlPaymentMethods\PrestaShop\Helpers;
 
 use PaynlPaymentMethods\PrestaShop\PayHelper;
-use Language;
 use Tools;
-use Configuration;
-use Address;
 
 /**
  * Class PaymentMethodsHelper
@@ -15,25 +12,22 @@ use Address;
  */
 class LogoHelper
 {
-    private $helper;
-    private $formHelper;
+    const IMAGE_PATH = '/modules/paynlpaymentmethods/views/cache/images';
+    private PayHelper $helper;
 
     public function __construct()
     {
         $this->helper = new PayHelper();
-        $this->formHelper = new FormHelper();
         return $this;
     }
 
     /**
-     * Save logo
-     *
-     * @param $path
-     * @param $imagePath   
+     * @param $imagePath
+     * @return string
      */
     public function getLogo($imagePath)
     {
-        $path = '/modules/paynlpaymentmethods/views/cache/images' . $imagePath;
+        $path = LogoHelper::IMAGE_PATH . $imagePath;
         if (file_exists(_PS_ROOT_DIR_ . $path)) {
             return $path;
         } else {
@@ -44,42 +38,52 @@ class LogoHelper
     /**
      * Save logo
      *
-     * @param $path
-     * @param $imagePath   
+     * @param $imagePath
+     * @return void
      */
-    public function saveLogo($imagePath)
+    public function saveLogo($imagePath): void
     {
-        $path = _PS_ROOT_DIR_ . '/modules/paynlpaymentmethods/views/cache/images';
+        $path = _PS_ROOT_DIR_ . LogoHelper::IMAGE_PATH;
         if (file_exists($path . $imagePath) && (time() - filemtime($path . $imagePath) < 86400)) {
             return;
         }
         $imageUrl = 'https://static.pay.nl/' . $imagePath;
         $result = $this->downloadImage($imageUrl, $path, $imagePath);
+        if(!$result) {
+            $this->helper->payLog('downloadImage', sprintf('Could not download/save image. URL: %s | Path: %s | File: %s', $imageUrl, $path, $imagePath));
+        }
     }
 
     /**
      * Download image from url
      *
      * @param string $url
-     * @param string $path
-     * @param string $imagePath
+     * @param string $basePath
+     * @param string $image
      * @return bool
      */
-    function downloadImage($url, $path, $image)
+    function downloadImage(string $url, string $basePath, string $image): bool
     {
+        paydbg('downloadImage()');
+
         $data = Tools::file_get_contents($url);
-        if ($data !== false) {
-            try {
-                $imagePath = explode('/', $image)[1];
-                if (!is_dir($path . '/' . $imagePath . '/')) {
-                    mkdir($path . '/' . $imagePath . '/', 0755, true);
-                }
-                $result = file_put_contents($path . $image, $data);
-            } catch (\Throwable $th) {
-                return false;
-            }
-            return $result;
+        if ($data === false) {
+            return false;
         }
-        return false;
+
+        $fullPath = rtrim($basePath, '/') . '/' . ltrim($image, '/');
+
+        $dir = dirname($fullPath);
+        if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+            return false;
+        }
+
+        try {
+            return file_put_contents($fullPath, $data) !== false;
+        } catch (\Throwable $th) {
+            $this->helper->payLog('downloadImage', sprintf('Could not save downloaded image %s. Exception: %s', $fullPath, $th->getMessage()));
+            return false;
+        }
     }
+
 }
