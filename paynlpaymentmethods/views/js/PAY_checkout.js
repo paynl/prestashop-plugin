@@ -1,5 +1,7 @@
-jQuery(document).ready(function () {
-    jQuery(".payment-option IMG[src*='paynlpayment']").each(function (indexNr) {
-        jQuery(this).parent().parent().addClass((indexNr == 0 ? 'PAYNL firstMethod' : 'PAYNL'));
+jQuery(function () {
+    let found = false;
+    jQuery(".payment-option img[src*='static.pay'], .payment-option img[src*='paynlpayment']").each(function () {
+        jQuery(this).parent().parent().addClass(found ? 'PAYNL' : 'PAYNL firstMethod');
+        found = true;
     });
 });

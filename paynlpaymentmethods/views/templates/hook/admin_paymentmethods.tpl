@@ -18,7 +18,7 @@
                             <span class="paynl_switch enabledSwitch green switch {if $paymentmethod->enabled}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->enabled}" name="enabled" {if $paymentmethod->enabled}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                     
                         </span>
                         <span class="col-xs-1 clickable openPaymentDetails checkfew">
-                            <img width="50" src="{$image_url}{$paymentmethod->image_path}">
+                            <img width="50" src="{$paymentmethod->logo}">
                             <input type="hidden" name="image_path" value="{$paymentmethod->image_path}"/>
                         </span>
                         <span class="col-xs-9 clickable openPaymentDetails">
