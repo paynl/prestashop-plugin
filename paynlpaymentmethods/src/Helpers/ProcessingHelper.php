@@ -91,7 +91,8 @@ class ProcessingHelper
                 continue;
             }
 
-            if (!in_array(strtolower($payPayment['status']['action']), ['paid', 'authorize', 'verify'])) {
+            $action = strtolower($payPayment['status']['action'] ?? '');
+            if (!in_array($action, ['paid','authorize','verify'], true)) {
                 continue;
             }
 
