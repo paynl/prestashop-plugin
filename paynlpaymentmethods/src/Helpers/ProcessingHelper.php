@@ -91,6 +91,11 @@ class ProcessingHelper
                 continue;
             }
 
+            $action = strtolower($payPayment['status']['action'] ?? '');
+            if (!in_array($action, ['paid','authorize','verify'])) {
+                continue;
+            }
+
             $totalPaid += $payAmount;
             $orderPayment = null;
             $arrOrderPayment = \OrderPayment::getByOrderReference($order->reference);
