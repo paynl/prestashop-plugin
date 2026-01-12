@@ -10,6 +10,7 @@ use Address;
 use Context;
 use Currency;
 use Cart;
+use PaynlPaymentMethods\PrestaShop\Helpers\LogoHelper;
 
 /**
  * Class PaymentMethodsHelper
@@ -20,11 +21,13 @@ class PaymentMethodsHelper
 {
     private $helper;
     private $formHelper;
+    private $logoHelper;
 
     public function __construct()
     {
         $this->helper = new PayHelper();
         $this->formHelper = new FormHelper();
+        $this->logoHelper = new LogoHelper();
         return $this;
     }
 
@@ -78,10 +81,11 @@ class PaymentMethodsHelper
                 ]);
 
             $imagePath = $paymentMethod->image_path ?? '';
-            if ($bShowLogo && !empty($imagePath)) {
-                $objPaymentMethod->setLogo($path . 'views/images/' . $imagePath);
+            if ($bShowLogo && !empty($imagePath)) {                
                 if (!empty($paymentMethod->external_logo)) {
                     $objPaymentMethod->setLogo($paymentMethod->external_logo);
+                } else {        
+                    $objPaymentMethod->setLogo($this->logoHelper->getLogo($imagePath));
                 }
             }
 
