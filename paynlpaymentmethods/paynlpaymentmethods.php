@@ -630,8 +630,10 @@ class PaynlPaymentMethods extends PaymentModule
                 $orderPayment = reset($orderPayments);
                 if (!empty($orderPayment)) {
                     $refundAmount = 0;
-                    foreach ($productList as $product) {
-                        if (!empty($product['amount']) && $product['amount'] > 0) {
+                    foreach ($productList as $key => $product) {
+                        if (!empty($product['total_refunded_tax_incl']) && $product['total_refunded_tax_incl'] > 0) {
+                            $refundAmount += $product['total_refunded_tax_incl'];
+                        } elseif (!empty($product['amount']) && $product['amount'] > 0) {
                             $refundAmount += $product['amount'];
                         }
                     }
