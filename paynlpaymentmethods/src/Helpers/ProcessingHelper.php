@@ -3,8 +3,10 @@
 namespace PaynlPaymentMethods\PrestaShop\Helpers;
 
 use PaynlPaymentMethods\PrestaShop\PayHelper;
+use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use Currency;
 use OrderHistory;
+use PrestaShopException;
 
 /**
  * Class ProcessingHelper
@@ -15,6 +17,12 @@ class ProcessingHelper
 {
     public function __construct()
     {
+        static $patched = false;
+        if (!$patched && isset(\OrderPayment::$definition['fields']['order_reference'])) {
+            \OrderPayment::$definition['fields']['order_reference']['size'] = 50;
+            $patched = true;
+        }
+
         return $this;
     }
 
@@ -55,6 +63,75 @@ class ProcessingHelper
             }
         }
         return false;
+    }
+
+    /**
+     * @param $order
+     * @param $transactionId
+     * @param $payPayments
+     * @param $paymentMethodName
+     * @param $totalAmount
+     * @return void
+     * @throws PrestaShopException
+     */
+    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
+    {
+        (new PayHelper())->payLog('registerPayments', 'Update ' . $transactionId);
+
+        $totalPaid = 0;
+
+        foreach ($payPayments as $key => $payPayment) {
+            if (!empty($payPayment)) {
+                $payAmount = ($payPayment['amount']['value'] ?? 0) / 100;
+            } else {
+                $payAmount = $totalAmount;
+            }
+
+            if ($payAmount == 0) {
+                continue;
+            }
+
+            $action = strtolower($payPayment['status']['action'] ?? '');
+            if (!in_array($action, ['paid','authorize','verify'])) {
+                continue;
+            }
+
+            $totalPaid += $payAmount;
+            $orderPayment = null;
+            $arrOrderPayment = \OrderPayment::getByOrderReference($order->reference);
+            $suffix = '';
+            if ($key > 0) {
+                $suffix = '_' . $key;
+                $paymentMethodName = PaymentMethod::getName($transactionId, ($payPayment['paymentMethod']['id'] ?? null));
+            }
+
+            foreach ($arrOrderPayment as $objOrderPayment) {
+                if ($objOrderPayment->transaction_id == $transactionId . $suffix) {
+                    $orderPayment = $objOrderPayment;
+                }
+            }
+
+            if (empty($orderPayment)) {
+                $orderPayment = new \OrderPayment();
+                $orderPayment->order_reference = $order->reference;
+            }
+            if (empty($orderPayment->payment_method)) {
+                $orderPayment->payment_method = $paymentMethodName;
+            }
+            if (empty($orderPayment->amount)) {
+                $orderPayment->amount = $payAmount;
+            }
+            if (empty($orderPayment->transaction_id)) {
+                $orderPayment->transaction_id = $transactionId . $suffix;
+            }
+            if (empty($orderPayment->id_currency)) {
+                $orderPayment->id_currency = $order->id_currency;
+            }
+
+            $orderPayment->save();
+        }
+        $order->total_paid_real = ($order->total_paid_real ?? 0) + $totalPaid;
+        $order->save();
     }
 
 }

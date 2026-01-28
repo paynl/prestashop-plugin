@@ -44,9 +44,27 @@ class PayLoad
         $this->checkoutData = is_array($payload['checkout_data'] ?? null) ? $payload['checkout_data'] : [];
         $this->fullPayLoad = is_array($payload['full_payload'] ?? null) ? $payload['full_payload'] : [];
 
-        $this->extra1 = (string)($this->fullPayLoad['extra1'] ?? '');
-        $this->extra2 = (string)($this->fullPayLoad['extra2'] ?? '');
-        $this->extra3 = (string)($this->fullPayLoad['extra3'] ?? '');
+        $payload = $this->isTguLoad() ? ($this->fullPayLoad['object'] ?? null) : $this->fullPayLoad;
+
+        $this->extra1 = (string)($payload['extra1'] ?? $payload['stats']['extra1'] ?? '');
+        $this->extra2 = (string)($payload['extra2'] ?? $payload['stats']['extra2'] ?? '');
+        $this->extra3 = (string)($payload['extra3'] ?? $payload['stats']['extra3'] ?? '');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTguLoad(): bool
+    {
+        return !isset($this->fullPayLoad['action']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLegacyPayLoad(): bool
+    {
+        return !$this->isTguLoad();
     }
 
     /**
@@ -80,6 +98,7 @@ class PayLoad
     {
         return $this->type;
     }
+    
     /**
      * @return string
      */
@@ -126,14 +145,6 @@ class PayLoad
     public function getPayOrderId(): string
     {
         return $this->payOrderId;
-    }
-
-    /**
-     * @return string
-     */
-    public function nce(): string
-    {
-        return $this->reference;
     }
 
     /**

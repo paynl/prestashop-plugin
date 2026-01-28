@@ -49,7 +49,7 @@ class Exchange
     /**
      * @param array|null $payload
      */
-    public function __construct(array $payload = null)
+    public function __construct(?array $payload = null)
     {
         $this->custom_payload = $payload;
     }
@@ -139,7 +139,7 @@ class Exchange
         try {
             return $this->getPayload();
         } catch (\Throwable $e) {
-            throw new PayException('Could not retrieve payload: ' . $e->getMessage(), 0, $e);
+            throw new PayException('Could not retrieve payload: ' . $e->getMessage(), 0, 0);
         }
     }
     /**
@@ -156,7 +156,7 @@ class Exchange
      */
     public function getAction(): string
     {
-        return $this->getSafePayload()->getAction();
+        return strtolower($this->getSafePayload()->getAction());
     }
 
     /**
@@ -298,6 +298,10 @@ class Exchange
             $config = Config::getConfig();
         }
 
+        if (empty($config->getUsername()) || empty($config->getPassword())) {
+            throw new Exception('Process failed, config not set', 8003);
+        }
+
         if ($this->isSignExchange()) {
             $signingResult = $this->checkSignExchange($config->getUsername(), $config->getPassword());
 
@@ -325,23 +329,40 @@ class Exchange
             $payOrder->setType($payload->getType());
             $payOrder->setStatusCodeName(PayStatus::PENDING, 'PENDING');
         } else {
-            # Continue to check the order status manually
+
             try {
-                if (empty($payload->getPayOrderId())) {
+                $payOrderId = $payload->getPayOrderId();
+                if (empty($payOrderId)) {
                     throw new Exception('Missing pay order id in payload');
                 }
 
                 $action = $this->getAction();
-                # Using TransactionStatusRequest for backwards compatibility, and refunds.
-                if (stripos($action, 'refund') !== false || !$payload->isTguTransaction()) {
-                    $request = new TransactionStatusRequest($payload->getPayOrderId());
-                } else {
-                    $request = new OrderStatusRequest($payload->getPayOrderId());
+
+                $useLegacy = (stripos($action, 'refund') !== false || !$payload->isTguTransaction());
+
+                $request = $useLegacy
+                    ? new TransactionStatusRequest($payOrderId) # Using TransactionStatusRequest for refunds and backwards compatibility
+                    : new OrderStatusRequest($payOrderId);
+
+                try {
+                    $payOrder = $request->setConfig($config)->start();
+
+                    if (!$useLegacy && $action === 'new_ppt' && $payOrder->isCancelled()) {
+                        # Rely on on legacy platform when retrieved status is cancelled, and request-status(action) is auth/paid
+                        # ..and TransactionStatusRequest above, wasn't used.
+                        $payOrder = (new TransactionStatusRequest($payOrderId))->setConfig($config)->start();
+                    }
+
+                } catch (Exception $exception) {
+                    paydbg('Exchange process exception: ' . $exception . '. Trying legacy platform for: ' . $payOrderId);
+                    $payOrder = (new TransactionStatusRequest($payOrderId))->setConfig($config)->start();
                 }
 
-                $payOrder = $request->setConfig($config)->start();
             } catch (PayException $e) {
-                throw new Exception('API Retrieval error: ' . $e->getFriendlyMessage());
+                throw new Exception('API Retrieval error: ' . $payload->getPayOrderId() . ' - ' . $e->getFriendlyMessage());
+
+            } catch (Exception $e) {
+                throw new Exception('API-Retrieval error: ' . $payload->getPayOrderId() . ' - ' . $e->getMessage());
             }
         }
 

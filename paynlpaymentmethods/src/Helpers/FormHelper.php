@@ -96,9 +96,9 @@ class FormHelper
               ),
               array(
                 'type' => 'select',
-                'label' => $l['multicore'],
+                'label' => $l['multicore'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['multicoreTooltip'] . '</span></div>',
                 'name' => 'PAYNL_FAILOVER_GATEWAY',
-                'desc' => $l['multicoreSettings'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['multicoreTooltip'] . '</span></div>',
+                'desc' => $l['multicoreSettings'],
                 'options' => array(
                   'query' => $this->getCores($module),
                   'id' => 'domain',
@@ -268,7 +268,7 @@ class FormHelper
                 array(
                     'type' => 'switch',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['sdkCaching'],
+                    'label' => $l['sdkCaching']  . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['sdkCachingTooltip'] . '</span></div>',
                     'name' => 'PAYNL_SDK_CACHING',
                     'desc' => $l['sdkCachingSettings'],
                     'values' => array(
@@ -287,7 +287,7 @@ class FormHelper
                 array(
                     'type' => 'switch',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['validationDelay'],
+                    'label' => $l['validationDelay'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['validationDelayTooltip'] . '</span></div>',
                     'name' => 'PAYNL_VALIDATION_DELAY',
                     'desc' => $l['validationDelaySettings'],
                     'values' => array(
@@ -306,7 +306,7 @@ class FormHelper
                 array(
                     'type' => 'text',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['testIp'],
+                    'label' => $l['testIp']   . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['testIpTooltip'] . '</span></div>',
                     'name' => 'PAYNL_TEST_IPADDRESS',
                     'desc' => $l['testIpSettings'] . '<br/>' . $l['currentIp'] . Tools::getRemoteAddr(), // phpcs:ignore
                     'required' => false
@@ -314,10 +314,29 @@ class FormHelper
                 array(
                     'type' => 'text',
                     'form_group_class' => 'advancedSetting',
-                    'label' => $l['expireTime'],
+                    'label' => $l['expireTime']   . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['expireTimeTooltip'] . '</span></div>',
                     'name' => 'PAYNL_EXPIRE_TIME',
                     'desc' => $l['expireTimeSettings'],
                     'required' => false
+                ),
+                array(
+                    'type' => 'switch',
+                    'form_group_class' => 'advancedSetting',
+                    'label' => $l['renewCartOnDuplicate'] . '<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">' . $l['renewCartOnDuplicateTooltip'] . '</span></div>',
+                    'name' => 'PAYNL_RENEWCART',
+                    'desc' => $l['renewCartOnDuplicateDesc'],
+                    'values' => array(
+                        array(
+                            'id' => 'renew_cart_on',
+                            'value' => 1,
+                            'label' => $l['enabled']
+                        ),
+                        array(
+                            'id' => 'renew_cart_off',
+                            'value' => 0,
+                            'label' => $l['disabled']
+                        )
+                    ),
                 ),
                 array(
                     'type' => 'hidden',
@@ -373,6 +392,7 @@ class FormHelper
           'PAYNL_PAYMENTMETHODS' => $paymentMethods,
           'PAYNL_TEST_IPADDRESS' => Tools::getValue('PAYNL_TEST_IPADDRESS', Configuration::get('PAYNL_TEST_IPADDRESS')),
           'PAYNL_EXPIRE_TIME' => Configuration::get('PAYNL_EXPIRE_TIME'),
+          'PAYNL_RENEWCART' => Configuration::get('PAYNL_RENEWCART'),
           'PAYNL_AUTO_VOID' => Tools::getValue('PAYNL_AUTO_VOID', Configuration::get('PAYNL_AUTO_VOID')),
           'PAYNL_AUTO_FOLLOW_PAYMENT_METHOD' => $followPaymentMethod,
           'PAYNL_SDK_CACHING' => Tools::getValue('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')),

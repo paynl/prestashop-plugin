@@ -14,9 +14,9 @@ Visit the [Pay.](https://www.pay.nl) website for a complete overview of our feat
   
 ## Requirements
 
-    PHP 8.1 or higher
-    PrestaShop minimum version 8.1.2.0
-    Tested up to PrestaShop 8.2.0
+    PHP 8.1 until PHP 8.3  
+    PrestaShop minimum version 8.1.2.0  
+    Tested up to PrestaShop 9.0.0  
 
   
 ## Installation or plugin update

@@ -18,7 +18,7 @@
                             <span class="paynl_switch enabledSwitch green switch {if $paymentmethod->enabled}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->enabled}" name="enabled" {if $paymentmethod->enabled}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                     
                         </span>
                         <span class="col-xs-1 clickable openPaymentDetails checkfew">
-                            <img width="50" src="{$image_url}{$paymentmethod->image_path}">
+                            <img width="50" src="{$paymentmethod->logo}">
                             <input type="hidden" name="image_path" value="{$paymentmethod->image_path}"/>
                         </span>
                         <span class="col-xs-9 clickable openPaymentDetails">
@@ -38,8 +38,8 @@
                                     <p class="help-block">
                                         {l s='The name of the payment method' mod='paynlpaymentmethods'}
                                     </p>
-                                    {if count($languages) > 1}  
-                                    <div class="translations">
+                                    {if isset($languages) && count($languages) > 0}
+                                        <div class="translations">
                                         <div class="show_translations">{l s='Translations' mod='paynlpaymentmethods'} &nbsp; <i class="icon-chevron-down"></i></div>                            
                                             <br/>
                                             <div class="language-options hidden">                                                          
@@ -55,8 +55,7 @@
                                         </div>
                                     </div>
                                     {/if}
-                                </div>                    
-                                
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -66,8 +65,8 @@
                                     <p class="help-block">
                                         {l s='Short description for the paymentmethod, Will be shown on selection of the payment method' mod='paynlpaymentmethods'}
                                     </p>
-                                    {if count($languages) > 1}  
-                                    <div class="translations">
+                                    {if isset($languages) && count($languages) > 0}
+                                        <div class="translations">
                                         <div class="show_translations">{l s='Translations' mod='paynlpaymentmethods'} &nbsp; <i class="icon-chevron-down"></i></div>
                                             <br/>
                                             <div class="language-options hidden">                            
@@ -115,13 +114,13 @@
                             <div class="form-group limit_countries_required {if !$paymentmethod->limit_countries}hidden{/if}">
                                 <label class="control-label col-lg-3 align-right">{l s="Allowed countries" mod='paynlpaymentmethods'}</label>
                                 <div class="col-lg-9">
-                                    <select name="allowed_countries" multiple>                                
+                                    <select class="select-multiple" name="allowed_countries" multiple style="width: 100%">
                                         {foreach from=$available_countries item=country}
                                             <option value="{$country.id_country}" {if in_array($country.id_country, $paymentmethod->allowed_countries)}selected="selected"{/if}>{$country.name}</option>                        
                                         {/foreach}
                                     </select>
                                     <p class="help-block">
-                                        {l s="Select all countries where this paymentmethod may be used, hold ctrl to select multiple countries" mod='paynlpaymentmethods'}
+                                        {l s="Select all countries where this paymentmethod may be used" mod='paynlpaymentmethods'}
                                     </p>
                                 </div>
                             </div>
@@ -137,13 +136,13 @@
                             <div class="form-group limit_carriers_required {if !$paymentmethod->limit_carriers}hidden{/if}">
                                 <label class="control-label col-lg-3 align-right">{l s="Allowed carriers" mod='paynlpaymentmethods'}</label>
                                 <div class="col-lg-9">
-                                    <select name="allowed_carriers" multiple>
+                                    <select class="select-multiple" name="allowed_carriers" multiple style="width: 100%">
                                         {foreach from=$available_carriers item=carrier}
                                             <option value="{$carrier.id_carrier}" {if in_array($carrier.id_carrier, $paymentmethod->allowed_carriers)}selected="selected"{/if}>{$carrier.name}</option>                        
                                         {/foreach}
                                     </select>
                                     <p class="help-block">
-                                        {l s="Select all carriers where this paymentmethod may be used, hold ctrl to select multiple carriers" mod='paynlpaymentmethods'}
+                                        {l s="Select all carriers where this paymentmethod may be used" mod='paynlpaymentmethods'}
                                     </p>
                                 </div>
                             </div>
@@ -180,6 +179,58 @@
                                     </p>
                                 </div>
                             </div>
+
+                            {if in_array($paymentmethod->id, $showFastcheckoutOptionsIdeal)}                                
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right" style="font-size: 25px; margin-top: 25px;">{l s='Fast checkout' mod='paynlpaymentmethods'}</label>
+                                    <div class="col-lg-9" style="height:80px;">                                       
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s="Cart page" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="Show the fast checkout button on the cart page. This button allows users to checkout directly from the cart without the need to fill in their address." mod='paynlpaymentmethods'}</span></div></label>
+                                    <div class="col-lg-9">
+                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_cart_page}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_cart_page}" name="fastcheckout_cart_page" {if $paymentmethod->fastcheckout_cart_page}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s="Minicart" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="Show the fast checkout button on the minicart. This button allows users to checkout directly from the cart without the need to fill in their address." mod='paynlpaymentmethods'}</span></div></label>
+                                    <div class="col-lg-9">
+                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_minicart}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_minicart}" name="fastcheckout_minicart" {if $paymentmethod->fastcheckout_minicart}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s="Product page" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="Show the fast checkout button on every product page. This button allows users to checkout directly from the cart without the need to fill in their address." mod='paynlpaymentmethods'}</span></div></label>
+                                    <div class="col-lg-9">
+                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_product_page}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_product_page}" name="fastcheckout_product_page" {if $paymentmethod->fastcheckout_product_page}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <p class="help-block">
+                                            {l s='Show the fast checkout button on the enabled pages.' mod='paynlpaymentmethods'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s="Guest checkout only" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="When enabled, the fast checkout button will only be shown for guest users." mod='paynlpaymentmethods'}</span></div></label>
+                                    <div class="col-lg-9">
+                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_guest_only}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_guest_only}" name="fastcheckout_guest_only" {if $paymentmethod->fastcheckout_guest_only}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <p class="help-block">
+                                            {l s='Show the fast checkout button on the cart page, only for guest customers.' mod='paynlpaymentmethods'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s="Show modal" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="When enabled, a modal explaining on how fast checkout works will show before going through with fast checkout." mod='paynlpaymentmethods'}</span></div></label>
+                                    <div class="col-lg-9">
+                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_modal}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_modal}" name="fastcheckout_modal" {if $paymentmethod->fastcheckout_modal}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <p class="help-block">
+                                            {l s='Open modal before fast checkout.' mod='paynlpaymentmethods'}
+                                        </p>
+                                    </div>
+                                </div>
+                            {/if}
 
                             {if in_array($paymentmethod->id, $showExternalLogoList)}
                                 <div class="form-group">
@@ -265,7 +316,8 @@
         }
         return $returnArray;
     }
-    
+
+    $('.select-multiple').select2();
 
     function paynlFormData(){       
         var $paymentmethods = [];

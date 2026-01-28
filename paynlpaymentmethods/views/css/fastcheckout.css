@@ -1,0 +1,293 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.pay-fastcheckout-button {
+    background-color: #c90066 !important;
+    border-color: #c90066 !important;
+    background-image: url(../images/fastCheckoutIdeal.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 51px !important;
+    background-position: 15px center !important;
+    cursor: pointer !important;
+    padding-left: 75px !important;
+    color: white !important;
+    display: inline-block !important;
+    float: none !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.pay-fastcheckout-button.checkout {
+    margin-top: 0.5rem !important;
+    background-position: 45px center !important;
+}
+
+.pay-fastcheckout-button.fs-product {
+    position: absolute !important;
+    left: 0 !important;
+    bottom: -50px !important;
+    height: 2.75rem !important;
+    padding-top: .625rem !important;
+    line-height: inherit !important;
+}
+
+.break {
+    width: 5px !important;
+}
+
+.block-social ul, .product-quantity {
+    position: relative !important;
+    margin-bottom: 65px !important;
+}
+
+
+.fc-modal-trigger-button-wrapper {
+    width: 250px !important;
+}
+
+.fc-modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: 9000 !important;
+}
+
+.fc-modal-backdrop.visible {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc-modal-backdrop.invisible {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc-modal {
+    width: 100% !important;
+    max-width: 700px !important;
+    padding: 30px !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    text-align: left !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) scale(0.9) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    z-index: 10000!important;
+    box-sizing: border-box !important;
+    font-family: Roboto, Arial, sans-serif !important;
+    display: block !important;
+    bottom: auto !important;
+    right: auto !important;
+}
+
+.fc-modal.visible {
+    display: block !important;
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(1) !important;
+    transition: all 0.2s ease, transform 0.2s ease !important;
+    visibility: visible !important;
+}
+
+.fc-modal.invisible {
+    opacity: 0 !important;
+    transform: translate(-50%, -50%) scale(0.9) !important;
+    transition: all 0.2s ease, transform 0.2s ease !important;
+    visibility: hidden !important;
+}
+
+.fc-modal-header {
+    font-size: 28px !important;
+    font-weight: bold !important;
+    margin: 0 !important;
+    color: #000 !important;
+    line-height: 1.2 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+.fc-modal-header span {
+    color: #CC0066 !important;
+}
+
+.fc-modal-body-wrapper {
+    display: flex !important;
+    gap: 50px !important;
+    align-items: flex-start !important;
+}
+
+.eye-catcher {
+    width: 250px !important;
+    height: 250px !important;
+    align-self: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-image: url(../images/ideal-visual.webp) !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+}
+
+.fc-modal-content {
+    flex: 1 !important;
+    border: none !important;
+}
+
+.fc-modal-text {
+    padding: 0px 0px 10px 0px !important;
+}
+
+.fc-modal-description {
+    font-size: 16px !important;
+    margin-top: 10px !important;
+    color: black !important;
+    opacity: 0.5 !important;
+    margin-bottom: 0 !important;
+}
+
+.fc-modal-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 20px !important;
+}
+
+.fc-modal-button {
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    border-radius: 60px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 50px !important;
+    transition: all 0.2s !important;
+}
+
+.button-primary {
+    background-color: #CC0066 !important;
+    color: #fff !important;
+    border: none !important;
+    background-image: url(../images/fastCheckoutIdeal.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 51px !important;
+    background-position: 45px center !important;
+    font-size: 18px !important;
+}
+
+.button-primary:hover {
+    transform: scale(1.02) !important;
+    color: #fff !important;
+    background-color: #CC0066 !important;
+    border-color: transparent !important;
+}
+
+.ideal-order-image {
+    width: 160px !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.button-secondary {
+    background-color: #fff !important;
+    color: #333 !important;
+    border: 1px solid #666 !important;
+}
+
+.button-secondary:hover {
+    transform: scale(1.02) !important;
+    color: #000 !important;
+    background-color: transparent !important;
+    border-color: rgb(102, 102, 102) !important;
+}
+
+.trigger-button {
+    background-color: #007BFF !important;
+    color: #fff !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+    border: none !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    z-index: 1 !important;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    .fc-modal {
+        padding: 24px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+        width: calc(100% - 32px) !important;
+    }
+
+    .fc-modal-body-wrapper {
+        flex-direction: column !important;
+        gap: 24px !important;
+    }
+
+    .eye-catcher {
+        width: 200px !important;
+        height: 200px !important;
+        margin: 0 auto !important;
+    }
+
+    .fc-modal-content {
+        width: 100% !important;
+    }
+
+    .fc-modal-header {
+        font-size: 24px !important;
+        text-align: center !important;
+        border: none !important;
+    }
+
+    .fc-modal-description {
+        text-align: center !important;
+    }
+
+    .fc-modal-button {
+        height: auto !important;
+        min-height: 50px !important;
+        padding: 12px !important;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .fc-modal {
+        padding: 20px !important;
+        width: calc(100% - 24px) !important;
+    }
+
+    .eye-catcher {
+        width: 150px !important;
+        height: 150px !important;
+    }
+
+    .fc-modal-header {
+        font-size: 20px !important;
+    }
+
+    .fc-modal-description {
+        font-size: 14px !important;
+    }
+
+    .ideal-order-image {
+        width: 140px !important;
+    }
+
+    .fc-modal-button {
+        font-size: 13px !important;
+    }
+}

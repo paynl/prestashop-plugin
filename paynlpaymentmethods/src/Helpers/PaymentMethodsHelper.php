@@ -9,6 +9,10 @@ use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use Tools;
 use Configuration;
 use Address;
+use Context;
+use Currency;
+use Cart;
+use PaynlPaymentMethods\PrestaShop\Helpers\LogoHelper;
 
 /**
  * Class PaymentMethodsHelper
@@ -19,11 +23,13 @@ class PaymentMethodsHelper
 {
     private $helper;
     private $formHelper;
+    private $logoHelper;
 
     public function __construct()
     {
         $this->helper = new PayHelper();
         $this->formHelper = new FormHelper();
+        $this->logoHelper = new LogoHelper();
         return $this;
     }
 
@@ -62,7 +68,8 @@ class PaymentMethodsHelper
                 $name = $paymentMethod->{'name_' . $iso_code};
             }
             if ($paymentMethod->fee > 0) {
-                $name .= " (+ " . Tools::displayPrice($paymentMethod->fee, (int)$cart->id_currency, true) . ")";
+                $currency = new Currency((int)$cart->id_currency);
+                $name .= " (+ " . Context::getContext()->getCurrentLocale()->formatPrice($paymentMethod->fee, $currency->iso_code) . ")";
             }
 
             $objPaymentMethod->setCallToActionText($name)
@@ -77,9 +84,10 @@ class PaymentMethodsHelper
 
             $imagePath = $paymentMethod->image_path ?? '';
             if ($bShowLogo && !empty($imagePath)) {
-                $objPaymentMethod->setLogo($path . 'views/images/' . $imagePath);
                 if (!empty($paymentMethod->external_logo)) {
                     $objPaymentMethod->setLogo($paymentMethod->external_logo);
+                } else {
+                    $objPaymentMethod->setLogo($this->logoHelper->getLogo($imagePath));
                 }
             }
 
