@@ -348,50 +348,38 @@ class PaynlPaymentMethods extends PaymentModule
             $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
             return '';
         }
-        if (!$showStartPinButton) {
-        try {
+
+        if (!$showStartPinButton)
+        {
             try {
-                $payOrder = $this->getPayOrder($transactionId);
-            } catch (Exception $e) {
-                $payOrder = false;
-                $useGMS = true;
-            }
-
-            if (isset($useGMS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
-                $payGmsOrder = $this->getPayRefundOrder($transactionId);
-                $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
-
-                if ($payGmsOrder->isRefunded() || isset($useGMS)) {
-                    $payOrder = $payGmsOrder;
-                }
-
-                if ($currency->iso_code == 'EUR') {
-                    $alreadyRefunded = $payGmsOrder->getAmountRefunded();
-                }
-            }
-
-            $payOrderAmount = $payOrder->getAmount();
-            $status = $payOrder->getStatusName();
-            $profileId = $payOrder->getPaymentMethod();
-            $methodName = PaymentMethod::getName($transactionId, $profileId);
-            $showCaptureButton = $payOrder->isAuthorized();
-            $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
-            $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
-            $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
-
-            $terminals = null;
-            if ($showPinRefundButton) {
                 try {
-                    $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
-                    $allTerminals = $terminalsFromCache['terminals'] ?? [];
-
-                    foreach ($allTerminals as $terminal) {
-                        $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
-                    }
+                    $payOrder = $this->getPayOrder($transactionId);
                 } catch (Exception $e) {
-                    $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
+                    $payOrder = false;
+                    $useGMS = true;
                 }
-            }
+
+                if (isset($useGMS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
+                    $payGmsOrder = $this->getPayRefundOrder($transactionId);
+                    $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
+
+                    if ($payGmsOrder->isRefunded() || isset($useGMS)) {
+                        $payOrder = $payGmsOrder;
+                    }
+
+                    if ($currency->iso_code == 'EUR') {
+                        $alreadyRefunded = $payGmsOrder->getAmountRefunded();
+                    }
+                }
+
+                $payOrderAmount = $payOrder->getAmount();
+                $status = $payOrder->getStatusName();
+                $profileId = $payOrder->getPaymentMethod();
+                $methodName = PaymentMethod::getName($transactionId, $profileId);
+                $showCaptureButton = $payOrder->isAuthorized();
+                $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
+                $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
+                $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
 
             } catch (Exception $exception) {
                 $showRefundButton = false;

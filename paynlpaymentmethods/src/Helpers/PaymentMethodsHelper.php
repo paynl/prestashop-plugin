@@ -6,7 +6,6 @@ use Language;
 use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PaynlPaymentMethods\PrestaShop\PaymentMethod;
-use Tools;
 use Configuration;
 use Address;
 use Context;
