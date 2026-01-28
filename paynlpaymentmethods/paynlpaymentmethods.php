@@ -336,17 +336,16 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
-
         $showPinRefundButton = false;
         $showStartPinButton = false;
-        if (!$transactionId && in_array($order->payment, ['PIN', 'InStore payment'])) {
-            $showStartPinButton = true;
-        }
 
-        # Check if transaction ID is valid
-        if (empty($transactionId)) {
-            $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
-            return '';
+        if (!$transactionId) {
+            if (in_array($order->payment, ['PIN', 'InStore payment'])) {
+                $showStartPinButton = true;
+            } else {
+                $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
+                return '';
+            }
         }
 
         if (!$showStartPinButton)
@@ -381,14 +380,15 @@ class PaynlPaymentMethods extends PaymentModule
                 $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
                 $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
 
-            } catch (Exception $exception) {
+            } catch (\Throwable $exception) {
+                $this->helper->payLog('hookDisplayAdminOrder', 'exception: ' . $exception->getMessage());
                 $showRefundButton = false;
                 $showCaptureButton = false;
                 $showCaptureRemainingButton = false;
             }
         }
 
-        $terminals = null;
+        $terminals = [];
         if ($showPinRefundButton || $showStartPinButton) {
             try {
                 $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
