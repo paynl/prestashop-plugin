@@ -9,8 +9,8 @@
         <input type="hidden" id="pay-transactionid" value="{$pay_orderid}">
         <input type="hidden" id="pay-prestaorderid" value="{$PrestaOrderId}">
         <input type="hidden" id="pay-ajaxurl" value="{$ajaxURL}">
-        <input type="hidden" id="pay-lang-areyoursure" value="{$lang.are_you_sure_pin}">
-        <input type="hidden" id="pay-lang-areyoursurepin" value="{$lang.are_you_sure}">
+        <input type="hidden" id="pay-lang-areyoursure" value="{$lang.are_you_sure}">
+        <input type="hidden" id="pay-lang-areyoursurepin" value="{$lang.are_you_sure_pin}">
         <input type="hidden" id="pay-lang-areyoursure" value="{$lang.are_you_sure}">
         <input type="hidden" id="pay-lang-areyoursurecapture" value="{$lang.are_you_sure_capture}">
         <input type="hidden" id="pay-lang-areyoursurecaptureremaining" value="{$lang.are_you_sure_capture_remaining}">

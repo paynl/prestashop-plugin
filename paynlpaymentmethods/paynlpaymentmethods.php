@@ -489,8 +489,8 @@ class PaynlPaymentMethods extends PaymentModule
     private function getMultiLang(): array
     {
         $lang['title'] = $this->l('Pay.');
-        $lang['are_you_sure'] = $this->l('Are you sure want to refund this amount');
-        $lang['are_you_sure_pin'] = $this->l('Are you sure want to start a pin transaction for this amount');
+        $lang['are_you_sure'] = $this->l('Are you sure you want to refund this amount');
+        $lang['are_you_sure_pin'] = $this->l('Are you sure you want to start a pin transaction for this amount');
         $lang['are_you_sure_capture'] = $this->l('Are you sure you want to capture this transaction for this amount');
         $lang['are_you_sure_capture_remaining'] = $this->l('Are you sure you want to capture the remaining amount of this transaction?');
         $lang['refund_button'] = $this->l('REFUND');
