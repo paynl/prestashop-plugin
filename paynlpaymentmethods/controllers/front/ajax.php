@@ -148,16 +148,19 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
     public function processPintransaction(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
     {
         $returnUrl = Tools::getValue('returnurl');
-        $terminalCode = Tools::getValue('terminalcode');
+        $terminalCode = Tools::getValue('terminalcode', '');
         $helper = new PayHelper();
         $helper->payLog('Pintransaction', 'Trying to start a pin transaction from the admin ' . $amount . ' ' . $strCurrency . ' on prestashop-order id ' . $prestaOrderId, $cartId, $transactionId);
 
         try {
+            if (empty($returnUrl)) {
+                throw new \Exception('Return URL is empty');
+            }
             $pinTransaction = new PayNL\Sdk\Model\Request\OrderCreateRequest();
             $pinTransaction->setConfig($helper->getConfig());
             $context = $module->getContext();
 
-            $pinTransaction->setServiceId(Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID')));
+            $pinTransaction->setServiceId(Configuration::get('PAYNL_SERVICE_ID'));
             $pinTransaction->setPaymentMethodId(PaymentMethod::METHOD_PIN);
             $pinTransaction->setAmount($amount);
             $pinTransaction->setCurrency($strCurrency);
@@ -172,7 +175,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $this->returnResponse(true, null, 'successfully_pin', $payTransaction->getPaymentUrl());
 
             $helper->payLog('Pintransaction', 'Pin transaction in admin started with succes', $cartId, $transactionId);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $helper->payLog('Pintransaction', 'Pin transaction in admin failed: ' . $e->getMessage(), $cartId, $transactionId);
             $this->returnResponse(false, null, 'could_not_process_pintransaction');
         }
