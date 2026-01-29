@@ -1077,7 +1077,7 @@ class PaynlPaymentMethods extends PaymentModule
 
         $products = $cart->getProducts();
         foreach ($products as $product) {
-            $cart->setProductAddressDelivery($product['id_product'], $product['id_product_attribute'], $product['id_address_delivery'], $addressShipping->id);
+            $cart->setProductAddressDelivery($product['id_product'], $product['id_product_attribute'], ($product['id_address_delivery'] ?? ''), $addressShipping->id);
         }
 
         $addressDataInvoice = [
@@ -1223,7 +1223,9 @@ class PaynlPaymentMethods extends PaymentModule
         $cartId = $cart->id;
         $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings($payment_option_id);
 
-        if ($parameters['pinMoment'] == 'backorder' || $paymentMethodSettings->payment_location == 'backorder') {
+        $paymentLocation = ((array) $paymentMethodSettings)['payment_location'] ?? null;
+
+        if (($parameters['pinMoment'] ?? '') == 'backorder' || $paymentLocation == 'backorder') {
             $this->createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings);
             $orderId = Order::getIdByCartId($cartId);
             $customer = new Customer($cart->id_customer);
