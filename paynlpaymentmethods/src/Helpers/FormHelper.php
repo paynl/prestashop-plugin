@@ -456,17 +456,17 @@ class FormHelper
      * @param $payment_option_id
      * @param $description
      * @param bool $logo
-     * @param $paymentLocation
+     * @param array|null $paymentLocation
      * @return mixed|void
      */
-    public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true, $paymentLocation = null)
+    public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true, array $paymentLocation = null)
     {
         $type = 'dropdown';
         $l = $module->payTranslations();
 
         if (in_array($payment_option_id, [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN])) {
             if (PaymentMethod::getPaymentMethodSettings($payment_option_id)->payment_location == 'backorder') {
-                // Setting is set to directly create a backorder, so no need for loading terminal information .
+                // Setting `payment_location` from instore method, is set to directly create a backorder, so no need for loading terminal information .
             } else {
                 try {
                     $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);

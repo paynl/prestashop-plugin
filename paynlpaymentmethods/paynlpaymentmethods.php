@@ -1301,25 +1301,8 @@ class PaynlPaymentMethods extends PaymentModule
 
         if ($this->shouldValidateOnStart($payment_option_id, $objPaymentMethod)) {
             $this->helper->payLog('startPayment', 'Pre-Creating order for pp : ' . $payment_option_id, $cartId, $payTransactionId);
+            $this->createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings);
 
-            # Flush the package list, so the fee is added to it.
-            $this->context->cart->getPackageList(true);
-
-            $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings($payment_option_id);
-            $paymentMethodName = empty($paymentMethodSettings->name) ? 'Pay. Overboeking' : $paymentMethodSettings->name;
-
-            $this->validateOrder($cart->id, $this->statusPending, 0, $paymentMethodName, null, array(), null, false, $cart->secure_key);
-
-            $orderId = Order::getIdByCartId($cartId);
-            $order = new Order($orderId);
-
-            $orderPayment = new OrderPayment();
-            $orderPayment->order_reference = $order->reference;
-            $orderPayment->payment_method = $paymentMethodName;
-            $orderPayment->amount = $cart->getOrderTotal();
-            $orderPayment->transaction_id = $payTransactionId;
-            $orderPayment->id_currency = $cart->id_currency;
-            $orderPayment->save();
         } else {
             $this->helper->payLog('startPayment', 'Not pre-creating the order, waiting for payment.', $cartId, $payTransactionId);
         }
