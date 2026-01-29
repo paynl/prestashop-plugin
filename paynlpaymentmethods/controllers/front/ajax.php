@@ -185,7 +185,6 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $url = $payTransaction->getPaymentUrl();
         } catch (\Throwable $e) {
             $bResult = false;
-            paydbg('failL ' . $e->getMessage());
             $helper->payLog('Pintransaction', 'Pin transaction in admin failed: ' . $e->getMessage(), $cartId, $payOrderId);
             $message = 'Pin transaction in admin failed: ' . $e->getMessage();
         }
