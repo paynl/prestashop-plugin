@@ -870,21 +870,26 @@ class PaynlPaymentMethods extends PaymentModule
     }
 
     /**
-     * @param $transactionId
+     * @param string $transactionId
      * @param \PayNL\Sdk\Model\Pay\PayOrder $payOrder
      * @return ExchangeResponse
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      * @throws Exception
      */
-    public function processPayment($transactionId, \PayNL\Sdk\Model\Pay\PayOrder $payOrder): ExchangeResponse
+    public function processPayment(string $transactionId, \PayNL\Sdk\Model\Pay\PayOrder $payOrder): ExchangeResponse
     {
         $message = '';
         $arrOrderState = $this->getNewOrderState($payOrder);
 
         $cartId = $payOrder->getReference();
         $this->helper->payLog('processPayment', 'orderStateName:' . $arrOrderState['name'] . '. iOrderState: ' . $arrOrderState['id'], $cartId, $transactionId);
-        $orderId = Order::getIdByCartId($cartId);
+        try {
+            $orderId = Order::getIdByCartId($cartId);
+        } catch (Exception $e) {
+            $orderId = null;
+            $this->helper->payLog('Exception retrieving order', $e->getMessage(), $cartId, $transactionId);
+        }
 
         $profileId = $payOrder->getPaymentMethod();
         $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
@@ -954,22 +959,8 @@ class PaynlPaymentMethods extends PaymentModule
             $message = "Updated order (" . $order->reference . ") to: " . $arrOrderState['name'];
         } else {
             $iState = $payOrder->getStatusCode();
-            $paymentLocation = false;
 
-            if ($profileId == PaymentMethod::METHOD_PIN && $payOrder->isPaid()) {
-                $orderId = $cart->id;
-                $order = new Order($orderId);
-
-                Transaction::addTransaction($transactionId, $orderId, $cart->id_customer, $profileId, $cart->getOrderTotal());
-
-                $this->updateOrderHistory($order->id, $this->statusPaid);
-                $this->helper->payLog('processPinFromAdmin', $transactionId . ' - Connected to prestashop order: ' . $orderId);
-
-                $message = 'Processing pin from admin, order paid';
-                $paymentLocation = true;
-            }
-
-            if (($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified()) && !$paymentLocation) {
+            if (($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified())) {
                 try {
                     $currency_order = new Currency($cart->id_currency);
 
