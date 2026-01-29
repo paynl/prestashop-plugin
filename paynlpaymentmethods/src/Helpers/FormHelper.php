@@ -450,33 +450,43 @@ class FormHelper
    * @param bool $logo
    * @return mixed
    */
+
+    /**
+     * @param $module
+     * @param $payment_option_id
+     * @param $description
+     * @param bool $logo
+     * @param $paymentLocation
+     * @return mixed|void
+     */
     public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true, $paymentLocation = null)
     {
-        $paymentOptions = [];
-        $paymentOptionText = null;
-        $paymentDropdownText = null;
         $type = 'dropdown';
         $l = $module->payTranslations();
 
-        if (in_array($payment_option_id, [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN]) && PaymentMethod::getPaymentMethodSettings($payment_option_id)->payment_location !== 'backorder') {
-            try {
-                $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
-                $allTerminals = $terminalsFromCache['terminals'] ?? [];
+        if (in_array($payment_option_id, [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN])) {
+            if (PaymentMethod::getPaymentMethodSettings($payment_option_id)->payment_location == 'backorder') {
+                // Setting is set to directly create a backorder, so no need for loading terminal information .
+            } else {
+                try {
+                    $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
+                    $allTerminals = $terminalsFromCache['terminals'] ?? [];
 
-                foreach ($allTerminals as $terminal) {
-                    $paymentOptions[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
+                    foreach ($allTerminals as $terminal) {
+                        $paymentOptions[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
+                    }
+
+                    $paymentOptionText = $l['selectPin'] ?? 'Select terminal';
+                    $paymentDropdownText = $l['pin'] ?? 'Select terminal';
+                    $paymentOptionName = 'terminalCode';
+                } catch (PayException $e) {
+                    echo '<pre>';
+                    echo 'Technical message: ' . $e->getMessage() . PHP_EOL;
+                    echo 'Pay-code: ' . $e->getPayCode() . PHP_EOL;
+                    echo 'Customer message: ' . $e->getFriendlyMessage() . PHP_EOL;
+                    echo 'HTTP code: ' . $e->getcode();
+                    exit();
                 }
-
-                $paymentOptionText = $l['selectPin'] ?? 'Select terminal';
-                $paymentDropdownText = $l['pin'] ?? 'Select terminal';
-                $paymentOptionName = 'terminalCode';
-            } catch (PayException $e) {
-                echo '<pre>';
-                echo 'Technical message: ' . $e->getMessage() . PHP_EOL;
-                echo 'Pay-code: ' . $e->getPayCode() . PHP_EOL;
-                echo 'Customer message: ' . $e->getFriendlyMessage() . PHP_EOL;
-                echo 'HTTP code: ' . $e->getcode();
-                exit();
             }
         }
 
@@ -485,10 +495,10 @@ class FormHelper
         $context->smarty->assign([
             'action' => $context->link->getModuleLink($module->name, 'startPayment', array(), true),
             'payment_option_name' => $paymentOptionName ?? '',
-            'payment_options' => $paymentOptions,
+            'payment_options' => $paymentOptions ?? [],
             'payment_option_id' => $payment_option_id,
-            'payment_option_text' => $paymentOptionText,
-            'payment_dropdown_text' => $paymentDropdownText,
+            'payment_option_text' => $paymentOptionText ?? null,
+            'payment_dropdown_text' => $paymentDropdownText ?? null,
             'description' => $description,
             'logoClass' => $logo ? '' : 'noLogo',
             'type' => $type,
