@@ -1302,9 +1302,7 @@ class PaynlPaymentMethods extends PaymentModule
         Transaction::addTransaction($payTransactionId, $cart->id, $cart->id_customer, $payment_option_id, $cart->getOrderTotal());
 
         if ($this->shouldValidateOnStart($payment_option_id, $objPaymentMethod)) {
-            $this->helper->payLog('startPayment', 'Pre-Creating order for pp : ' . $payment_option_id, $cartId, $payTransactionId);
             $this->createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings);
-
         } else {
             $this->helper->payLog('startPayment', 'Not pre-creating the order, waiting for payment.', $cartId, $payTransactionId);
         }
