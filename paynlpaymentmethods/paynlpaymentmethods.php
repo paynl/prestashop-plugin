@@ -56,7 +56,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.3.1';
+        $this->version = '5.3.2';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
