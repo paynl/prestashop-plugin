@@ -57,7 +57,7 @@ class PaynlPaymentMethodsStartPaymentModuleFrontController extends ModuleFrontCo
         }
 
         try {
-            $redirectUrl = $this->module->startPayment($cart, $paymentOptionId, ['terminalCode' => Tools::getValue('terminalCode')]);
+            $redirectUrl = $this->module->startPayment($cart, $paymentOptionId, ['terminalCode' => Tools::getValue('terminalCode'), 'pinMoment' => Tools::getValue('pinMoment')]);
             Tools::redirect($redirectUrl);
         } catch (Throwable $e) {
             (new PayHelper())->payLog('postProcess', 'Error startPayment: ' . $e->getMessage(), $cart->id);

@@ -5,6 +5,7 @@ use PayNL\Sdk\Model\Request\OrderCaptureRequest;
 use PayNL\Sdk\Exception\PayException;
 use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PaynlPaymentMethods\PrestaShop\PaymentMethod;
+use PaynlPaymentMethods\PrestaShop\Transaction;
 
 class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
 {
@@ -63,11 +64,8 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $paymentCollection = $order->getOrderPayments();
             $orderPayment = reset($paymentCollection);
             $transactionId = $orderPayment->transaction_id ?? '';
-
             $currency = new Currency((int) $orderPayment->id_currency);
             $strCurrency = $currency->iso_code;
-
-            $cartId = (int)$order->id_cart ?: null;
             $method = 'process' . ucfirst($callType);
 
             if (!method_exists($this, $method)) {
@@ -75,7 +73,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
                 return;
             }
 
-            $this->$method($prestaOrderId, $amount, $cartId, $transactionId, $strCurrency, $module);
+            $this->$method($prestaOrderId, $amount, $order, $transactionId, $strCurrency, $module);
         } catch (Exception $e) {
             $helper->payLog('Capture', "Failed trying to {$callType} {$amount} on ps-order id {$prestaOrderId}. Error: " . $e->getMessage());
             $this->returnResponse(false, 0, 'Could not find order');
@@ -85,14 +83,15 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
     /**
      * @param int $prestaOrderId
      * @param float $amount
-     * @param int|null $cartId
+     * @param $order
      * @param string $transactionId
      * @param string $strCurrency
      * @param $module
      * @return void
      */
-    public function processRefund(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
+    public function processRefund(int $prestaOrderId, float $amount, $order, string $transactionId, string $strCurrency, $module): void
     {
+        $cartId = (int)$order->id_cart ?: null;
         $helper = new PayHelper();
         $helper->payLog('Refund', "Trying to refund {$amount} {$strCurrency} on order {$prestaOrderId}", $cartId, $transactionId);
 
@@ -112,14 +111,15 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
     /**
      * @param int $prestaOrderId
      * @param float $amount
-     * @param int|null $cartId
+     * @param $order
      * @param string $transactionId
      * @param string $strCurrency
      * @param $module
      * @return void
      */
-    public function processCapture(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
+    public function processCapture(int $prestaOrderId, float $amount, $order, string $transactionId, string $strCurrency, $module): void
     {
+        $cartId = (int)$order->id_cart ?: null;
         $helper = new PayHelper();
         $helper->payLog('Capture', "Trying to capture {$amount} {$strCurrency} on order {$prestaOrderId}", $cartId, $transactionId);
 
@@ -139,14 +139,71 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
     /**
      * @param int $prestaOrderId
      * @param float $amount
-     * @param int|null $cartId
+     * @param $order
      * @param string $transactionId
      * @param string $strCurrency
      * @param $module
      * @return void
      */
-    public function processRetourpin(int $prestaOrderId, float $amount, ?int $cartId, string $transactionId, string $strCurrency, $module): void
+    public function processPintransaction(int $prestaOrderId, float $amount, $order, string $transactionId, string $strCurrency, $module): void
     {
+        $cartId = (int)$order->id_cart ?: null;
+        $returnUrl = Tools::getValue('returnurl');
+        $terminalCode = Tools::getValue('terminalcode', '');
+        $helper = new PayHelper();
+        $helper->payLog('Pintransaction', 'Trying to start a pin transaction from the admin ' . $amount . ' ' . $strCurrency . ' on prestashop-order id ' . $prestaOrderId, $cartId, $transactionId);
+
+        try {
+            if (empty($returnUrl)) {
+                throw new \Exception('Return URL is empty');
+            }
+            $pinTransaction = new PayNL\Sdk\Model\Request\OrderCreateRequest();
+            $pinTransaction->setConfig($helper->getConfig());
+            $context = $module->getContext();
+
+            $pinTransaction->setServiceId(Configuration::get('PAYNL_SERVICE_ID'));
+            $pinTransaction->setPaymentMethodId(PaymentMethod::METHOD_PIN);
+            $pinTransaction->setAmount($amount);
+            $pinTransaction->setCurrency($strCurrency);
+            $pinTransaction->setReturnurl($returnUrl);
+            $pinTransaction->setExchangeUrl($context->link->getModuleLink($module->name, 'exchange', array(), true));
+            $pinTransaction->setTerminal($terminalCode);
+            $pinTransaction->setDescription($prestaOrderId);
+            $pinTransaction->setReference($cartId);
+            $pinTransaction->setStats((new PayNL\Sdk\Model\Stats)->setExtra1($prestaOrderId)->setObject(($helper->getObjectInfo($module))));
+
+            $payTransaction = $pinTransaction->start();
+
+            $cart = new Cart((int)$cartId);
+
+            $payOrderId = $payTransaction->getOrderId();
+            Transaction::addTransaction($payOrderId, $cartId, $cart->id_customer, PaymentMethod::METHOD_PIN, $cart->getOrderTotal());
+
+            $helper->payLog('Pintransaction', 'Pin transaction in admin started with succes', $cartId, $payOrderId);
+            $bResult = true;
+            $message = 'successfully_pin';
+            $url = $payTransaction->getPaymentUrl();
+        } catch (\Throwable $e) {
+            $bResult = false;
+            $helper->payLog('Pintransaction', 'Pin transaction in admin failed: ' . $e->getMessage(), $cartId, $payOrderId);
+            $message = 'Pin transaction in admin failed: ' . $e->getMessage();
+        }
+
+        $this->returnResponse($bResult, null, $message, $url ?? '');
+    }
+
+    /**
+     * @param int $prestaOrderId
+     * @param float $amount
+     * @param $order
+     * @param string $transactionId
+     * @param string $strCurrency
+     * @param $module
+     * @return void
+     */
+    public function processRetourpin(int $prestaOrderId, float $amount, $order, string $transactionId, string $strCurrency, $module): void
+    {
+        $cartId = (int)$order->id_cart ?: null;
         $helper = new PayHelper();
         $returnUrl = Tools::getValue('returnurl');
         $terminalCode = Tools::getValue('terminalcode');

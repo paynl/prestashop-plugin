@@ -10,6 +10,8 @@
         <input type="hidden" id="pay-prestaorderid" value="{$PrestaOrderId}">
         <input type="hidden" id="pay-ajaxurl" value="{$ajaxURL}">
         <input type="hidden" id="pay-lang-areyoursure" value="{$lang.are_you_sure}">
+        <input type="hidden" id="pay-lang-areyoursurepin" value="{$lang.are_you_sure_pin}">
+        <input type="hidden" id="pay-lang-areyoursure" value="{$lang.are_you_sure}">
         <input type="hidden" id="pay-lang-areyoursurecapture" value="{$lang.are_you_sure_capture}">
         <input type="hidden" id="pay-lang-areyoursurecaptureremaining" value="{$lang.are_you_sure_capture_remaining}">
         <input type="hidden" id="pay-lang-invalidamount" value="{$lang.invalidamount}">
@@ -20,9 +22,12 @@
         <input type="hidden" id="pay-lang-capturebutton" value="{$lang.capture_button}">
         <input type="hidden" id="pay-lang-captureremainingbutton" value="{$lang.capture_remaining_button}">
         <input type="hidden" id="pay-lang-couldnotprocess" value="{$lang.could_not_process_refund}">
+        <input type="hidden" id="pay-lang-couldnotprocesspin" value="{$lang.could_not_process_pintransaction}">
         <input type="hidden" id="pay-lang-couldnotprocesscapture" value="{$lang.could_not_process_capture}">
         <input type="hidden" id="pay-lang-succesfullycaptured" value="{$lang.successfully_captured}">
         <input type="hidden" id="pay-lang-succesfullycapturedremaining" value="{$lang.successfully_captured_remaining}">
+        <input type="hidden" id="pay-lang-succesfullypin" value="{$lang.successfully_pin}">
+        <input type="hidden" id="pay-lang-pinbutton" value="{$lang.pin_button}">
 
         <div class="payFields">
             <div class="label">Pay. Order id</div>
@@ -86,6 +91,28 @@
                     <div class="tooltipPAY">
                         ? <span class="tooltipPAYtext"> {$lang.info_capture_remaining_text} </span>
                     </div>
+                </div>
+            {/if}
+            {if $showStartPinButton eq true}
+                <div class="payOption" id="refund-div" style="display: inline-block">
+                    <input type="hidden" value="{$amountFormatted}" id="pay-pin-amount" class="fixed-width-sm" style="display: inline;margin-right:10px"/>
+                    <button type="button" id="pay-pin-button" class="btn btn-danger"
+                            style="display: inline">{$lang.pin_button}</button>
+                    <div class="tooltipPAY">
+                        ? <span class="tooltipPAYtext"> {$lang.pin_button} </span>
+                    </div>
+                    {if !empty($terminals)}
+                        <div class="retourpinTerminals">
+                            <fieldset>
+                                <select id="pay-terminalcode" class="form-control form-control-select" name="terminalCode">
+                                    <option value="">{$lang.select_pin}</option>
+                                    {foreach from=$terminals item=_option}
+                                        <option value="{$_option['id']}">{$_option['name']}</option>
+                                    {/foreach}
+                                </select>
+                            </fieldset>
+                        </div>
+                    {/if}
                 </div>
             {/if}
             <hr>

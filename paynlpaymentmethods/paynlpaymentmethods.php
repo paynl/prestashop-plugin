@@ -42,7 +42,7 @@ class PaynlPaymentMethods extends PaymentModule
     private ProcessingHelper $processingHelper;
     private AddressHelper $addressHelper;
     private InstallHelper $installHelper;
-    private PaymentMethodsHelper $paymentMethodsHelper;    
+    private PaymentMethodsHelper $paymentMethodsHelper;
     private LogoHelper $logoHelper;
 
     public array $avMethods = [];
@@ -147,14 +147,14 @@ class PaynlPaymentMethods extends PaymentModule
         $this->context->controller->addJs($this->_path . 'views/js/fastcheckout.js');
         $this->context->controller->addCSS($this->_path . 'views/css/fastcheckout.css');
 
-        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);      
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
         if (isset($paymentMethodSettings->fastcheckout_modal) && $paymentMethodSettings->fastcheckout_modal == 1) {
-            $this->smarty->assign([       
-                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),   
+            $this->smarty->assign([
+                'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
                 'checkoutUrl' => $this->context->link->getPageLink('order'),
-            ]);       
+            ]);
             return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/modal.tpl');
-        }        
+        }
     }
 
     /**
@@ -225,7 +225,7 @@ class PaynlPaymentMethods extends PaymentModule
      * @return string
      */
     public function hookDisplayExpressCheckout(array $params)
-    {        
+    {
         $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
 
         $customer = $this->context->customer;
@@ -234,12 +234,12 @@ class PaynlPaymentMethods extends PaymentModule
         }
 
         if (isset($paymentMethodSettings->fastcheckout_cart_page) && $paymentMethodSettings->fastcheckout_cart_page == 1) {
-            $this->smarty->assign([       
+            $this->smarty->assign([
                 'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
                 'show_modal' => isset($paymentMethodSettings->fastcheckout_modal) ? $paymentMethodSettings->fastcheckout_modal : 0,
-            ]);            
+            ]);
             return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/checkout.tpl');
-        }        
+        }
     }
 
     /**
@@ -250,7 +250,7 @@ class PaynlPaymentMethods extends PaymentModule
      * @return string
      */
     public function hookDisplayCartModalContent(array $params)
-    {        
+    {
         $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
 
         $customer = $this->context->customer;
@@ -259,10 +259,10 @@ class PaynlPaymentMethods extends PaymentModule
         }
 
         if (isset($paymentMethodSettings->fastcheckout_minicart) && $paymentMethodSettings->fastcheckout_minicart == 1) {
-            $this->smarty->assign([       
+            $this->smarty->assign([
                 'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction']),
                 'show_modal' => isset($paymentMethodSettings->fastcheckout_modal) ? $paymentMethodSettings->fastcheckout_modal : 0,
-            ]);       
+            ]);
             return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/minicart.tpl');
         }
     }
@@ -275,7 +275,7 @@ class PaynlPaymentMethods extends PaymentModule
      * @return string
      */
     public function hookDisplayProductActions(array $params)
-    {       
+    {
         $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings(PaymentMethod::METHOD_IDEAL);
 
         $customer = $this->context->customer;
@@ -283,8 +283,8 @@ class PaynlPaymentMethods extends PaymentModule
             return false;
         }
 
-        if (isset($paymentMethodSettings->fastcheckout_product_page) && $paymentMethodSettings->fastcheckout_product_page == 1) { 
-            $this->smarty->assign([       
+        if (isset($paymentMethodSettings->fastcheckout_product_page) && $paymentMethodSettings->fastcheckout_product_page == 1) {
+            $this->smarty->assign([
                 'fastcheckout_url' => $this->context->link->getModuleLink($this->name, 'fastcheckout', ['action' => 'startTransaction'])
             ]);
             return $this->fetch('module:paynlpaymentmethods/views/templates/front/fastcheckout/product.tpl');
@@ -306,7 +306,6 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function hookDisplayAdminOrder(array $params)
     {
-        
         try {
             $cartId = Cart::getCartIdByOrderId((int)$params['id_order']);
             $orderId = Order::getIdByCartId($cartId);
@@ -337,62 +336,70 @@ class PaynlPaymentMethods extends PaymentModule
         $alreadyRefunded = 0;
         $prestaOrderStatusId = $order->getCurrentState();
 
-        # Check if transaction ID is valid
-        if (empty($transactionId)) {
-            $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
-            return '';
+        $showPinRefundButton = false;
+        $showStartPinButton = false;
+
+        if (!$transactionId) {
+            if (in_array($order->payment, ['PIN', 'InStore payment'])) {
+                $showStartPinButton = true;
+            } else {
+                $this->helper->payLog('hookDisplayAdminOrder', 'Transaction ID is empty or null for order: ' . $orderId);
+                return '';
+            }
         }
 
-        try {
+        if (!$showStartPinButton)
+        {
             try {
-                $payOrder = $this->getPayOrder($transactionId);
-            } catch (Exception $e) {
-                $payOrder = false;
-                $useGMS = true;
-            }
-
-            if (isset($useGMS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
-                $payGmsOrder = $this->getPayRefundOrder($transactionId);
-                $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
-
-                if ($payGmsOrder->isRefunded() || isset($useGMS)) {
-                    $payOrder = $payGmsOrder;
-                }
-                
-                if ($currency->iso_code == 'EUR') {
-                    $alreadyRefunded = $payGmsOrder->getAmountRefunded();
-                }
-            }
-
-            $payOrderAmount = $payOrder->getAmount();
-            $status = $payOrder->getStatusName();
-            $profileId = $payOrder->getPaymentMethod();
-            $methodName = PaymentMethod::getName($transactionId, $profileId);
-            $showCaptureButton = $payOrder->isAuthorized();
-            $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
-            $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
-            $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
-
-            $terminals = null;
-            if ($showPinRefundButton) {
                 try {
-                    $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
-                    $allTerminals = $terminalsFromCache['terminals'] ?? [];
-
-                    foreach ($allTerminals as $terminal) {
-                        $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
-                    }
+                    $payOrder = $this->getPayOrder($transactionId);
                 } catch (Exception $e) {
-                    $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
+                    $payOrder = false;
+                    $useGMS = true;
                 }
-            }
 
-        } catch (Exception $exception) {
-            $showRefundButton = false;
-            $showCaptureButton = false;
-            $showCaptureRemainingButton = false;
-            $showPinRefundButton = false;
-            $terminals = null;
+                if (isset($useGMS) || ($payOrder instanceof \PayNL\Sdk\Model\Pay\PayOrder && ($payOrder->isPaid() || $payOrder->isAuthorized()))) {
+                    $payGmsOrder = $this->getPayRefundOrder($transactionId);
+                    $this->helper->payLog('hookDisplayAdminOrder', 'gms: ' . $payGmsOrder->getStatusName());
+
+                    if ($payGmsOrder->isRefunded() || isset($useGMS)) {
+                        $payOrder = $payGmsOrder;
+                    }
+
+                    if ($currency->iso_code == 'EUR') {
+                        $alreadyRefunded = $payGmsOrder->getAmountRefunded();
+                    }
+                }
+
+                $payOrderAmount = $payOrder->getAmount();
+                $status = $payOrder->getStatusName();
+                $profileId = $payOrder->getPaymentMethod();
+                $methodName = PaymentMethod::getName($transactionId, $profileId);
+                $showCaptureButton = $payOrder->isAuthorized();
+                $showCaptureRemainingButton = $payOrder->getStatusCode() == 97;
+                $showRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId != PaymentMethod::METHOD_INSTORE_PROFILE_ID && $profileId != PaymentMethod::METHOD_INSTORE && $prestaOrderStatusId != $this->statusRefund); // phpcs:ignore
+                $showPinRefundButton = ($payOrder->isPaid() || $payOrder->isRefundedPartial()) && ($profileId == PaymentMethod::METHOD_PIN && $prestaOrderStatusId != $this->statusRefund);
+
+            } catch (\Throwable $exception) {
+                $this->helper->payLog('hookDisplayAdminOrder', 'exception: ' . $exception->getMessage());
+                $showRefundButton = false;
+                $showCaptureButton = false;
+                $showCaptureRemainingButton = false;
+            }
+        }
+
+        $terminals = [];
+        if ($showPinRefundButton || $showStartPinButton) {
+            try {
+                $terminalsFromCache = json_decode(Configuration::get('PAYNL_TERMINALS'), true);
+                $allTerminals = $terminalsFromCache['terminals'] ?? [];
+
+                foreach ($allTerminals as $terminal) {
+                    $terminals[] = ['id' => $terminal['code'], 'name' => $terminal['name']];
+                }
+            } catch (Exception $e) {
+                $this->helper->payLog('hookDisplayAdminOrder', 'Could get terminals: ' . $e->getMessage());
+            }
         }
 
         $amountFormatted = number_format(($order->total_paid - $alreadyRefunded), 2, ',', '.');
@@ -414,6 +421,7 @@ class PaynlPaymentMethods extends PaymentModule
           'showPinRefundButton' => $showPinRefundButton,
           'showCaptureButton' => $showCaptureButton,
           'showCaptureRemainingButton' => $showCaptureRemainingButton,
+          'showStartPinButton' => $showStartPinButton,
           'terminals' => $terminals,
         ));
         return $this->display(__FILE__, 'payorder.tpl');
@@ -481,11 +489,15 @@ class PaynlPaymentMethods extends PaymentModule
     private function getMultiLang(): array
     {
         $lang['title'] = $this->l('Pay.');
-        $lang['are_you_sure'] = $this->l('Are you sure want to refund this amount');
+        $lang['are_you_sure'] = $this->l('Are you sure you want to refund this amount');
+        $lang['are_you_sure_pin'] = $this->l('Are you sure you want to start a pin transaction for this amount');
         $lang['are_you_sure_capture'] = $this->l('Are you sure you want to capture this transaction for this amount');
         $lang['are_you_sure_capture_remaining'] = $this->l('Are you sure you want to capture the remaining amount of this transaction?');
         $lang['refund_button'] = $this->l('REFUND');
         $lang['pin_refund_button'] = $this->l('RETOURPIN');
+        $lang['pin_button'] = $this->l('START PIN');
+        $lang['pin_button_text'] = $this->l('Start a pin transaction to complete this order');
+        $lang['select_pin'] = $this->l('Please select a pin-terminal to use the pin button');
         $lang['select_pin_refund'] = $this->l('Please select a pin-terminal to use the retourpin button');
         $lang['capture_button'] = $this->l('CAPTURE');
         $lang['capture_remaining_button'] = $this->l('CAPTURE REMAINING');
@@ -499,10 +511,12 @@ class PaynlPaymentMethods extends PaymentModule
         $lang['amount'] = $this->l('Amount');
         $lang['invalidamount'] = $this->l('Invalid amount');
         $lang['successfully_refunded'] = $this->l('Succesfully refunded');
+        $lang['successfully_pin'] = $this->l('Succesfully paid via pin');
         $lang['successfully_captured'] = $this->l('Succesfully captured');
         $lang['successfully_captured_remaining'] = $this->l('Succesfully captured the remaining amount.');
         $lang['paymentmethod'] = $this->l('Paymentmethod');
         $lang['could_not_process_refund'] = $this->l('Could not process refund. Refund might be too fast or amount is invalid');
+        $lang['could_not_process_pintransaction'] = $this->l('Could not process pin transaction.');
         $lang['could_not_process_capture'] = $this->l('Could not process this capture.');
         $lang['could_not_process_retourpin'] = $this->l('Could not process the retourpin transaction.');
         $lang['info_refund_title'] = $this->l('Refund');
@@ -856,21 +870,26 @@ class PaynlPaymentMethods extends PaymentModule
     }
 
     /**
-     * @param $transactionId
+     * @param string $transactionId
      * @param \PayNL\Sdk\Model\Pay\PayOrder $payOrder
      * @return ExchangeResponse
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      * @throws Exception
      */
-    public function processPayment($transactionId, \PayNL\Sdk\Model\Pay\PayOrder $payOrder): ExchangeResponse
+    public function processPayment(string $transactionId, \PayNL\Sdk\Model\Pay\PayOrder $payOrder): ExchangeResponse
     {
         $message = '';
         $arrOrderState = $this->getNewOrderState($payOrder);
 
         $cartId = $payOrder->getReference();
         $this->helper->payLog('processPayment', 'orderStateName:' . $arrOrderState['name'] . '. iOrderState: ' . $arrOrderState['id'], $cartId, $transactionId);
-        $orderId = Order::getIdByCartId($cartId);
+        try {
+            $orderId = Order::getIdByCartId($cartId);
+        } catch (Exception $e) {
+            $orderId = null;
+            $this->helper->payLog('Exception retrieving order', $e->getMessage(), $cartId, $transactionId);
+        }
 
         $profileId = $payOrder->getPaymentMethod();
         $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
@@ -969,12 +988,12 @@ class PaynlPaymentMethods extends PaymentModule
 
                     $orderId = Order::getIdByCartId($cartId);
                     $order = new Order($orderId);
-                    
+
                     if (count($payPayments) > 1) {
                         $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
                         $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
                     }
-                    
+
                     $message = "Validated order (" . $order->reference . ") with status: " . $arrOrderState['name'];
                     $this->helper->payLog('processPayment', 'Order created. Amount: ' . $order->getTotalPaid(), $cartId, $transactionId);
                 } catch (Exception $ex) {
@@ -1004,13 +1023,13 @@ class PaynlPaymentMethods extends PaymentModule
 
         $id_customer = Customer::customerExists($data['customer']['email'], true);
         if ($id_customer) {
-            $customer = new Customer($id_customer);          
-        } 
+            $customer = new Customer($id_customer);
+        }
 
         if (empty($customer) || !Validate::isLoadedObject($customer)) {
             $customer = new Customer();
             $customer->is_guest = 1;
-        }        
+        }
 
         $customer->firstname = $data['customer']['firstName'];
         $customer->lastname = $data['customer']['lastName'];
@@ -1021,7 +1040,7 @@ class PaynlPaymentMethods extends PaymentModule
         $customer->save();
 
         $cart->id_customer = (int)$customer->id;
-        $cart->update();  
+        $cart->update();
 
         if (method_exists($this->context, 'updateCustomer')) {
             $this->context->updateCustomer($customer);
@@ -1043,7 +1062,7 @@ class PaynlPaymentMethods extends PaymentModule
         ];
 
         $addressShipping = new Address();
-        $addressShipping->id_customer = (int)$customer->id; 
+        $addressShipping->id_customer = (int)$customer->id;
         $addressShipping->id_manufacturer = 0;
         $addressShipping->id_supplier = 0;
 
@@ -1058,7 +1077,7 @@ class PaynlPaymentMethods extends PaymentModule
 
         $products = $cart->getProducts();
         foreach ($products as $product) {
-            $cart->setProductAddressDelivery($product['id_product'], $product['id_product_attribute'], $product['id_address_delivery'], $addressShipping->id);
+            $cart->setProductAddressDelivery($product['id_product'], $product['id_product_attribute'], ($product['id_address_delivery'] ?? ''), $addressShipping->id);
         }
 
         $addressDataInvoice = [
@@ -1072,8 +1091,8 @@ class PaynlPaymentMethods extends PaymentModule
             'id_country' => (int)Country::getByIso($data['billingAddress']['countryCode']), // Get ID from ISO code
             'phone' => $data['customer']['phone'],
             'alias' => 'Fastcheckout Billing Address', // Alias is required
-        ];   
-        
+        ];
+
         $addressInvoice = new Address();
         $addressInvoice->id_customer = (int)$customer->id;
         $addressInvoice->id_manufacturer = 0;
@@ -1081,7 +1100,7 @@ class PaynlPaymentMethods extends PaymentModule
 
         foreach ($addressDataInvoice as $key => $value) {
             $addressInvoice->{$key} = $value;
-        }     
+        }
 
         $addressInvoice->save();
 
@@ -1089,7 +1108,7 @@ class PaynlPaymentMethods extends PaymentModule
         $cart->id_address_invoice = $addressInvoice->id;
 
         $cart->update();
-        $cart->save();     
+        $cart->save();
 
         return $cart;
     }
@@ -1183,7 +1202,7 @@ class PaynlPaymentMethods extends PaymentModule
      */
     public function startPayment(Cart $cart, $payment_option_id, array $parameters = []): string
     {
-        $cart = $this->initCart($cart);        
+        $cart = $this->initCart($cart);
 
         $request = new PayNL\Sdk\Model\Request\OrderCreateRequest();
         $request->setConfig($this->helper->getConfig());
@@ -1202,6 +1221,19 @@ class PaynlPaymentMethods extends PaymentModule
         $iPaymentFee = $this->paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
         $iPaymentFee = empty($iPaymentFee) ? 0 : $iPaymentFee;
         $cartId = $cart->id;
+        $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings($payment_option_id);
+
+        $paymentLocation = ((array) $paymentMethodSettings)['payment_location'] ?? null;
+
+        if (($parameters['pinMoment'] ?? '') == 'backorder' || $paymentLocation == 'backorder') {
+            $this->createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings);
+            $orderId = Order::getIdByCartId($cartId);
+            $customer = new Customer($cart->id_customer);
+            $module = Module::getInstanceByName('paynlpaymentmethods');
+
+            Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cartId . '&id_module=' . $module->id . '&id_order=' . $orderId . '&key=' . $customer->secure_key);
+            Tools::redirect($this->context->link->getModuleLink($this->name, 'finish', array(), true));
+        }
 
         try {
             $this->addPaymentFee($cart, $iPaymentFee);
@@ -1238,8 +1270,8 @@ class PaynlPaymentMethods extends PaymentModule
             $requestOrderData->setInvoiceAddress($this->addressHelper->getInvoiceAddress($cart));
             $requestOrderData->setDeliveryAddress($this->addressHelper->getDeliveryAddress($cart));
         }
-        
-        $requestOrderData->setProducts($this->_getProductData($cart));        
+
+        $requestOrderData->setProducts($this->_getProductData($cart));
 
         $request->setOrder($requestOrderData);
 
@@ -1271,25 +1303,8 @@ class PaynlPaymentMethods extends PaymentModule
 
         if ($this->shouldValidateOnStart($payment_option_id, $objPaymentMethod)) {
             $this->helper->payLog('startPayment', 'Pre-Creating order for pp : ' . $payment_option_id, $cartId, $payTransactionId);
+            $this->createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings);
 
-            # Flush the package list, so the fee is added to it.
-            $this->context->cart->getPackageList(true);
-
-            $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings($payment_option_id);
-            $paymentMethodName = empty($paymentMethodSettings->name) ? 'Pay. Overboeking' : $paymentMethodSettings->name;
-
-            $this->validateOrder($cart->id, $this->statusPending, 0, $paymentMethodName, null, array(), null, false, $cart->secure_key);
-
-            $orderId = Order::getIdByCartId($cartId);
-            $order = new Order($orderId);
-
-            $orderPayment = new OrderPayment();
-            $orderPayment->order_reference = $order->reference;
-            $orderPayment->payment_method = $paymentMethodName;
-            $orderPayment->amount = $cart->getOrderTotal();
-            $orderPayment->transaction_id = $payTransactionId;
-            $orderPayment->id_currency = $cart->id_currency;
-            $orderPayment->save();
         } else {
             $this->helper->payLog('startPayment', 'Not pre-creating the order, waiting for payment.', $cartId, $payTransactionId);
         }
@@ -1297,6 +1312,28 @@ class PaynlPaymentMethods extends PaymentModule
         return $payTransaction->getPaymentUrl();
     }
 
+    public function createPrestashopOrder($payment_option_id, $cartId, $cart, $paymentMethodSettings, $payTransactionId = null)
+    {
+        $this->helper->payLog('startPayment', 'Pre-Creating order for pp : ' . $payment_option_id, $cartId, $payTransactionId);
+
+        # Flush the package list, so the fee is added to it.
+        $this->context->cart->getPackageList(true);
+
+        $paymentMethodName = empty($paymentMethodSettings->name) ? 'PAY. Overboeking' : $paymentMethodSettings->name;
+
+        $this->validateOrder($cart->id, $this->statusPending, 0, $paymentMethodName, null, array(), null, false, $cart->secure_key);
+
+        $orderId = Order::getIdByCartId($cartId);
+        $order = new Order($orderId);
+
+        $orderPayment = new OrderPayment();
+        $orderPayment->order_reference = $order->reference;
+        $orderPayment->payment_method = $paymentMethodName;
+        $orderPayment->amount = $cart->getOrderTotal();
+        $orderPayment->transaction_id = $payTransactionId;
+        $orderPayment->id_currency = $cart->id_currency;
+        $orderPayment->save();
+    }
 
     /**
      * @return array|false
@@ -1405,7 +1442,9 @@ class PaynlPaymentMethods extends PaymentModule
           'bank_selection' => 'dropdown',
           'limit_carriers' => false,
           'allowed_carriers' => [],
-          'create_order_on' => 'success'
+          'create_order_on' => 'success',
+          'payment_location' => 'direct',
+          'payment_location_method' => []
         ];
 
         foreach ($arr as $fieldName => $methodValue) {
@@ -1827,7 +1866,7 @@ class PaynlPaymentMethods extends PaymentModule
             }
             if (!isset($v->image_path)) {
                 $v->image_path = '';
-            }        
+            }
 
             $this->logoHelper->saveLogo($v->image_path);
             $v->logo = $this->logoHelper->getLogo($v->image_path);
@@ -1840,7 +1879,9 @@ class PaynlPaymentMethods extends PaymentModule
           'paymentmethods' => $this->avMethods,
           'showExternalLogoList' => [PaymentMethod::METHOD_GIVACARD],
           'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL],
-          'showFastcheckoutOptionsIdeal' => [PaymentMethod::METHOD_IDEAL]
+          'showFastcheckoutOptionsIdeal' => [PaymentMethod::METHOD_IDEAL],
+          'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL],
+          'showPaymentLocationList' => [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN]
         ));
 
         return $this->display(__FILE__, 'admin_paymentmethods.tpl');

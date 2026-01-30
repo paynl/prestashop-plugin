@@ -5,6 +5,7 @@ namespace PaynlPaymentMethods\PrestaShop\Helpers;
 use Language;
 use PaynlPaymentMethods\PrestaShop\PayHelper;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use PaynlPaymentMethods\PrestaShop\PaymentMethod;
 use Configuration;
 use Address;
 use Context;
@@ -81,10 +82,10 @@ class PaymentMethodsHelper
                 ]);
 
             $imagePath = $paymentMethod->image_path ?? '';
-            if ($bShowLogo && !empty($imagePath)) {                
+            if ($bShowLogo && !empty($imagePath)) {
                 if (!empty($paymentMethod->external_logo)) {
                     $objPaymentMethod->setLogo($paymentMethod->external_logo);
-                } else {        
+                } else {
                     $objPaymentMethod->setLogo($this->logoHelper->getLogo($imagePath));
                 }
             }
@@ -94,8 +95,17 @@ class PaymentMethodsHelper
                 $strDescription = $paymentMethod->{'description_' . $iso_code};
             }
 
+            $paymentLocation = [];
+            if (in_array($paymentMethod->id, [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN])
+                && in_array($cart->id_carrier, $paymentMethod->payment_location_method)
+                && $paymentMethod->payment_location == 'checkout') {
+
+                $paymentLocation['pinmoment'] = $paymentMethod->payment_location;
+                $paymentLocation['method'] = $paymentMethod->payment_location_method;
+            }
+
             try {
-                $payForm = $this->formHelper->getPayForm($module, $paymentMethod->id, $strDescription, $bShowLogo);
+                $payForm = $this->formHelper->getPayForm($module, $paymentMethod->id, $strDescription, $bShowLogo, $paymentLocation);
             } catch (Exception $e) {
             }
 
@@ -217,7 +227,9 @@ class PaymentMethodsHelper
             'allowed_carriers' => [],
             'external_logo' => '',
             'create_order_on' => 'success',
-            'bank_selection' => 'dropdown'
+            'bank_selection' => 'dropdown',
+            'payment_location' => 'direct',
+            'payment_location_method' => []
         ];
     }
 
