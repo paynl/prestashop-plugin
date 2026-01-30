@@ -960,7 +960,7 @@ class PaynlPaymentMethods extends PaymentModule
         } else {
             $iState = $payOrder->getStatusCode();
 
-            if (($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified())) {
+            if ($payOrder->isPaid() || $payOrder->isAuthorized() || $payOrder->isBeingVerified()) {
                 try {
                     $currency_order = new Currency($cart->id_currency);
 
