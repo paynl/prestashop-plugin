@@ -895,14 +895,6 @@ class PaynlPaymentMethods extends PaymentModule
         $paymentMethodName = PaymentMethod::getName($transactionId, $profileId);
         $cart = new Cart((int)$cartId);
         $this->context->cart = $cart;
-        $this->context->customer = new Customer($cart->id_customer);
-        $this->context->currency = new Currency($cart->id_currency);
-        $this->context->language = new Language($cart->id_lang);
-
-        if ($cart->id_address_delivery) {
-            $address = new Address($cart->id_address_delivery);
-            $this->context->country = new Country($address->id_country);
-        }
 
         $customer = new Customer($cart->id_customer);
         if ($payOrder->isFastCheckout() && !empty($payOrder->getFastCheckoutData()) && (empty($customer) || !Validate::isLoadedObject($customer))) {
