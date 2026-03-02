@@ -29,8 +29,8 @@ class PayHelper
     {
         $config = new PayConfig();
         $config->setCaching(Configuration::get('PAYNL_SDK_CACHING', Configuration::get('PAYNL_SDK_CACHING')));
-        $config->setUsername(Tools::getValue('PAYNL_TOKEN_CODE', Configuration::get('PAYNL_TOKEN_CODE')));
-        $config->setPassword(Tools::getValue('PAYNL_API_TOKEN', Configuration::get('PAYNL_API_TOKEN')));
+        $config->setUsername(Configuration::get('PAYNL_TOKEN_CODE'));
+        $config->setPassword(Configuration::get('PAYNL_API_TOKEN'));
         $config->setCore($this->getCore());
 
         return $config;
