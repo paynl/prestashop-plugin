@@ -25,6 +25,7 @@
 */
 
 use PaynlPaymentMethods\PrestaShop\PayHelper;
+use PaynlPaymentMethods\PrestaShop\Helpers\PaymentMethodsHelper;
 
 /**
  * @since 1.5.0
@@ -53,6 +54,17 @@ class PaynlPaymentMethodsStartPaymentModuleFrontController extends ModuleFrontCo
 
         if (!$authorized) {
             Tools::redirect('/index.php?controller=order&step=1');
+            return null;
+        }
+
+        $objPaymentMethod = $this->module->getPaymentMethod($paymentOptionId);
+        $paymentMethodsHelper = new PaymentMethodsHelper();
+        $cartTotal = $cart->getOrderTotal(true, Cart::BOTH);
+        $paymentFee = $paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
+
+        if (!$paymentMethodsHelper->isPaymentMethodAvailable($cart, $objPaymentMethod, $paymentFee, $cartTotal)) {
+            (new PayHelper())->payLog('postProcess', 'Payment method ' . $paymentOptionId . ' is not available for this cart', $cart->id);
+            Tools::redirect('index.php?controller=order&step=1');
             return null;
         }
 
