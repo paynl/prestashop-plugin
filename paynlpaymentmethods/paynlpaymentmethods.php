@@ -56,7 +56,7 @@ class PaynlPaymentMethods extends PaymentModule
         $this->payConnection = new PayConnection();
         $this->name = 'paynlpaymentmethods';
         $this->tab = 'payments_gateways';
-        $this->version = '5.3.3';
+        $this->version = '5.3.4';
         $this->ps_versions_compliancy = array('min' => '8.0.0', 'max' => _PS_VERSION_);
         $this->author = 'Pay.';
         $this->controllers = array('startPayment', 'finish', 'exchange');
@@ -1259,7 +1259,7 @@ class PaynlPaymentMethods extends PaymentModule
             $request->enableFastCheckout();
         }
 
-        $request->setServiceId(Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID')));
+        $request->setServiceId(Configuration::get('PAYNL_SERVICE_ID'));
         $request->setAmount($cart->getOrderTotal())->setCurrency($currency->iso_code);
         $request->setReturnurl($this->context->link->getModuleLink($this->name, 'finish', array(), true));
         $request->setExchangeUrl($this->context->link->getModuleLink($this->name, 'exchange', array(), true));
