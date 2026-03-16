@@ -106,7 +106,7 @@ class Transaction
      */
     public static function removeProcessing($payOrderId)
     {
-        Db::getInstance()->delete('pay_processing', 'payOrderId = "' . $payOrderId . '"');
+        Db::getInstance()->delete('pay_processing', "payOrderId = '" . pSQL($payOrderId) . "'");
     }
 
     /**

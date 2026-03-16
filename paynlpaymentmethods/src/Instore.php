@@ -19,7 +19,7 @@ class Instore extends PaymentMethod
     {
         try {
             $status = \Paynl\Instore::status(['hash' => $hash]);
-            Db::getInstance()->execute("UPDATE `" . _DB_PREFIX_ . "pay_transactions` SET `status` = '" . $status->getTransactionState() . "', `updated_at` = now() WHERE `" . _DB_PREFIX_ . "pay_transactions`.`transaction_id` = '" . Db::getInstance()->escape($transactionId) . "';"); // phpcs:ignore
+            Db::getInstance()->execute("UPDATE `" . _DB_PREFIX_ . "pay_transactions` SET `status` = '" . pSQL($status->getTransactionState()) . "', `updated_at` = NOW() WHERE `transaction_id` = '" . pSQL($transactionId) . "'");
             if (in_array($status->getTransactionState(), ['cancelled', 'expired', 'error'])) {
                 $object->errors[] = $object->module->l('The payment could not be completed', 'finish');
                 $object->redirectWithNotifications('index.php?controller=order&step=1');
