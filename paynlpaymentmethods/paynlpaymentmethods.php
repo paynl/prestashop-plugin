@@ -1229,6 +1229,11 @@ class PaynlPaymentMethods extends PaymentModule
         $iPaymentFee = $this->paymentMethodsHelper->getPaymentFee($objPaymentMethod, $cartTotal);
         $iPaymentFee = empty($iPaymentFee) ? 0 : $iPaymentFee;
         $cartId = $cart->id;
+
+        if (!$this->paymentMethodsHelper->isPaymentMethodAvailable($cart, $objPaymentMethod, $iPaymentFee, $cartTotal)) {
+            $this->helper->payLog('startPayment', 'Payment method ' . $payment_option_id . ' is not available for this cart', $cartId);
+            throw new Exception($this->l('This payment method is not available.'));
+        }
         $paymentMethodSettings = PaymentMethod::getPaymentMethodSettings($payment_option_id);
 
         $paymentLocation = ((array) $paymentMethodSettings)['payment_location'] ?? null;
