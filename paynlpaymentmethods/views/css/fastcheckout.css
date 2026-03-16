@@ -1,4 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@font-face {
+ font-family: 'Roboto';
+ font-style: normal;
+ src: url(fonts/Roboto_latin.woff2) format('woff2');
+}
+
+@font-face {
+ font-family: 'Roboto';
+ font-style: normal;
+ src: url(fonts/Roboto_latin_ext.woff2) format('woff2');
+}
+
+@font-face {
+ font-family: 'Roboto';
+ font-style: normal;
+ src: url(fonts/Roboto_special_characters.woff2) format('woff2');
+}
+
+@font-face {
+ font-family: 'Roboto';
+ font-style: normal;
+ src: url(fonts/roboto_math.woff2) format('woff2');
+}
 
 .pay-fastcheckout-button {
     background-color: #c90066 !important;
