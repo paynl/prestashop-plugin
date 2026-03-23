@@ -1043,7 +1043,7 @@ class PaynlPaymentMethods extends PaymentModule
         $customer->lastname = $data['customer']['lastName'];
         if (!$id_customer) {
             $customer->email = $data['customer']['email'];
-            $customer->passwd = md5(time());
+            $customer->passwd = Tools::hash(Tools::passwdGen());
         }
         $customer->save();
 
