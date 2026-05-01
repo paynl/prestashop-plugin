@@ -72,13 +72,8 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $this->returnResponse(false, 0, 'Invalid action');
         }
 
-        // Feature request heeft geen order nodig
         if ($method === 'processFeatureRequest') {
-            $this->processFeatureRequest(
-                $this->module,
-                (string) Tools::getValue('email'),
-                (string) Tools::getValue('message')
-            );
+            $this->processFeatureRequest($this->module, (string) Tools::getValue('email'), (string) Tools::getValue('message'));
             return;
         }
 
