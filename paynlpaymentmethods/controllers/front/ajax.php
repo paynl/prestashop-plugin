@@ -11,6 +11,24 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
 {
 
     /**
+     * @return string
+     */
+    private function getCsrfToken(): string
+    {
+        $cookie = new Cookie('psAdmin');
+
+        return Tools::hash($cookie->id_employee . _COOKIE_KEY_ . 'paynl_ajax');
+    }
+
+    /**
+     * @return bool
+     */
+    private function isCsrfTokenValid(): bool
+    {
+        return hash_equals($this->getCsrfToken(), (string)Tools::getValue('csrf_token'));
+    }
+
+    /**
      * @return void
      */
     public function init(): void
@@ -42,6 +60,12 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      */
     public function initContent(): void
     {
+
+        if (!$this->isCsrfTokenValid()) {
+            header('HTTP/1.1 403 Forbidden');
+            exit('Invalid CSRF token');
+        }
+
         $callType = Tools::getValue('calltype');
         $prestaOrderId = (int) Tools::getValue('prestaorderid');
         $amount = (float) Tools::getValue('amount');

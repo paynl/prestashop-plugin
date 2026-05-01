@@ -77,7 +77,8 @@ jQuery(document).ready(function () {
         exchangeCall(ajaxurl, data, payOption, lang_succes, actionButton, lang_button, lang_couldnotprocess, 'Refund failed');
     });
 
-    jQuery("#pay-capture-button").click(function () {
+    jQuery("#pay-capture-button").click(function ()
+    {
         var amount = jQuery('#pay-capture-amount').val();
         var errorMessage = jQuery('#pay-lang-invalidamount').val();
 
@@ -230,7 +231,11 @@ jQuery(document).ready(function () {
         }
     });
 
-    function exchangeCall(ajaxurl, data, payOption, lang_succes, actionButton, lang_button, lang_couldnotprocess, errorMessage) {
+    function exchangeCall(ajaxurl, data, payOption, lang_succes, actionButton, lang_button, lang_couldnotprocess, errorMessage)
+    {
+        var csrf = jQuery('#csrf').val();
+        jQuery.extend(data, {csrf_token: csrf});
+
         setTimeout(function () {
             jQuery.ajax({
                 url: ajaxurl,
