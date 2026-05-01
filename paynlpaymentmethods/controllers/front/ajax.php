@@ -16,7 +16,6 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
     private function getCsrfToken(): string
     {
         $cookie = new Cookie('psAdmin');
-
         return Tools::hash($cookie->id_employee . _COOKIE_KEY_ . 'paynl_ajax');
     }
 
@@ -96,10 +95,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
 
             $this->$method($prestaOrderId, $amount, $order, $transactionId, $strCurrency, $module);
         } catch (Exception $e) {
-            $helper->payLog(
-                'Capture',
-                "Failed trying to {$callType} {$amount} on ps-order id {$prestaOrderId}. Error: " . $e->getMessage()
-            );
+            $helper->payLog('Capture', "Failed trying to {$callType} {$amount} on ps-order id {$prestaOrderId}. Error: " . $e->getMessage());
             $this->returnResponse(false, 0, 'Could not find order');
         }
     }
