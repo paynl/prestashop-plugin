@@ -280,10 +280,12 @@ jQuery(document).ready(function () {
             return false;
         }
 
+        var csrf = jQuery('#csrf').val();
         var ajaxurl = $('#pay-ajaxurl').val();
         var data = {
             'email': email,
             'message': message,
+            'csrf_token': csrf,
             'calltype': 'feature_request'
         };
         setTimeout(function () {

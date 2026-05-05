@@ -1776,8 +1776,11 @@ class PaynlPaymentMethods extends PaymentModule
     {
         $this->context->controller->addJs($this->_path . 'views/js/jquery-ui/jquery-ui.js');
         $this->context->controller->addCss($this->_path . 'css/admin523.css');
+
+        $cookie = new Cookie('psAdmin');
         $this->smarty->assign(array(
           'ajaxURL' => $this->context->link->getModuleLink($this->name, 'ajax', array(), true),
+          'paynl_ajax_csrf_token' => Tools::hash($cookie->id_employee . _COOKIE_KEY_ . 'paynl_ajax'),
         ));
         return $this->display(__FILE__, 'admin_featurerequest.tpl');
     }
