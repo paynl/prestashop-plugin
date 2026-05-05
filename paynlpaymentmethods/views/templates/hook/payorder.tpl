@@ -5,6 +5,7 @@
         </a>
     </div>
     <div class="card-body">
+        <input type="hidden" id="csrf" value="{$paynl_ajax_csrf_token}">
         <input type="hidden" id="pay-currency" value="{$currency}">
         <input type="hidden" id="pay-transactionid" value="{$pay_orderid}">
         <input type="hidden" id="pay-prestaorderid" value="{$PrestaOrderId}">

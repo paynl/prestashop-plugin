@@ -227,7 +227,7 @@ class Exchange
             } else {
                 $rawBody = file_get_contents('php://input');
                 if (empty(trim($rawBody))) {
-                    throw new Exception('Empty or incomplete payload', 8002);
+                    throw new Exception('Empty or incomplete payload' , 8002);
                 }
                 $tguData = json_decode($rawBody, true, 512, JSON_BIGINT_AS_STRING);
             }
@@ -348,7 +348,7 @@ class Exchange
                     $payOrder = $request->setConfig($config)->start();
 
                     if (!$useLegacy && $action === 'new_ppt' && $payOrder->isCancelled()) {
-                        # Rely on on legacy platform when retrieved status is cancelled, and request-status(action) is auth/paid
+                        # Rely on on legacy platform when retrieved status is canceled, and request-status(action) is auth/paid
                         # ..and TransactionStatusRequest above, wasn't used.
                         $payOrder = (new TransactionStatusRequest($payOrderId))->setConfig($config)->start();
                     }

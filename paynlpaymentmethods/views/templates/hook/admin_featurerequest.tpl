@@ -9,6 +9,7 @@
         <p>{l s='Please note: this form is not for Support requests, please contact support@pay.nl for this.' mod='paynlpaymentmethods'}</p>
     </div>
     <br/>
+    <input type="hidden" id="csrf" value="{$paynl_ajax_csrf_token}">
     <div class="panel">
     <form>   
         <input type="hidden" id="pay-ajaxurl" value="{$ajaxURL}">      

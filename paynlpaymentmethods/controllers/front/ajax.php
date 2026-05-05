@@ -11,6 +11,23 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
 {
 
     /**
+     * @return string
+     */
+    private function getCsrfToken(): string
+    {
+        $cookie = new Cookie('psAdmin');
+        return Tools::hash($cookie->id_employee . _COOKIE_KEY_ . 'paynl_ajax');
+    }
+
+    /**
+     * @return bool
+     */
+    private function isCsrfTokenValid(): bool
+    {
+        return hash_equals($this->getCsrfToken(), (string)Tools::getValue('csrf_token'));
+    }
+
+    /**
      * @return void
      */
     public function init(): void
@@ -42,18 +59,27 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
      */
     public function initContent(): void
     {
-        $callType = Tools::getValue('calltype');
+        if (!$this->isCsrfTokenValid()) {
+            header('HTTP/1.1 403 Forbidden');
+            $this->returnResponse(false, 0, 'Invalid CSRF token');
+        }
+
+        $callType = (string) Tools::getValue('calltype');
+        $method = $this->getAllowedMethod($callType);
+
+        if (!$method) {
+            $this->returnResponse(false, 0, 'Invalid action');
+        }
+
+        if ($method === 'processFeatureRequest') {
+            $this->processFeatureRequest($this->module, (string) Tools::getValue('email'), (string) Tools::getValue('message'));
+            return;
+        }
+
         $prestaOrderId = (int) Tools::getValue('prestaorderid');
         $amount = (float) Tools::getValue('amount');
         $module = $this->module;
         $helper = new PayHelper();
-
-        if ($callType === 'feature_request') {
-            $email = Tools::getValue('email');
-            $message = Tools::getValue('message');
-            $this->processFeatureRequest($module, $email, $message);
-            return;
-        }
 
         try {
             $order = new Order($prestaOrderId);
@@ -66,12 +92,6 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $transactionId = $orderPayment->transaction_id ?? '';
             $currency = new Currency((int) $orderPayment->id_currency);
             $strCurrency = $currency->iso_code;
-            $method = 'process' . ucfirst($callType);
-
-            if (!method_exists($this, $method)) {
-                $this->returnResponse(false, 0, 'Invalid action');
-                return;
-            }
 
             $this->$method($prestaOrderId, $amount, $order, $transactionId, $strCurrency, $module);
         } catch (Exception $e) {
@@ -79,6 +99,18 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
             $this->returnResponse(false, 0, 'Could not find order');
         }
     }
+
+    private function getAllowedMethod(string $callType): ?string
+    {
+        return [
+            'feature_request' => 'processFeatureRequest',
+            'refund' => 'processRefund',
+            'capture' => 'processCapture',
+            'pintransaction' => 'processPintransaction',
+            'retourpin' => 'processRetourpin',
+        ][$callType] ?? null;
+    }
+
 
     /**
      * @param int $prestaOrderId
@@ -214,7 +246,7 @@ class PaynlPaymentMethodsAjaxModuleFrontController extends ModuleFrontController
         try {
             $retourpin = new PayNL\Sdk\Model\Request\OrderCreateRequest();
             $retourpin->setConfig($helper->getConfig())
-                ->setServiceId(Tools::getValue('PAYNL_SERVICE_ID', Configuration::get('PAYNL_SERVICE_ID')))
+                ->setServiceId(Configuration::get('PAYNL_SERVICE_ID'))
                 ->setPaymentMethodId(PaymentMethod::METHOD_RETOURPIN)
                 ->setAmount($amount)
                 ->setCurrency($strCurrency)
