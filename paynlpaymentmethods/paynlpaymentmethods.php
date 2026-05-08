@@ -1587,23 +1587,7 @@ class PaynlPaymentMethods extends PaymentModule
         return $collectionProducts;
     }
 
-    /**
-     * Retrieve language
-     *
-     * @param Cart $cart
-     * @return mixed|string
-     */
-    private function getLanguageForOrder($cart)
-    {
-        $languageSetting = Tools::getValue('PAYNL_LANGUAGE', Configuration::get('PAYNL_LANGUAGE'));
-        if ($languageSetting == 'auto') {
-            return $this->getBrowserLanguage();
-        } elseif ($languageSetting == 'cart') {
-            return Language::getIsoById($cart->id_lang);
-        } else {
-            return $languageSetting;
-        }
-    }
+
 
     /**
      * @return string
