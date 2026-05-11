@@ -4,9 +4,11 @@ namespace PaynlPaymentMethods\PrestaShop\Helpers;
 
 use Address;
 use Country;
+use Language;
+use Tools;
 use Customer;
 use Cart;
-
+use Configuration;
 /**
  * Class AddressHelper
  *
@@ -43,6 +45,14 @@ class AddressHelper
         $customer->setPhone($objShippingAddress->phone ? $objShippingAddress->phone : $objShippingAddress->phone_mobile);
         $customer->setEmail($cartCustomer->email);
 
+        $lang = $this->getLanguageForOrder($cart);
+        $country = new Country((int) $objInvoiceAddress->id_country);
+
+        $langIso = strtolower(substr($lang ?: 'nl', 0, 2));
+        $countryIso = strtoupper($country->iso_code ?: 'NL');
+
+        $customer->setLocale($langIso . '_' . $countryIso);
+
         $company = new \PayNL\Sdk\Model\Company();
         $company->setName($objInvoiceAddress->company);
         $company->setVat($objInvoiceAddress->vat_number);
@@ -51,6 +61,24 @@ class AddressHelper
         $customer->setCompany($company);
 
         return $customer;
+    }
+
+    /**
+     * Retrieve language
+     *
+     * @param Cart $cart
+     * @return mixed|string
+     */
+    private function getLanguageForOrder($cart)
+    {
+        $languageSetting = Tools::getValue('PAYNL_LANGUAGE', Configuration::get('PAYNL_LANGUAGE'));
+        if ($languageSetting == 'auto') {
+            return $this->getBrowserLanguage();
+        } elseif ($languageSetting == 'cart') {
+            return Language::getIsoById($cart->id_lang);
+        } else {
+            return $languageSetting;
+        }
     }
 
 
