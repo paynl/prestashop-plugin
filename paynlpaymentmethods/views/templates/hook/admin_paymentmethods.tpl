@@ -179,32 +179,57 @@
                                     </p>
                                 </div>
                             </div>
+                            {if in_array($paymentmethod->id, $showFastcheckoutOptionsIdeal)}
 
-                            {if in_array($paymentmethod->id, $showFastcheckoutOptionsIdeal)}                                
+                                {assign var=fastcheckout_cart_page value=0}
+                                {if isset($paymentmethod->fastcheckout_cart_page)}
+                                    {assign var=fastcheckout_cart_page value=$paymentmethod->fastcheckout_cart_page}
+                                {/if}
+
+                                {assign var=fastcheckout_minicart value=0}
+                                {if isset($paymentmethod->fastcheckout_minicart)}
+                                    {assign var=fastcheckout_minicart value=$paymentmethod->fastcheckout_minicart}
+                                {/if}
+
+                                {assign var=fastcheckout_product_page value=0}
+                                {if isset($paymentmethod->fastcheckout_product_page)}
+                                    {assign var=fastcheckout_product_page value=$paymentmethod->fastcheckout_product_page}
+                                {/if}
+
+                                {assign var=fastcheckout_guest_only value=0}
+                                {if isset($paymentmethod->fastcheckout_guest_only)}
+                                    {assign var=fastcheckout_guest_only value=$paymentmethod->fastcheckout_guest_only}
+                                {/if}
+
+                                {assign var=fastcheckout_modal value=0}
+                                {if isset($paymentmethod->fastcheckout_modal)}
+                                    {assign var=fastcheckout_modal value=$paymentmethod->fastcheckout_modal}
+                                {/if}
+
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right" style="font-size: 25px; margin-top: 25px;">{l s='Fast checkout' mod='paynlpaymentmethods'}</label>
-                                    <div class="col-lg-9" style="height:80px;">                                       
+                                    <div class="col-lg-9" style="height:80px;">
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s="Cart page" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="Show the fast checkout button on the cart page. This button allows users to checkout directly from the cart without the need to fill in their address." mod='paynlpaymentmethods'}</span></div></label>
                                     <div class="col-lg-9">
-                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_cart_page}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_cart_page}" name="fastcheckout_cart_page" {if $paymentmethod->fastcheckout_cart_page}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <span class="paynl_switch enabledSwitch blue switch {if $fastcheckout_cart_page}checked{/if}"><small></small><input type="checkbox" value="{$fastcheckout_cart_page}" name="fastcheckout_cart_page" {if $fastcheckout_cart_page}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s="Minicart" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="Show the fast checkout button on the minicart. This button allows users to checkout directly from the cart without the need to fill in their address." mod='paynlpaymentmethods'}</span></div></label>
                                     <div class="col-lg-9">
-                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_minicart}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_minicart}" name="fastcheckout_minicart" {if $paymentmethod->fastcheckout_minicart}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <span class="paynl_switch enabledSwitch blue switch {if $fastcheckout_minicart}checked{/if}"><small></small><input type="checkbox" value="{$fastcheckout_minicart}" name="fastcheckout_minicart" {if $fastcheckout_minicart}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s="Product page" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="Show the fast checkout button on every product page. This button allows users to checkout directly from the cart without the need to fill in their address." mod='paynlpaymentmethods'}</span></div></label>
                                     <div class="col-lg-9">
-                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_product_page}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_product_page}" name="fastcheckout_product_page" {if $paymentmethod->fastcheckout_product_page}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <span class="paynl_switch enabledSwitch blue switch {if $fastcheckout_product_page}checked{/if}"><small></small><input type="checkbox" value="{$fastcheckout_product_page}" name="fastcheckout_product_page" {if $fastcheckout_product_page}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>
                                         <p class="help-block">
                                             {l s='Show the fast checkout button on the enabled pages.' mod='paynlpaymentmethods'}
                                         </p>
@@ -214,7 +239,7 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s="Guest checkout only" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="When enabled, the fast checkout button will only be shown for guest users." mod='paynlpaymentmethods'}</span></div></label>
                                     <div class="col-lg-9">
-                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_guest_only}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_guest_only}" name="fastcheckout_guest_only" {if $paymentmethod->fastcheckout_guest_only}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <span class="paynl_switch enabledSwitch blue switch {if $fastcheckout_guest_only}checked{/if}"><small></small><input type="checkbox" value="{$fastcheckout_guest_only}" name="fastcheckout_guest_only" {if $fastcheckout_guest_only}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>
                                         <p class="help-block">
                                             {l s='Show the fast checkout button on the cart page, only for guest customers.' mod='paynlpaymentmethods'}
                                         </p>
@@ -224,7 +249,7 @@
                                 <div class="form-group">
                                     <label class="control-label col-lg-3 align-right">{l s="Show modal" mod='paynlpaymentmethods'}<div class="tooltipPAY tooltipPAYsettings tooltipPAYdropdown">?<span class="tooltipPAYtext">{l s="When enabled, a modal explaining on how fast checkout works will show before going through with fast checkout." mod='paynlpaymentmethods'}</span></div></label>
                                     <div class="col-lg-9">
-                                        <span class="paynl_switch enabledSwitch blue switch {if $paymentmethod->fastcheckout_modal}checked{/if}"><small></small><input type=checkbox value="{$paymentmethod->fastcheckout_modal}" name="fastcheckout_modal" {if $paymentmethod->fastcheckout_modal}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>                 
+                                        <span class="paynl_switch enabledSwitch blue switch {if $fastcheckout_modal}checked{/if}"><small></small><input type="checkbox" value="{$fastcheckout_modal}" name="fastcheckout_modal" {if $fastcheckout_modal}checked="checked"{/if} style="display:none;"/><span class="switch-text"> </span></span>
                                         <p class="help-block">
                                             {l s='Open modal before fast checkout.' mod='paynlpaymentmethods'}
                                         </p>
