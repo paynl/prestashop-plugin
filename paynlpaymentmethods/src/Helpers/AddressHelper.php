@@ -21,12 +21,18 @@ class AddressHelper
         return $this;
     }
 
+    private $module = null;
+
     /**
      * @param Cart $cart
+     * @param $module
      * @return \PayNL\Sdk\Model\Customer
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    public function getCustomer(Cart $cart)
+    public function getCustomer(Cart $cart, $module)
     {
+        $this->module = $module;
         $shippingAddressId = $cart->id_address_delivery;
         $objInvoiceAddress = new Address($cart->id_address_invoice);
         $objShippingAddress = new Address($shippingAddressId);
@@ -79,6 +85,110 @@ class AddressHelper
         } else {
             return $languageSetting;
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function getBrowserLanguage(): string
+    {
+        if (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
+            return $this->parseDefaultLanguage($_SERVER["HTTP_ACCEPT_LANGUAGE"]);
+        } else {
+            return $this->parseDefaultLanguage(null);
+        }
+    }
+
+
+    /**
+     * @param string $http_accept
+     * @param string $deflang
+     * @return string
+     */
+    private function parseDefaultLanguage($http_accept, $deflang = "en"): string
+    {
+        if (isset($http_accept) && strlen($http_accept) > 1) {
+            $lang = array();
+            # Split possible languages into array
+            $x = explode(",", $http_accept);
+            foreach ($x as $val) {
+                #check for q-value and create associative array. No q-value means 1 by rule
+                if (preg_match(
+                    "/(.*);q=([0-1]{0,1}.[0-9]{0,4})/i",
+                    $val,
+                    $matches
+                )) {
+                    $lang[$matches[1]] = (float)$matches[2] . '';
+                } else {
+                    $lang[$val] = 1.0;
+                }
+            }
+
+            $arrLanguages = $this->getLanguages();
+            $arrAvailableLanguages = array();
+            foreach ($arrLanguages as $language) {
+                if ($language['language_id'] != 'auto') {
+                    $arrAvailableLanguages[] = $language['language_id'];
+                }
+            }
+
+            #return default language (highest q-value)
+            $qval = 0.0;
+            foreach ($lang as $key => $value) {
+                $languagecode = strtolower(substr($key, 0, 2));
+                if (in_array($languagecode, $arrAvailableLanguages)) {
+                    if ($value > $qval) {
+                        $qval = (float)$value;
+                        $deflang = $key;
+                    }
+                }
+            }
+        }
+
+        return strtolower(substr($deflang, 0, 2));
+    }
+
+
+
+    /**
+     * @return array
+     */
+    public function getLanguages(): array
+    {
+        return array(
+            array(
+                'language_id' => 'nl',
+                'label' => $this->module->l('Dutch')
+            ),
+            array(
+                'language_id' => 'en',
+                'label' => $this->module->l('English')
+            ),
+            array(
+                'language_id' => 'es',
+                'label' => $this->module->l('Spanish')
+            ),
+            array(
+                'language_id' => 'it',
+                'label' => $this->module->l('Italian')
+            ),
+            array(
+                'language_id' => 'fr',
+                'label' => $this->module->l('French')
+            ),
+            array(
+                'language_id' => 'de',
+                'label' => $this->module->l('German')
+            ),
+            array(
+                'language_id' => 'cart',
+                'label' => $this->module->l('Webshop language')
+            ),
+            array(
+                'language_id' => 'auto',
+                'label' => $this->module->l('Automatic (Browser language)')
+            ),
+        );
     }
 
 
