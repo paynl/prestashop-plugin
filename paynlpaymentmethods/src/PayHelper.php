@@ -66,9 +66,9 @@ class PayHelper
      */
     public function payLog($method, $message, $cartid = null, $transactionId = null)
     {
-      if ($this->payLogEnabled === null) {
-        $this->payLogEnabled = Configuration::get('PAYNL_PAYLOGGER') == 1;
-      }
+        if ($this->payLogEnabled === null) {
+            $this->payLogEnabled = Configuration::get('PAYNL_PAYLOGGER') == 1;
+        }
 
         if ($this->payLogEnabled) {
             $strCartId = empty($cartid) ? '' : ' CartId: ' . $cartid;
