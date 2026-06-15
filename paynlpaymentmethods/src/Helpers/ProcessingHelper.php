@@ -71,10 +71,10 @@ class ProcessingHelper
      * @param $payPayments
      * @param $paymentMethodName
      * @param $totalAmount
-     * @return void
+     * @return float|int|mixed
      * @throws PrestaShopException
      */
-    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount): void
+    public function registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $totalAmount)
     {
         (new PayHelper())->payLog('registerPayments', 'Update ' . $transactionId);
 
@@ -132,6 +132,8 @@ class ProcessingHelper
         }
         $order->total_paid_real = ($order->total_paid_real ?? 0) + $totalPaid;
         $order->save();
+
+        return $order->total_paid_real;
     }
 
 }

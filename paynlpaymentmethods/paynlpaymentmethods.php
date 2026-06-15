@@ -1001,8 +1001,10 @@ class PaynlPaymentMethods extends PaymentModule
                     $order = new Order($orderId);
 
                     if (count($payPayments) > 1) {
-                        $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
-                        $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
+                        $totalRegistered = $this->processingHelper->registerPayments($order, $transactionId, $payPayments, $paymentMethodName, $amountPaid);
+                        if (round($totalRegistered, 2) >= round($order->total_paid, 2)) {
+                            $this->updateOrderHistory($order->id, $arrOrderState['id'], $cartId, $transactionId);
+                        }
                     }
 
                     $message = "Validated order (" . $order->reference . ") with status: " . $arrOrderState['name'];
