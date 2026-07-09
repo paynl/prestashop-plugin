@@ -27,11 +27,12 @@ class PaymentMethod
         if ($profileId == self::METHOD_SANDBOX) {
             $paymentMethodName = 'Sandbox';
         } else {
-            $dbTransaction = Transaction::get($transactionId);
-            if (!empty($dbTransaction['payment_option_id'])) {
-                $settings = self::getPaymentMethodSettings($dbTransaction['payment_option_id']);
-            } else {
-                $settings = self::getPaymentMethodSettings($profileId);
+            $settings = self::getPaymentMethodSettings($profileId);
+            if (!$settings) {
+                $dbTransaction = Transaction::get($transactionId);
+                if (!empty($dbTransaction['payment_option_id'])) {
+                    $settings = self::getPaymentMethodSettings($dbTransaction['payment_option_id']);
+                }
             }
             $paymentMethodName = empty($settings->name) ? '' : $settings->name;
         }
