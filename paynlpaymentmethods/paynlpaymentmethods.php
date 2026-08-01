@@ -1464,7 +1464,9 @@ class PaynlPaymentMethods extends PaymentModule
         ];
 
         foreach ($arr as $fieldName => $methodValue) {
-            if (!isset($localMethod[$fieldName])) {
+            if (!isset($localMethod[$fieldName])
+                || ($fieldName === 'image_path' && $localMethod[$fieldName] === '')
+            ) {
                 $localMethod[$fieldName] = $methodValue;
             } else {
                 # So, payment methods exists already exists locally, make sure minimum amount is not lower than pay-minumum
