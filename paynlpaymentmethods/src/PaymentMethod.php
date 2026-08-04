@@ -49,7 +49,11 @@ class PaymentMethod
      */
     public static function getPaymentMethodSettings($payment_profile_id)
     {
-        $paymentMethods = json_decode(Configuration::get('PAYNL_PAYMENTMETHODS'));
+        $paymentMethods = json_decode((string) Configuration::get('PAYNL_PAYMENTMETHODS'));
+        if (!is_array($paymentMethods)) {
+            return false;
+        }
+
         foreach ($paymentMethods as $objPaymentSettings) {
             if ($objPaymentSettings->id == $payment_profile_id) {
                 return $objPaymentSettings;

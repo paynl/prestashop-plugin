@@ -44,7 +44,11 @@ class PaymentMethodsHelper
         global $cookie;
 
         $iso_code = Language::getIsoById((int)$cookie->id_lang);
-        $availablePaymentMethods = json_decode(Configuration::get('PAYNL_PAYMENTMETHODS'));
+        $availablePaymentMethods = json_decode((string) Configuration::get('PAYNL_PAYMENTMETHODS'));
+        if (!is_array($availablePaymentMethods)) {
+            return [];
+        }
+
         $cartTotal = $cart->getOrderTotal();
 
         $path = $module->getPath();
