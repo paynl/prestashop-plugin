@@ -45,7 +45,7 @@ class PaymentMethodsHelper
 
         $iso_code = Language::getIsoById((int)$cookie->id_lang);
         $availablePaymentMethods = json_decode((string) Configuration::get('PAYNL_PAYMENTMETHODS'));
-        if (!is_array($availablePaymentMethods)) {
+        if (!is_array($availablePaymentMethods) && !is_object($availablePaymentMethods)) {
             return [];
         }
 
