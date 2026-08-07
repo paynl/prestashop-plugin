@@ -1483,7 +1483,7 @@ class PaynlPaymentMethods extends PaymentModule
     public function getPaymentMethod($payment_option_id)
     {
         $paymentMethods = json_decode((string) Configuration::get('PAYNL_PAYMENTMETHODS'));
-        if (!is_array($paymentMethods)) {
+        if (!is_array($paymentMethods) && !is_object($paymentMethods)) {
             return null;
         }
 
