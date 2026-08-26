@@ -459,7 +459,7 @@ class FormHelper
      * @param array|null $paymentLocation
      * @return mixed|void
      */
-    public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true, array $paymentLocation = null)
+    public function getPayForm($module, $payment_option_id, $description = null, bool $logo = true, ?array $paymentLocation = null)
     {
         $type = 'dropdown';
         $l = $module->payTranslations();
