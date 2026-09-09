@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PayNL\Sdk\Hydrator;
 
-use PayNL\Sdk\Packages\Doctrine\Common\Collections\ArrayCollection;
-use PayNL\Sdk\{Common\CollectionInterface,
+use PayNL\Sdk\{Common\ArrayCollection,
+    Common\CollectionInterface,
     Common\DateTime,
     Common\OptionsAwareInterface,
     Common\OptionsAwareTrait,
@@ -13,6 +13,7 @@ use PayNL\Sdk\{Common\CollectionInterface,
     Exception\RuntimeException,
     Model\ModelInterface};
 use ReflectionClass,
+
     ReflectionException,
     Exception;
 
@@ -50,7 +51,7 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
      * @param ModelInterface $model
      *
      * @throws ReflectionException
-     * @throws LogicException when a property within the object does not have a DocBlock
+     * @throws LogicException When a property within the object does not have a DocBlock.
      *
      * @return array
      */
@@ -119,7 +120,8 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
             $docComment = $property->getDocComment();
 
             # If docblock exists, try to parse @var
-            if ($docComment !== false &&
+            if (
+                $docComment !== false &&
                 preg_match("/@var(?:\n|\s(?P<type>.*))\n/s", $docComment, $annotations)
             ) {
                 $propertyInfo[$property->getName()] = $annotations['type'];
@@ -136,8 +138,8 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
                     $param = $params[0];
                     $paramType = $param->getType();
 
-                    if ($paramType && !$paramType->isBuiltin()) {
-                        # Example: PayOrder::setAmount(Amount $amount)
+                    if ($paramType instanceof \ReflectionNamedType && !$paramType->isBuiltin()) {
+                        // Example: PayOrder::setAmount(Amount $amount)
                         $propertyInfo[$property->getName()] = $paramType->getName();
                     }
                 }
@@ -149,10 +151,10 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
 
 
     /**
-     * @param array $data
+     * @param array  $data
      * @param object $object
      *
-     * @throws RuntimeException when given object isn't an instance of ModelInterface
+     * @throws RuntimeException When given object isn't an instance of ModelInterface.
      * @throws Exception
      *
      * @return object
@@ -177,23 +179,6 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
             unset($data['_links']);
         }
 
-        /** @var ModelInterface $object */
-        $propertyInfo = $this->load($object);
-
-        foreach ($data as $key => $value) {
-            $type = $propertyInfo[$key] ?? 'string';
-            if (false === in_array($type, $this->supportedNativeTypes, true)) {
-                if ($type === 'DateTime') {
-                    $data[$key] = $this->getSdkDateTime($value);
-                    continue;
-                }
-
-                $data[$key] = $this->hydratorManager->build(static::class)
-                    ->hydrate($value, $this->modelManager->build($type))
-                ;
-            }
-        }
-
         if ($object instanceof CollectionInterface) {
             $collectionKey = $object->getCollectionName();
             if (false === array_key_exists($collectionKey, $data)) {
@@ -212,6 +197,23 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
             }
 
             return parent::hydrate($data, $object);
+        }
+
+        /** @var ModelInterface $object */
+        $propertyInfo = $this->load($object);
+
+        foreach ($data as $key => $value) {
+            $type = $propertyInfo[$key] ?? 'string';
+            if (false === in_array($type, $this->supportedNativeTypes, true)) {
+                if ($type === 'DateTime') {
+                    $data[$key] = $this->getSdkDateTime($value);
+                    continue;
+                }
+
+                $data[$key] = $this->hydratorManager->build(static::class)
+                    ->hydrate($value, $this->modelManager->build($type))
+                ;
+            }
         }
 
         return parent::hydrate($data, $object);
@@ -244,6 +246,9 @@ class Entity extends AbstractHydrator implements OptionsAwareInterface
         return $data;
     }
 
+    /**
+     * @return void
+     */
     private function loadCollectionMap(): void
     {
         $collectionMap = $this->getOption('collectionMap');

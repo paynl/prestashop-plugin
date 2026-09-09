@@ -9,20 +9,23 @@ use PayNL\Sdk\{
     Common\DateTime,
     Common\DebugAwareInterface,
     Common\DebugAwareTrait,
+    Exception\UnexpectedValueException,
     Hydrator\Manager as HydratorManager,
     Model\Manager as ModelManager,
     Validator\ValidatorManagerAwareInterface,
     Validator\ValidatorManagerAwareTrait
 };
 use Exception;
-use PayNL\Sdk\Packages\Laminas\Hydrator\ClassMethodsHydrator;
+use ReflectionMethod;
+use Throwable;
 
 /**
  * Class AbstractHydrator
  *
  * @package PayNL\Sdk\Hydrator
  */
-abstract class AbstractHydrator extends ClassMethodsHydrator implements DebugAwareInterface, ValidatorManagerAwareInterface
+
+abstract class AbstractHydrator implements DebugAwareInterface, ValidatorManagerAwareInterface
 {
     use DebugAwareTrait;
     use ValidatorManagerAwareTrait;
@@ -41,20 +44,15 @@ abstract class AbstractHydrator extends ClassMethodsHydrator implements DebugAwa
      * AbstractHydrator constructor.
      *
      * @param HydratorManager $hydratorManager
-     * @param ModelManager $modelManager
+     * @param ModelManager    $modelManager
      */
     public function __construct(HydratorManager $hydratorManager, ModelManager $modelManager)
     {
         $this->hydratorManager = $hydratorManager;
         $this->modelManager = $modelManager;
-
-        // override the given params
-        parent::__construct(false, true);
     }
 
     /**
-     * @inheritDoc
-     *
      * @internal also automatically sets links and filters to remove all null values
      */
     public function hydrate(array $data, $object)
@@ -63,7 +61,65 @@ abstract class AbstractHydrator extends ClassMethodsHydrator implements DebugAwa
             return null !== $item;
         });
 
-        return parent::hydrate($data, $object);
+        foreach ($data as $key => $value) {
+            $setter = 'set' . ucfirst((string)$key);
+            if (method_exists($object, $setter) === false) {
+                continue;
+            }
+
+            $method = new ReflectionMethod($object, $setter);
+            if ($method->isPublic() === false || $method->getNumberOfRequiredParameters() > 1) {
+                continue;
+            }
+
+            try {
+                $object->$setter($value);
+            } catch (Throwable $throwable) {
+                throw new UnexpectedValueException(
+                    sprintf('Unable to hydrate "%s::%s"', get_class($object), $setter),
+                    500,
+                    $throwable
+                );
+            }
+        }
+
+        return $object;
+    }
+
+    /**
+     * Extract values exposed by an object's public getters.
+     */
+    public function extract($object): array
+    {
+        $data = [];
+        foreach (get_class_methods($object) as $methodName) {
+            if (str_starts_with($methodName, 'get') === true) {
+                $key = lcfirst(substr($methodName, 3));
+            } elseif (str_starts_with($methodName, 'is') === true) {
+                $key = lcfirst(substr($methodName, 2));
+            } else {
+                continue;
+            }
+
+            $method = new ReflectionMethod($object, $methodName);
+            if (
+                $method->isPublic() === false
+                || $method->getNumberOfRequiredParameters() > 0
+                || $methodName === 'getIterator'
+            ) {
+                continue;
+            }
+
+            try {
+                $data[$key] = $object->$methodName();
+            } catch (Throwable) {
+                continue;
+            }
+        }
+
+        return array_filter($data, static function ($item) {
+            return null !== $item;
+        });
     }
 
     /**
@@ -72,7 +128,6 @@ abstract class AbstractHydrator extends ClassMethodsHydrator implements DebugAwa
      * @throws Exception
      * @return DateTime|null
      *
-     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     protected function getSdkDateTime($dateTime): ?DateTime
     {
@@ -84,7 +139,7 @@ abstract class AbstractHydrator extends ClassMethodsHydrator implements DebugAwa
             $dateTime = $dateTime->format(stdDateTime::ATOM);
         }
 
-        if (true === is_string($dateTime) && '' === $dateTime) {
+        if ($dateTime === '') {
             return null;
         }
 

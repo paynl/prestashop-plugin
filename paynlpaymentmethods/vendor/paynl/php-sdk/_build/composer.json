@@ -1,0 +1,12 @@
+{
+  "name": "paynl/php-sdk-vendor-bundle",
+  "type": "project",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "repositories": [
+    { "type": "path", "url": "..", "options": { "symlink": false } }
+  ],
+  "require": {
+    "paynl/php-sdk": "*"
+  }
+}
