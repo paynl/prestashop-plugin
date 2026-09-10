@@ -1,0 +1,16 @@
+# IDE
+.idea
+
+# Composer
+/vendor/
+
+# Custom
+/samples/OrderCreateCustom.php
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache
+
+# Build
+/build/
+/bin/

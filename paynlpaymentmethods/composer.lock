@@ -134,24 +134,25 @@
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "2.3.0",
+            "version": "2.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "481557b130ef3790cf82b713667b43030dc9c957"
+                "reference": "cde49999552d185d64715fe9c1f77a2aadd2f9f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/481557b130ef3790cf82b713667b43030dc9c957",
-                "reference": "481557b130ef3790cf82b713667b43030dc9c957",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/cde49999552d185d64715fe9c1f77a2aadd2f9f1",
+                "reference": "cde49999552d185d64715fe9c1f77a2aadd2f9f1",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2.5 || ^8.0"
+                "php": "^7.2.5 || ^8.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0"
             },
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
-                "phpunit/phpunit": "^8.5.44 || ^9.6.25"
+                "phpunit/phpunit": "^8.5.52 || ^9.6.34"
             },
             "type": "library",
             "extra": {
@@ -197,7 +198,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/promises/issues",
-                "source": "https://github.com/guzzle/promises/tree/2.3.0"
+                "source": "https://github.com/guzzle/promises/tree/2.5.3"
             },
             "funding": [
                 {
@@ -213,7 +214,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-22T14:34:08+00:00"
+            "time": "2026-08-24T09:11:28+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -322,16 +323,16 @@
         },
         {
             "name": "paynl/php-sdk",
-            "version": "1.0.8",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paynl/php-sdk.git",
-                "reference": "9a132cc3780e5f20f085b4df92735bad53cf365f"
+                "reference": "9a7a1a8bbbf3ab2b036fc3b8040e597abb1878f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paynl/php-sdk/zipball/9a132cc3780e5f20f085b4df92735bad53cf365f",
-                "reference": "9a132cc3780e5f20f085b4df92735bad53cf365f",
+                "url": "https://api.github.com/repos/paynl/php-sdk/zipball/9a7a1a8bbbf3ab2b036fc3b8040e597abb1878f8",
+                "reference": "9a7a1a8bbbf3ab2b036fc3b8040e597abb1878f8",
                 "shasum": ""
             },
             "require": {
@@ -344,12 +345,11 @@
             },
             "require-dev": {
                 "ext-simplexml": "*",
-                "phpmd/phpmd": "^2",
                 "phpstan/phpstan": "^2",
-                "phpunit/phpunit": "^11",
+                "phpunit/phpunit": "^10.5.20",
                 "roave/security-advisories": "dev-master",
-                "squizlabs/php_codesniffer": "^3",
-                "symfony/var-dumper": "^7"
+                "slevomat/coding-standard": "^8.22",
+                "squizlabs/php_codesniffer": "^3"
             },
             "type": "library",
             "autoload": {
@@ -366,19 +366,24 @@
             "license": [
                 "MIT"
             ],
-            "description": "Software Development Kit for implementing Pay.'s API version 3",
+            "description": "Pay. API client library for PHP. Pay. is an all-in-one European PSP offering 50+ payment methods both online and instore.",
             "keywords": [
+                "Apple Pay",
                 "api",
-                "plugins",
-                "rest",
-                "sdk"
+                "bancontact",
+                "ideal",
+                "pay",
+                "payment",
+                "paynl",
+                "php",
+                "psp"
             ],
             "support": {
                 "email": "webshop@pay.nl",
                 "issues": "https://github.com/paynl/php-sdk/issues",
-                "source": "https://github.com/paynl/php-sdk/tree/v1.0.8"
+                "source": "https://github.com/paynl/php-sdk/tree/v2.0.1"
             },
-            "time": "2025-11-10T13:29:44+00:00"
+            "time": "2026-08-28T14:42:27+00:00"
         },
         {
             "name": "psr/container",
@@ -584,16 +589,16 @@
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v3.6.0",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "63afe740e99a13ba87ec199bb07bbdee937a5b62"
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/63afe740e99a13ba87ec199bb07bbdee937a5b62",
-                "reference": "63afe740e99a13ba87ec199bb07bbdee937a5b62",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
                 "shasum": ""
             },
             "require": {
@@ -606,7 +611,7 @@
                     "name": "symfony/contracts"
                 },
                 "branch-alias": {
-                    "dev-main": "3.6-dev"
+                    "dev-main": "3.7-dev"
                 }
             },
             "autoload": {
@@ -631,7 +636,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.6.0"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -643,11 +648,15 @@
                     "type": "github"
                 },
                 {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
                     "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-25T14:21:43+00:00"
+            "time": "2026-06-05T06:23:12+00:00"
         }
     ],
     "packages-dev": [],
