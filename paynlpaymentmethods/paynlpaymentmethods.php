@@ -941,6 +941,10 @@ class PaynlPaymentMethods extends PaymentModule
                 $transactionId = $payOrder->getOrderId();
                 $order = new Order($orderId);
 
+                if ((int) $order->current_state === (int) $this->statusRefund) {
+                    return new ExchangeResponse(true, 'Order already refunded | OrderReference: ' . $order->reference);
+                }
+
                 $this->updateOrderHistory($order->id, $this->statusRefund);
                 $this->helper->payLog('processRetourpin', $transactionId . ' - Connected to prestashop order: ' . $orderId);
 
@@ -949,6 +953,10 @@ class PaynlPaymentMethods extends PaymentModule
 
             if ($payOrder->isRefundedPartial()) {
                 return new ExchangeResponse(true, 'Partial refund received | OrderReference: ' . $order->reference);
+            }
+
+            if ($payOrder->isRefundedFully() && (int) $order->current_state === (int) $this->statusRefund) {
+                return new ExchangeResponse(true, 'Order already refunded | OrderReference: ' . $order->reference);
             }
 
             if ($order->hasBeenPaid() && !$payOrder->isRefundedFully()) {

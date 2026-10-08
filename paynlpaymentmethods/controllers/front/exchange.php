@@ -55,7 +55,7 @@ class PaynlPaymentMethodsExchangeModuleFrontController extends ModuleFrontContro
      */
     private function checkProcessing(Exchange $exchange, string $mode = 'in')
     {
-        if ($exchange->eventPaid(true)) {
+        if ($exchange->eventPaid(true) || $exchange->eventRefund() || $exchange->eventChargeback()) {
             if ($mode == 'in') {
                 $processing = Transaction::checkProcessing($this->payOrderId);
                 if (!empty($processing)) {
