@@ -21,25 +21,19 @@ use PayNL\Sdk\{
     Response\Response,
     Exception\InvalidArgumentException,
     Filter\FilterInterface,
+    Serialization\JsonMapper,
     Validator\ValidatorManagerAwareInterface,
     Validator\ValidatorManagerAwareTrait
 };
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use PayNL\Sdk\Packages\Symfony\Serializer\Encoder\{
-    JsonEncoder,
-    XmlEncoder
-};
-use PayNL\Sdk\Packages\Symfony\Serializer\Exception\NotEncodableValueException;
 
 /**
  * Class AbstractRequest
  *
  * @package PayNL\Sdk\Request
  *
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 abstract class AbstractRequest implements
     RequestInterface,
@@ -419,28 +413,19 @@ abstract class AbstractRequest implements
      */
     private function encodeBody(mixed $body): string
     {
-        $encoder = new JsonEncoder();
-        $contentTypeHeader = 'application/json';
-        $context = [
-            'json_encode_options' => JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | ($this->isDebug() === true ? JSON_PRETTY_PRINT : 0),
-        ];
-
         if (true === $this->isFormat(static::FORMAT_XML)) {
-            $encoder = new XmlEncoder([
-                XmlEncoder::ROOT_NODE_NAME => static::XML_ROOT_NODE_NAME,
-            ]);
-            $contentTypeHeader = 'application/xml';
-            $context = [];
+            throw new RuntimeException('XML request serialization is not supported in SDK 2.0', 500);
         }
-        $this->setHeader(static::HEADER_CONTENT_TYPE, $contentTypeHeader);
 
-        return (string)$encoder->encode($body, $this->getFormat(), $context);
+        $this->setHeader(static::HEADER_CONTENT_TYPE, 'application/json');
+
+        return (new JsonMapper())->encode($body, $this->isDebug());
     }
 
     /**
      * @param Response $response
      *
-     * @throws RuntimeException when no HTTP client is set
+     * @throws RuntimeException When no HTTP client is set.
      *
      * @return void
      */
@@ -494,7 +479,7 @@ abstract class AbstractRequest implements
             $errorMessages = '';
             $rawBody = $re->getMessage();
 
-            if (true === method_exists($re, 'getResponse') && null !== $re->getResponse()) {
+            if (null !== $re->getResponse()) {
                 $guzzleExceptionBody = $re->getResponse()->getBody();
                 $size = $guzzleExceptionBody->isSeekable() === true ? (int)$guzzleExceptionBody->getSize() : 0;
 
@@ -514,39 +499,29 @@ abstract class AbstractRequest implements
                 $body = $this->getErrorsString($response->getFormat(), (int)$statusCode, $errorMessages);
             }
         } catch (GuzzleException | ExceptionInterface $e) {
-            $statusCode = $e->getCode() ?? 500;
+            $statusCode = $e->getCode() ?: 500;
             $rawBody = 'Error: ' . $e->getMessage() . ' (' . $statusCode . ')';
             $body = $this->getErrorsString($response->getFormat(), (int)$statusCode, $rawBody);
         }
 
         if (function_exists('displayPayRequest')) {
-            displayPayRequest($guzzleClient->getConfig('base_uri') . $uri, $requestBody, $rawBody, $curlRequest);
+            displayPayRequest($guzzleClient->getConfig('base_uri') . $uri, $requestBody ?? '', $rawBody, $curlRequest ?? '');
         }
 
         $response->setStatusCode($statusCode)->setRawBody($rawBody)->setBody($body);
     }
 
     /**
-     * @param string $responseFormat
+     * @param string  $responseFormat
      * @param integer $statusCode
-     * @param string $rawBody
+     * @param string  $rawBody
      *
      * @return string
      */
     private function getErrorsString(string $responseFormat, int $statusCode, string $rawBody): string
     {
-        $encoderClass = JsonEncoder::class;
         if (static::FORMAT_XML === $responseFormat) {
-            $encoderClass = XmlEncoder::class;
-        }
-
-        $encoder = new $encoderClass();
-        try {
-            $errors = $encoder->decode($rawBody, $responseFormat);
-        } catch (NotEncodableValueException $notEncodableValueException) {
-            $statusCode = $notEncodableValueException->getCode();
-            $rawBody = $notEncodableValueException->getMessage();
-            $errors = [];
+            throw new RuntimeException('XML response serialization is not supported in SDK 2.0', 500);
         }
 
         $errors = [
@@ -558,17 +533,14 @@ abstract class AbstractRequest implements
                 ]
             ]
         ];
-        // if given raw body already is Json return that
-        if (true === array_key_exists('errors', $errors)) {
-            // reformat the errors
-            $errors['errors'] = $this->flattenErrors($errors['errors']);
-        }
 
-        return (string)$encoder->encode($errors, $responseFormat);
+        $errors['errors'] = $this->flattenErrors($errors['errors']);
+
+        return (new JsonMapper())->encode($errors, $this->isDebug());
     }
 
     /**
-     * @param array $errors
+     * @param array  $errors
      * @param string $context
      *
      * @return array
@@ -596,7 +568,7 @@ abstract class AbstractRequest implements
      *
      * @param mixed $body
      *
-     * @throws RuntimeException when the body is an object and it's invalid
+     * @throws RuntimeException When the body is an object and it's invalid.
      *
      * @return void
      */

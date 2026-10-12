@@ -13,6 +13,7 @@ use PayNL\Sdk\{
   Request\RequestDataInterface,
   Response\Response,
   Request\AbstractRequest,
+  Serialization\JsonMapper,
   Service\Manager as ServiceManager,
   Service\ManagerConfig as ServiceManagerConfig
 };
@@ -48,7 +49,7 @@ class Application
      * Application constructor.
      *
      * @param ServiceManager $serviceManager
-     * @param Response $response
+     * @param Response       $response
      */
     public function __construct(ServiceManager $serviceManager, Response $response)
     {
@@ -138,18 +139,18 @@ class Application
      * Parameters, filters and body can be given only when the given request (name) is a string, otherwise
      * these parameters will be ignored
      *
-     * @param $request
+     * @param mixed      $request
      * @param array|null $params
      * @param array|null $filters
-     * @param null $body
+     * @param mixed|null $body
      * @return $this
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function setRequest($request, ?array $params = null, ?array $filters = null, $body = null): self
+    public function setRequest($request, ?array $params = null, ?array $filters = null, mixed $body = null): self
     {
         if (true === is_string($request)) {
-            $body = (false === empty($body) ? $body : null);
+            $body = $body ?: null;
 
             # Do we've got a body given? And if yes, is it correct?
             if ($body !== null) {
@@ -186,12 +187,12 @@ class Application
             $request->setBody($body);
         } elseif (($request instanceof AbstractRequest) === false) {
             throw new InvalidArgumentException(
-              sprintf(
-                'Given request should correspond to a request class name or alias, or should be an ' .
-                'instance of %s, %s given',
-                AbstractRequest::class,
-                (is_object($request) === true ? get_class($request) : gettype($request))
-              )
+                sprintf(
+                    'Given request should correspond to a request class name or alias, or should be an ' .
+                    'instance of %s, %s given',
+                    AbstractRequest::class,
+                    (is_object($request) === true ? get_class($request) : gettype($request))
+                )
             );
         }
 
@@ -208,7 +209,6 @@ class Application
         $method = $request->getMethodName();
 
         # Get the request from its manager with the given options
-        /** @var AbstractRequest $method */
         $newRequest = $this->serviceManager->get('requestManager')->get($method);
         $newRequest->setUri($request->getUri());
         $newRequest->setMethod($request->getRequestMethod());
@@ -216,7 +216,7 @@ class Application
 
         $bodyParams = $request->getBodyParameters();
         if (!empty($bodyParams)) {
-            $newRequest->setBody(json_encode($bodyParams));
+            $newRequest->setBody((new JsonMapper())->encode($bodyParams));
         }
 
         $this->request = $newRequest;

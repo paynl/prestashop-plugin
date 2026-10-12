@@ -49,7 +49,7 @@ class Method implements ModelInterface
     /**
      * @var array
      */
-    protected $settings;
+    protected ?array $settings;
 
     /**
      * @var int
