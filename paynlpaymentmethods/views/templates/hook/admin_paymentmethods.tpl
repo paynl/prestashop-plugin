@@ -179,6 +179,22 @@
                                     </p>
                                 </div>
                             </div>
+                            {if in_array($paymentmethod->id, $showIssuerSelection)}
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3 align-right">{l s='Bank Selection' mod='paynlpaymentmethods'}</label>
+                                    <div class="col-lg-9">
+                                        <select name="bank_selection">
+                                            <option value="off" {if $paymentmethod->bank_selection == 'off'}selected{/if}>Off</option>
+                                            <option value="radio" {if $paymentmethod->bank_selection == 'radio'}selected{/if}>Radiobuttons</option>
+                                            <option value="dropdown" {if $paymentmethod->bank_selection == 'dropdown'}selected{/if}>Selectbox</option>
+                                        </select>
+                                        <p class="help-block">
+                                            {l s='Choose the type of bank selection' mod='paynlpaymentmethods'}
+                                        </p>
+                                    </div>
+                                </div>
+                            {/if}
+
                             {if in_array($paymentmethod->id, $showFastcheckoutOptionsIdeal)}
 
                                 {assign var=fastcheckout_cart_page value=0}

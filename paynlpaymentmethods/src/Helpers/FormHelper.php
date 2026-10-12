@@ -490,6 +490,23 @@ class FormHelper
             }
         }
 
+        $bankSelection = PaymentMethod::isPayIssuersEnabled($payment_option_id);
+        if ((int)$payment_option_id === PaymentMethod::METHOD_METJEBANK && $bankSelection) {
+            $issuersFromCache = json_decode((string)Configuration::get('PAYNL_ISSUERS'), true);
+            $paymentOptions = [];
+            foreach ($issuersFromCache['issuers'] ?? [] as $issuer) {
+                $paymentOptions[] = [
+                    'id' => $issuer['issuerId'] ?? $issuer['id'] ?? '',
+                    'name' => $issuer['name'] ?? '',
+                    'image' => 'https://static.pay.nl/' . $issuer['image'] ?? '',
+                ];
+            }
+            $type = $bankSelection;
+            $paymentOptionName = 'issuerId';
+            $paymentOptionText = $l['selectIssuer'] ?? 'Please select your bank';
+            $paymentDropdownText = $l['selectIssuerText'] ?? 'Pay safely via your bank';
+        }
+
         $context = $module->getContext();
 
         $context->smarty->assign([

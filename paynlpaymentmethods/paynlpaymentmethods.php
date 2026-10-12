@@ -788,6 +788,8 @@ class PaynlPaymentMethods extends PaymentModule
         $trans['browserLanguage'] = $this->l('Automatic (Browser language)');
         $trans['selectPin'] = $this->l('Please select a pin-terminal');
         $trans['pin'] = $this->l('Pay safely via pin');
+        $trans['selectIssuer'] = $this->l('Please select your bank');
+        $trans['selectIssuerText'] = $this->l('Pay safely via your bank');
         $trans['payConnected'] = $this->l('Pay. successfully connected');
         $trans['payNotConnected'] = $this->l('Pay. not connected');
         $trans['expireTime'] = $this->l('Expire time');
@@ -1297,6 +1299,10 @@ class PaynlPaymentMethods extends PaymentModule
             $request->setTerminal($parameters['terminalCode']);
         }
 
+        if (!empty($parameters['issuerId'])) {
+            $request->setPaymentInputData(['issuerId' => $parameters['issuerId']]);
+        }
+
         if (Configuration::get('PAYNL_EXPIRE_TIME') && (int)Configuration::get('PAYNL_EXPIRE_TIME') > 0) {
             $request->setExpire($this->setExpireTime(Configuration::get('PAYNL_EXPIRE_TIME')));
         }
@@ -1374,6 +1380,7 @@ class PaynlPaymentMethods extends PaymentModule
 
             Configuration::updateValue('PAYNL_CORES', json_encode(['dateSaved' => date('Y-m-d'), 'cores' => $service->getCores()]));
             Configuration::updateValue('PAYNL_TERMINALS', json_encode(['dateSaved' => date('Y-m-d'), 'terminals' => $service->getTerminals()]));
+            Configuration::updateValue('PAYNL_ISSUERS', json_encode(['dateSaved' => date('Y-m-d'), 'issuers' => $service->getBanks()]));
         } catch (Exception $e) {
             return false;
         }
@@ -1828,6 +1835,7 @@ class PaynlPaymentMethods extends PaymentModule
           'showExternalLogoList' => [PaymentMethod::METHOD_GIVACARD],
           'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL],
           'showFastcheckoutOptionsIdeal' => [PaymentMethod::METHOD_IDEAL],
+          'showIssuerSelection' => [PaymentMethod::METHOD_METJEBANK],
           'showCreateOrderOnList' => [PaymentMethod::METHOD_PAYPAL],
           'showPaymentLocationList' => [PaymentMethod::METHOD_INSTORE, PaymentMethod::METHOD_PIN]
         ));
