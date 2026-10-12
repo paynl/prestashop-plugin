@@ -127,6 +127,9 @@ class ProcessingHelper
             if (empty($orderPayment->id_currency)) {
                 $orderPayment->id_currency = $order->id_currency;
             }
+            if (empty($orderPayment->conversion_rate)) {
+                $orderPayment->conversion_rate = (float) $order->conversion_rate;
+            }
 
             $orderPayment->save();
         }

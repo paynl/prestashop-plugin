@@ -1354,6 +1354,7 @@ class PaynlPaymentMethods extends PaymentModule
         $orderPayment->amount = $cart->getOrderTotal();
         $orderPayment->transaction_id = $payTransactionId;
         $orderPayment->id_currency = $cart->id_currency;
+        $orderPayment->conversion_rate = (float) $order->conversion_rate;
         $orderPayment->save();
     }
 
