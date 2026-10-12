@@ -9,6 +9,7 @@ class PaymentMethod
     const METHOD_SANDBOX = 613; // phpcs:ignore
     const METHOD_OVERBOEKING = 136; // phpcs:ignore
     const METHOD_IDEAL = 10; // phpcs:ignore
+    const METHOD_METJEBANK = 5358; // phpcs:ignore
     const METHOD_SOFORT = 556; // phpcs:ignore
     const METHOD_INSTORE = 1729; // phpcs:ignore
     const METHOD_PIN = 1927; // phpcs:ignore
@@ -74,5 +75,24 @@ class PaymentMethod
     {
         $object->errors[] = $error;
         $object->redirectWithNotifications('index.php?controller=order&step=1');
+    }
+
+    /**
+     * @param $paymentProfileId
+     * @return false
+     */
+    public static function isPayIssuersEnabled($paymentProfileId)
+    {
+        $settings = self::getPaymentMethodSettings($paymentProfileId);
+
+        if (!$settings || empty($settings->enabled)) {
+            return false;
+        }
+
+        if (!isset($settings->bank_selection) || $settings->bank_selection === 'off') {
+            return false;
+        }
+
+        return $settings->bank_selection;
     }
 }

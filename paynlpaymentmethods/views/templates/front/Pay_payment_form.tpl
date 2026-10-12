@@ -19,7 +19,7 @@
                         <label>
                             <input type="radio" name="{$payment_option_name}" value="{$_option['id']}">
                             {if $logoClass != 'noLogo'}
-                                <img src="/modules/paynlpaymentmethods/views/images/issuers/qr-{$_option['id']}.png" loading="lazy">
+                                <img src="{$_option['image']}" loading="lazy">
                             {/if}
                             <span>{$_option['name']}</span>
                         </label>
